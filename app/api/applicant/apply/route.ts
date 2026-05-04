@@ -6,48 +6,75 @@ const FORM_NAME = 'Application: Personal Details'
 
 const FIELD_DEFS = [
   // Section 1 — Personal Details
-  { slug: 'first_name',                label: 'First name',                    field_type: 'text',     is_required: true,  sort_order: 1  },
-  { slug: 'last_name',                 label: 'Last name',                     field_type: 'text',     is_required: true,  sort_order: 2  },
-  { slug: 'email',                     label: 'Email',                         field_type: 'email',    is_required: true,  sort_order: 3  },
-  { slug: 'phone',                     label: 'Phone',                         field_type: 'phone',    is_required: false, sort_order: 4  },
-  { slug: 'job_role',                  label: 'Job role',                      field_type: 'text',     is_required: false, sort_order: 5  },
-  { slug: 'address_line_1',            label: 'Address line 1',                field_type: 'text',     is_required: true,  sort_order: 6  },
-  { slug: 'address_line_2',            label: 'Address line 2',                field_type: 'text',     is_required: false, sort_order: 7  },
-  { slug: 'town_city',                 label: 'Town / City',                   field_type: 'text',     is_required: true,  sort_order: 8  },
-  { slug: 'postcode',                  label: 'Postcode',                      field_type: 'text',     is_required: true,  sort_order: 9  },
-  { slug: 'date_of_birth',             label: 'Date of birth',                 field_type: 'date',     is_required: true,  sort_order: 10 },
-  { slug: 'national_insurance',        label: 'National Insurance number',     field_type: 'text',     is_required: true,  sort_order: 11 },
+  { slug: 'first_name',                   label: 'First name',                      field_type: 'text',     is_required: true,  sort_order: 1  },
+  { slug: 'last_name',                    label: 'Last name',                       field_type: 'text',     is_required: true,  sort_order: 2  },
+  { slug: 'email',                        label: 'Email',                           field_type: 'email',    is_required: true,  sort_order: 3  },
+  { slug: 'phone',                        label: 'Phone',                           field_type: 'phone',    is_required: false, sort_order: 4  },
+  { slug: 'job_role',                     label: 'Job role',                        field_type: 'text',     is_required: false, sort_order: 5  },
+  { slug: 'address_line_1',              label: 'Address line 1',                  field_type: 'text',     is_required: true,  sort_order: 6  },
+  { slug: 'address_line_2',              label: 'Address line 2',                  field_type: 'text',     is_required: false, sort_order: 7  },
+  { slug: 'town_city',                    label: 'Town / City',                     field_type: 'text',     is_required: true,  sort_order: 8  },
+  { slug: 'postcode',                     label: 'Postcode',                        field_type: 'text',     is_required: true,  sort_order: 9  },
+  { slug: 'date_of_birth',               label: 'Date of birth',                   field_type: 'date',     is_required: true,  sort_order: 10 },
+  { slug: 'national_insurance',          label: 'National Insurance number',       field_type: 'text',     is_required: true,  sort_order: 11 },
 
-  // Section 2 — Employment History
-  { slug: 'current_employer',          label: 'Current or most recent employer', field_type: 'text',   is_required: false, sort_order: 12 },
-  { slug: 'current_job_title',         label: 'Job title',                     field_type: 'text',     is_required: false, sort_order: 13 },
-  { slug: 'employment_start_date',     label: 'Start date',                    field_type: 'date',     is_required: false, sort_order: 14 },
-  { slug: 'employment_end_date',       label: 'End date',                      field_type: 'date',     is_required: false, sort_order: 15 },
-  { slug: 'reason_for_leaving',        label: 'Reason for leaving',            field_type: 'textarea', is_required: false, sort_order: 16 },
-  { slug: 'employment_gaps',           label: 'Gaps in employment',            field_type: 'textarea', is_required: false, sort_order: 17 },
-  { slug: 'employment_gap_explanation',label: 'Explanation of gaps',           field_type: 'textarea', is_required: false, sort_order: 18 },
+  // Section 2 — Employment / Education History (stored as single JSONB array)
+  { slug: 'employment_history',          label: 'Employment / Education History',  field_type: 'textarea', is_required: true,  sort_order: 12 },
 
-  // Section 2 — Reference 1
-  { slug: 'reference_1_name',          label: 'Reference 1 — Full name',       field_type: 'text',     is_required: true,  sort_order: 19 },
-  { slug: 'reference_1_position',      label: 'Reference 1 — Position',        field_type: 'text',     is_required: false, sort_order: 20 },
-  { slug: 'reference_1_company',       label: 'Reference 1 — Company',         field_type: 'text',     is_required: false, sort_order: 21 },
-  { slug: 'reference_1_email',         label: 'Reference 1 — Email',           field_type: 'email',    is_required: true,  sort_order: 22 },
-  { slug: 'reference_1_phone',         label: 'Reference 1 — Phone',           field_type: 'phone',    is_required: false, sort_order: 23 },
-  { slug: 'reference_1_relationship',  label: 'Reference 1 — Relationship',    field_type: 'text',     is_required: false, sort_order: 24 },
+  // Section 2 — References (stored as single JSONB array)
+  { slug: 'references',                  label: 'References',                      field_type: 'textarea', is_required: true,  sort_order: 13 },
 
-  // Section 2 — Reference 2
-  { slug: 'reference_2_name',          label: 'Reference 2 — Full name',       field_type: 'text',     is_required: true,  sort_order: 25 },
-  { slug: 'reference_2_position',      label: 'Reference 2 — Position',        field_type: 'text',     is_required: false, sort_order: 26 },
-  { slug: 'reference_2_company',       label: 'Reference 2 — Company',         field_type: 'text',     is_required: false, sort_order: 27 },
-  { slug: 'reference_2_email',         label: 'Reference 2 — Email',           field_type: 'email',    is_required: true,  sort_order: 28 },
-  { slug: 'reference_2_phone',         label: 'Reference 2 — Phone',           field_type: 'phone',    is_required: false, sort_order: 29 },
-  { slug: 'reference_2_relationship',  label: 'Reference 2 — Relationship',    field_type: 'text',     is_required: false, sort_order: 30 },
+  // Section 3 — Right to Work
+  { slug: 'right_to_work_uk',            label: 'Right to work in the UK',         field_type: 'boolean',  is_required: true,  sort_order: 31 },
+  { slug: 'right_to_work_type',          label: 'Right to work type',              field_type: 'text',     is_required: false, sort_order: 32 },
+  { slug: 'requires_sponsorship',        label: 'Requires visa sponsorship',       field_type: 'boolean',  is_required: false, sort_order: 33 },
+  { slug: 'visa_expiry_date',            label: 'Visa expiry date',                field_type: 'date',     is_required: false, sort_order: 34 },
+  { slug: 'share_code',                  label: 'Share code',                      field_type: 'text',     is_required: false, sort_order: 35 },
+
+  // Section 3 — Criminal Record & DBS Declaration (stored as single JSONB object)
+  { slug: 'criminal_record',             label: 'Criminal Record & DBS Declaration', field_type: 'textarea', is_required: false, sort_order: 36 },
+
+  // Section 3 — Care Experience
+  { slug: 'previous_care_experience',    label: 'Has previous care experience',    field_type: 'boolean',  is_required: false, sort_order: 41 },
+  { slug: 'care_experience_details',     label: 'Care experience details',         field_type: 'textarea', is_required: false, sort_order: 42 },
+  { slug: 'preferred_work_setting',      label: 'Preferred work setting',          field_type: 'text',     is_required: false, sort_order: 43 },
+  { slug: 'available_start_date',        label: 'Available start date',            field_type: 'date',     is_required: false, sort_order: 44 },
+
+  // Section 3 — Training and Qualifications (stored as single JSONB object)
+  { slug: 'training_qualifications',     label: 'Training & Qualifications',       field_type: 'textarea', is_required: false, sort_order: 45 },
+
+  // Section — Professional Qualifications (stored as single JSONB array)
+  { slug: 'professional_qualifications', label: 'Professional Qualifications',     field_type: 'textarea', is_required: false, sort_order: 46 },
+
+  // Section — Professional Registration (stored as single JSONB array)
+  { slug: 'professional_registration',   label: 'Professional Registration',       field_type: 'textarea', is_required: false, sort_order: 47 },
+
+  // Section — Application Source (stored as single JSONB object)
+  { slug: 'application_source',          label: 'Source',                          field_type: 'textarea', is_required: false, sort_order: 48 },
+
+  // Section — Medical History (stored as single JSONB object)
+  { slug: 'medical_history',             label: 'Medical History',                 field_type: 'textarea', is_required: false, sort_order: 49 },
+
+  // Section — Work Availability (stored as single JSONB object)
+  { slug: 'work_availability',           label: 'Work Availability',               field_type: 'textarea', is_required: false, sort_order: 50 },
+
+  // Section 3 — Emergency Contact
+  { slug: 'emergency_contact_name',      label: 'Emergency contact — Full name',   field_type: 'text',     is_required: true,  sort_order: 51 },
+  { slug: 'emergency_contact_relationship', label: 'Emergency contact — Relationship', field_type: 'text', is_required: false, sort_order: 52 },
+  { slug: 'emergency_contact_phone',     label: 'Emergency contact — Phone',       field_type: 'phone',    is_required: true,  sort_order: 53 },
+  { slug: 'emergency_contact_email',     label: 'Emergency contact — Email',       field_type: 'email',    is_required: false, sort_order: 54 },
+
+  // Section — Declaration & Consent (stored as single JSONB object)
+  { slug: 'declaration_consent',        label: 'Declaration & Consent',           field_type: 'textarea', is_required: true,  sort_order: 61 },
+
+  // Section — Application Declarations (stored as single JSONB object)
+  { slug: 'application_declarations',   label: 'Declarations',                    field_type: 'textarea', is_required: true,  sort_order: 62 },
 ] as const
 
 type FieldSlug = (typeof FIELD_DEFS)[number]['slug']
 
 export async function POST(request: NextRequest) {
-  let body: { token?: unknown; answers?: unknown }
+  let body: { token?: unknown; answers?: unknown; submit?: unknown }
 
   try {
     body = await request.json() as { token?: unknown; answers?: unknown }
@@ -55,7 +82,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { token, answers } = body
+  const { token, answers, submit } = body
+  const isSubmit = submit === true
 
   if (typeof token !== 'string' || !token) {
     return NextResponse.json({ error: 'Token is required' }, { status: 400 })
@@ -166,11 +194,16 @@ export async function POST(request: NextRequest) {
 
   const answerRecords = fields
     .filter((f): f is { id: string; slug: FieldSlug } => typeof f.slug === 'string')
-    .map(f => ({
-      response_id: responseId,
-      field_id:    f.id as string,
-      value:       { text: typeof typedAnswers[f.slug] === 'string' ? typedAnswers[f.slug] : '' },
-    }))
+    .map(f => {
+      const raw = typedAnswers[f.slug]
+      // Objects and arrays (e.g. training_qualifications) are stored as raw JSONB.
+      // Primitive values are wrapped in { text } for consistency with the rest of the form.
+      const value =
+        raw !== null && typeof raw === 'object'
+          ? raw
+          : { text: typeof raw === 'string' ? raw : '' }
+      return { response_id: responseId, field_id: f.id as string, value }
+    })
 
   const { error: answersError } = await adminClient
     .from('form_answers')
@@ -181,5 +214,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not save answers' }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true, response_id: responseId })
+  // ── 6. If submitting, mark form_response as submitted ──────────────────────
+
+  if (isSubmit) {
+    const { error: submitError } = await adminClient
+      .from('form_responses')
+      .update({ status: 'submitted', submitted_at: new Date().toISOString() })
+      .eq('id', responseId)
+
+    if (submitError) {
+      console.error('[apply] submit status update failed:', submitError)
+      return NextResponse.json({ error: 'Could not mark application as submitted' }, { status: 500 })
+    }
+  }
+
+  return NextResponse.json({ success: true, response_id: responseId, submitted: isSubmit })
 }

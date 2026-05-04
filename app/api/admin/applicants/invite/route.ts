@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
+import { sendInviteEmail } from '@/lib/email/resend'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
@@ -140,6 +141,38 @@ export async function POST(request: NextRequest) {
 
   const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const magicLink = `${appUrl}/portal/apply?token=${rawToken}`
+
+  // Send invite email — fire-and-forget; never blocks the response
+  sendInviteEmail({
+    to:         normalizedEmail,
+    firstName:  (first_name as string).trim(),
+    jobRole:    (job_role as string).trim(),
+    magicLink,
+    expiresAt:  tokenExpiresAt,
+  }).then((result) => {
+    if (result.success) {
+      adminClient.from('audit_logs').insert({
+        company_id:  profile!.company_id,
+        actor_id:    profile!.id,
+        action:      'applicant.invite_email_sent',
+        entity_type: 'applicant',
+        entity_id:   applicant.id,
+        metadata: { email: normalizedEmail },
+      })
+    } else {
+      console.error('[invite-applicant] email send failed:', result.error)
+      adminClient.from('audit_logs').insert({
+        company_id:  profile!.company_id,
+        actor_id:    profile!.id,
+        action:      'applicant.invite_email_failed',
+        entity_type: 'applicant',
+        entity_id:   applicant.id,
+        metadata: { email: normalizedEmail, error: String(result.error) },
+      })
+    }
+  }).catch((err) => {
+    console.error('[invite-applicant] unexpected email error:', err)
+  })
 
   return NextResponse.json(
     {

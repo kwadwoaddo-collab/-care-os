@@ -1,0 +1,8 @@
+Only modify:
+- lib/email/*
+- app/api/admin/applicants/invite/route.ts
+
+Do NOT:
+- refactor existing logic
+- change database queries
+- rename files
