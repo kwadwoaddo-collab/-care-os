@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import ApplicantActions from './ApplicantActions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -94,25 +95,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         </dl>
       </div>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    applied:              'bg-blue-50 text-blue-700 ring-blue-600/20',
-    shortlisted:          'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-    rejected:             'bg-red-50 text-red-700 ring-red-600/20',
-    interview_scheduled:  'bg-purple-50 text-purple-700 ring-purple-600/20',
-    hired:                'bg-green-50 text-green-700 ring-green-600/20',
-    withdrawn:            'bg-gray-50 text-gray-600 ring-gray-500/20',
-    draft:                'bg-gray-50 text-gray-500 ring-gray-500/20',
-    submitted:            'bg-green-50 text-green-700 ring-green-600/20',
-  }
-  const cls = map[status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
-  return (
-    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}`}>
-      {status.replace(/_/g, ' ')}
-    </span>
   )
 }
 
@@ -328,25 +310,22 @@ export default async function ApplicantDetailPage({
       {/* Back link */}
       <Link
         href="/admin/applicants"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
       >
         ← Back to applicants
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">
-            {applicant.first_name ?? ''} {applicant.last_name ?? ''}
-            {!applicant.first_name && !applicant.last_name && applicant.email}
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">{applicant.email}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <StatusBadge status={applicant.status} />
-          {response && <StatusBadge status={response.status} />}
-        </div>
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold text-gray-900">
+          {applicant.first_name ?? ''} {applicant.last_name ?? ''}
+          {!applicant.first_name && !applicant.last_name && applicant.email}
+        </h1>
+        <p className="text-sm text-gray-500 mt-0.5">{applicant.email}</p>
       </div>
+
+      {/* Action bar — status display + pipeline buttons */}
+      <ApplicantActions applicantId={applicant.id} currentStatus={applicant.status} />
 
       <div className="space-y-4">
 
