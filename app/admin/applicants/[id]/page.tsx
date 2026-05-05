@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ApplicantActions from './ApplicantActions'
+import InterviewsSection, { type Interview } from './InterviewsSection'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,16 @@ async function getApplicant(id: string): Promise<ApiResponse> {
     throw new Error(`Failed to fetch applicant: ${res.status}`)
   }
   return res.json() as Promise<ApiResponse>
+}
+
+async function getInterviews(applicantId: string): Promise<Interview[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(
+    `${baseUrl}/api/admin/interviews?applicant_id=${applicantId}`,
+    { cache: 'no-store' }
+  )
+  if (!res.ok) return [] // Non-fatal: show empty section on error
+  return res.json() as Promise<Interview[]>
 }
 
 // ── Helper Components ─────────────────────────────────────────────────────────
@@ -304,6 +315,7 @@ export default async function ApplicantDetailPage({
   }
 
   const { applicant, response, answers } = data
+  const interviews = await getInterviews(applicant.id)
 
   return (
     <div>
@@ -328,6 +340,9 @@ export default async function ApplicantDetailPage({
       <ApplicantActions applicantId={applicant.id} currentStatus={applicant.status} />
 
       <div className="space-y-4">
+
+        {/* ── Interviews ────────────────────────────────────────────────────── */}
+        <InterviewsSection applicantId={applicant.id} initialInterviews={interviews} />
 
         {/* ── Personal Details ─────────────────────────────────────────────── */}
         <Section title="Personal Details">
