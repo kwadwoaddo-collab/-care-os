@@ -25,9 +25,9 @@ const FIELD_DEFS = [
   { slug: 'references',                  label: 'References',                      field_type: 'textarea', is_required: true,  sort_order: 13 },
 
   // Section 3 — Right to Work
-  { slug: 'right_to_work_uk',            label: 'Right to work in the UK',         field_type: 'boolean',  is_required: true,  sort_order: 31 },
+  { slug: 'right_to_work_uk',            label: 'Right to work in the UK',         field_type: 'checkbox', is_required: true,  sort_order: 31 },
   { slug: 'right_to_work_type',          label: 'Right to work type',              field_type: 'text',     is_required: false, sort_order: 32 },
-  { slug: 'requires_sponsorship',        label: 'Requires visa sponsorship',       field_type: 'boolean',  is_required: false, sort_order: 33 },
+  { slug: 'requires_sponsorship',        label: 'Requires visa sponsorship',       field_type: 'checkbox', is_required: false, sort_order: 33 },
   { slug: 'visa_expiry_date',            label: 'Visa expiry date',                field_type: 'date',     is_required: false, sort_order: 34 },
   { slug: 'share_code',                  label: 'Share code',                      field_type: 'text',     is_required: false, sort_order: 35 },
 
@@ -35,7 +35,7 @@ const FIELD_DEFS = [
   { slug: 'criminal_record',             label: 'Criminal Record & DBS Declaration', field_type: 'textarea', is_required: false, sort_order: 36 },
 
   // Section 3 — Care Experience
-  { slug: 'previous_care_experience',    label: 'Has previous care experience',    field_type: 'boolean',  is_required: false, sort_order: 41 },
+  { slug: 'previous_care_experience',    label: 'Has previous care experience',    field_type: 'checkbox', is_required: false, sort_order: 41 },
   { slug: 'care_experience_details',     label: 'Care experience details',         field_type: 'textarea', is_required: false, sort_order: 42 },
   { slug: 'preferred_work_setting',      label: 'Preferred work setting',          field_type: 'text',     is_required: false, sort_order: 43 },
   { slug: 'available_start_date',        label: 'Available start date',            field_type: 'date',     is_required: false, sort_order: 44 },
@@ -157,9 +157,45 @@ export async function POST(request: NextRequest) {
     include_in_pdf: true,
   }))
 
-  await adminClient
+  // Task 1: ignoreDuplicates: false ensures existing rows are updated (not skipped)
+  const { error: upsertFieldsError } = await adminClient
     .from('form_fields')
-    .upsert(fieldInserts, { onConflict: 'form_id,slug', ignoreDuplicates: true })
+    .upsert(fieldInserts, { onConflict: 'form_id,slug', ignoreDuplicates: false })
+  if (upsertFieldsError) {
+    console.error('[apply] form_fields upsert failed:', upsertFieldsError)
+  } else {
+    console.log('[apply] form_fields upsert OK, inserted/updated', fieldInserts.length, 'fields')
+  }
+
+  // Task 2: Remove any stale form_fields that are no longer in FIELD_DEFS
+  // Must delete form_answers referencing stale fields first (FK constraint)
+  const validSlugs = FIELD_DEFS.map(f => f.slug) as string[]
+  const { data: staleFields } = await adminClient
+    .from('form_fields')
+    .select('id')
+    .eq('form_id', formId)
+    .not('slug', 'in', `(${validSlugs.join(',')})`)
+
+  if (staleFields && staleFields.length > 0) {
+    const staleIds = staleFields.map(f => f.id as string)
+    // Delete answers that reference stale fields (across all responses for this form)
+    await adminClient
+      .from('form_answers')
+      .delete()
+      .in('field_id', staleIds)
+    // Now safe to delete the stale fields
+    const { error: deleteStaleError } = await adminClient
+      .from('form_fields')
+      .delete()
+      .in('id', staleIds)
+    if (deleteStaleError) {
+      console.error('[apply] stale field cleanup failed:', deleteStaleError)
+    } else {
+      console.log('[apply] stale field cleanup OK — removed', staleIds.length, 'stale fields')
+    }
+  } else {
+    console.log('[apply] no stale fields to remove')
+  }
 
   const { data: fields, error: fieldsError } = await adminClient
     .from('form_fields')
