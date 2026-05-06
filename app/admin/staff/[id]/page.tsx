@@ -91,6 +91,26 @@ async function getAvailability(id: string): Promise<StaffAvailability | null> {
   return parseAvailabilityRecord(id, raw)
 }
 
+interface StaffShift {
+  id:               string
+  title:            string
+  shift_date:       string
+  start_time:       string
+  end_time:         string
+  status:           string
+  location:         string | null
+  client_name:      string | null
+  shift_type:       string | null
+  timesheet_status: string | null
+}
+
+async function getRecentShifts(id: string): Promise<StaffShift[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/staff/${id}/shifts`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json() as Promise<StaffShift[]>
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string | null): string {
@@ -129,6 +149,22 @@ const STATUS_CLS: Record<string, string> = {
   suspended:      'bg-orange-50 text-orange-700 ring-orange-600/20',
   terminated:     'bg-red-50    text-red-700    ring-red-600/20',
   inactive:       'bg-gray-50   text-gray-600   ring-gray-500/20',
+}
+
+const SHIFT_STATUS_CLS: Record<string, string> = {
+  scheduled: 'bg-blue-50   text-blue-700   ring-blue-600/20',
+  confirmed: 'bg-green-50  text-green-700  ring-green-600/20',
+  completed: 'bg-gray-50   text-gray-600   ring-gray-500/20',
+  cancelled: 'bg-red-50    text-red-700    ring-red-600/20',
+  no_show:   'bg-orange-50 text-orange-700 ring-orange-600/20',
+}
+
+const TIMESHEET_STATUS_CLS: Record<string, string> = {
+  pending:    'bg-gray-50   text-gray-500   ring-gray-400/20',
+  clocked_in: 'bg-blue-50   text-blue-700   ring-blue-600/20',
+  completed:  'bg-green-50  text-green-700  ring-green-600/20',
+  missed:     'bg-red-50    text-red-700    ring-red-600/20',
+  adjusted:   'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
 }
 
 // Document expiry status badge
@@ -333,8 +369,9 @@ export default async function StaffDetailPage({
 }) {
   const { id } = await params
 
-  // Start both fetches in parallel
-  const availabilityPromise = getAvailability(id)
+  // Start fetches in parallel
+  const availabilityPromise  = getAvailability(id)
+  const recentShiftsPromise  = getRecentShifts(id)
 
   let data: ApiResponse
   try {
@@ -347,7 +384,8 @@ export default async function StaffDetailPage({
     )
   }
 
-  const availability = await availabilityPromise.catch(() => null)
+  const availability  = await availabilityPromise.catch(() => null)
+  const recentShifts  = await recentShiftsPromise.catch(() => [])
 
   const { staff_profile: sp, applicant, documents, compliance_items } = data
 
@@ -521,6 +559,51 @@ export default async function StaffDetailPage({
           staffProfileId={sp.id}
           initial={availability ?? parseAvailabilityRecord(sp.id, null)}
         />
+
+        {/* ── Recent Shifts ───────────────────────────────────────────────── */}
+        <SectionBox title="Recent Shifts">
+          {recentShifts.length === 0 ? (
+            <p className="text-sm text-gray-400">No shifts assigned yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100 text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                    <th className="text-left pb-2 pr-4">Title</th>
+                    <th className="text-left pb-2 pr-4">Date</th>
+                    <th className="text-left pb-2 pr-4">Time</th>
+                    <th className="text-left pb-2 pr-4">Location</th>
+                    <th className="text-left pb-2">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recentShifts.map((shift) => (
+                    <tr key={shift.id}>
+                      <td className="py-2 pr-4 text-gray-900">{shift.title}</td>
+                      <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">
+                        {formatDate(shift.shift_date)}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-600 whitespace-nowrap tabular-nums">
+                        {shift.start_time.slice(0, 5)} – {shift.end_time.slice(0, 5)}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-500 max-w-[160px] truncate">
+                        {shift.location ?? '—'}
+                      </td>
+                      <td className="py-2">
+                        <div className="flex items-center gap-1.5">
+                          <Badge status={shift.status} map={SHIFT_STATUS_CLS} />
+                          {shift.timesheet_status && (
+                            <Badge status={shift.timesheet_status} map={TIMESHEET_STATUS_CLS} />
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </SectionBox>
 
       </div>
     </div>

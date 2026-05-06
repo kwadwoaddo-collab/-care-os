@@ -12,6 +12,15 @@ export function calculateReadiness(
   compliant:    boolean,
   availability: StaffAvailability | null
 ): ReadinessResult {
+  if (status === 'inactive') {
+    return {
+      ready:    false,
+      score:    0,
+      blockers: ['Staff is no longer active'],
+      warnings: [],
+    }
+  }
+
   const blockers: string[] = []
   const warnings: string[] = []
   let score = 100

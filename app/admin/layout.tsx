@@ -1,3 +1,5 @@
+import { ENABLE_TIMESHEETS } from '@/lib/features'
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -11,6 +13,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <a href="/admin/staff" className="hover:text-gray-900 transition-colors">
               Staff
             </a>
+            <a href="/admin/shifts" className="hover:text-gray-900 transition-colors">
+              Shifts
+            </a>
+            {ENABLE_TIMESHEETS && (
+              <a href="/admin/timesheets" className="hover:text-gray-900 transition-colors">
+                Timesheets
+              </a>
+            )}
           </nav>
         </div>
       </header>
