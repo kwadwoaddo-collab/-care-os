@@ -12,6 +12,7 @@ export interface Shift {
   end_time:          string
   location:          string | null
   client_name:       string | null
+  client_id:         string | null
   shift_type:        string | null
   status:            string
   notes:             string | null
@@ -22,6 +23,11 @@ export interface Shift {
     first_name: string | null
     last_name:  string | null
     email:      string | null
+  } | null
+  clients: {
+    id:         string
+    first_name: string
+    last_name:  string
   } | null
 }
 
@@ -159,6 +165,7 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -194,6 +201,18 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                     </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">
                       {formatTime(shift.start_time)} – {formatTime(shift.end_time)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      {shift.clients ? (
+                        <a
+                          href={`/admin/clients/${shift.clients.id}`}
+                          className="text-indigo-700 hover:underline"
+                        >
+                          {shift.clients.first_name} {shift.clients.last_name}
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">{shift.client_name ?? '—'}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-600 max-w-[160px] truncate">
                       {shift.location ?? '—'}

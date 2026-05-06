@@ -19,6 +19,7 @@ interface PatchBody {
   end_time?:    string
   location?:    string
   client_name?: string
+  client_id?:   string | null
   notes?:       string
 }
 
@@ -51,7 +52,7 @@ export async function PATCH(
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   const allowed: Array<keyof PatchBody> = [
     'status', 'shift_type', 'title', 'shift_date',
-    'start_time', 'end_time', 'location', 'client_name', 'notes',
+    'start_time', 'end_time', 'location', 'client_name', 'client_id', 'notes',
   ]
   for (const key of allowed) {
     if (key in body) updates[key] = body[key] ?? null

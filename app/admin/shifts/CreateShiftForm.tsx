@@ -13,9 +13,16 @@ export interface ReadyStaff {
   readiness:  { ready: boolean; score: number }
 }
 
+export interface ActiveClient {
+  id:         string
+  first_name: string
+  last_name:  string
+}
+
 interface CreateShiftFormProps {
-  companyId:  string
-  readyStaff: ReadyStaff[]
+  companyId:     string
+  readyStaff:    ReadyStaff[]
+  activeClients: ActiveClient[]
 }
 
 const SHIFT_TYPES = [
@@ -28,7 +35,7 @@ const SHIFT_TYPES = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function CreateShiftForm({ companyId, readyStaff }: CreateShiftFormProps) {
+export default function CreateShiftForm({ companyId, readyStaff, activeClients }: CreateShiftFormProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -42,6 +49,7 @@ export default function CreateShiftForm({ companyId, readyStaff }: CreateShiftFo
     end_time:          '',
     location:          '',
     client_name:       '',
+    client_id:         '',
     shift_type:        '',
     assigned_staff_id: '',
     notes:             '',
@@ -72,11 +80,12 @@ export default function CreateShiftForm({ companyId, readyStaff }: CreateShiftFo
             shift_date:        form.shift_date,
             start_time:        form.start_time,
             end_time:          form.end_time,
-            location:          form.location     || null,
-            client_name:       form.client_name  || null,
-            shift_type:        form.shift_type   || null,
-            assigned_staff_id: form.assigned_staff_id || null,
-            notes:             form.notes        || null,
+            location:          form.location              || null,
+            client_name:       form.client_name           || null,
+            client_id:         form.client_id             || null,
+            shift_type:        form.shift_type            || null,
+            assigned_staff_id: form.assigned_staff_id     || null,
+            notes:             form.notes                 || null,
           }),
         })
 
@@ -94,7 +103,7 @@ export default function CreateShiftForm({ companyId, readyStaff }: CreateShiftFo
         setOpen(false)
         setForm({
           title: '', shift_date: '', start_time: '', end_time: '',
-          location: '', client_name: '', shift_type: '',
+          location: '', client_name: '', client_id: '', shift_type: '',
           assigned_staff_id: '', notes: '',
         })
         router.refresh()
@@ -244,16 +253,34 @@ export default function CreateShiftForm({ companyId, readyStaff }: CreateShiftFo
                 />
               </div>
 
-              {/* Client name */}
+              {/* Client */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Client name</label>
-                <input
-                  type="text"
-                  value={form.client_name}
-                  onChange={(e) => set('client_name', e.target.value)}
-                  placeholder="e.g. Mr. Smith"
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Client
+                  <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                </label>
+                {activeClients.length > 0 ? (
+                  <select
+                    value={form.client_id}
+                    onChange={(e) => set('client_id', e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <option value="">— No client —</option>
+                    {activeClients.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.first_name} {c.last_name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={form.client_name}
+                    onChange={(e) => set('client_name', e.target.value)}
+                    placeholder="e.g. Mr. Smith"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                )}
               </div>
 
               {/* Notes */}

@@ -1,5 +1,5 @@
 import ShiftsTable, { type Shift } from './ShiftsTable'
-import CreateShiftForm, { type ReadyStaff } from './CreateShiftForm'
+import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -29,6 +29,14 @@ async function getReadyStaff(): Promise<ReadyStaff[]> {
   return all.filter((s) => s.status === 'active' && s.readiness.ready)
 }
 
+async function getActiveClients(): Promise<ActiveClient[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
+  if (!res.ok) return []
+  const all = await res.json() as (ActiveClient & { status: string })[]
+  return all.filter((c) => c.status === 'active')
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function todayStr() {
@@ -38,7 +46,7 @@ function todayStr() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ShiftsPage() {
-  const [shifts, readyStaff] = await Promise.all([getShifts(), getReadyStaff()])
+  const [shifts, readyStaff, activeClients] = await Promise.all([getShifts(), getReadyStaff(), getActiveClients()])
 
   const today     = todayStr()
   const todayCount    = shifts.filter((s) => s.shift_date === today).length
@@ -60,7 +68,7 @@ export default async function ShiftsPage() {
             {shifts.length} shift{shifts.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <CreateShiftForm companyId={companyId} readyStaff={readyStaff} />
+        <CreateShiftForm companyId={companyId} readyStaff={readyStaff} activeClients={activeClients} />
       </div>
 
       {/* Summary cards */}
