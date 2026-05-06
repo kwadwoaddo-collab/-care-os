@@ -94,6 +94,10 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       )
     }
+    return NextResponse.json(
+      { error: 'Applicant already exists. Use Resend Invite from the table.' },
+      { status: 409 }
+    )
   }
 
   // Generate token — store only the SHA-256 hash, never the raw token

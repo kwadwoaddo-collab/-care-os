@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import InviteApplicantForm from './InviteApplicantForm'
+import ResendInviteButton from './ResendInviteButton'
 
 interface ApplicantRow {
   id: string
@@ -74,11 +76,14 @@ export default async function ApplicantsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Applicants</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          All applicants across the organisation.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Applicants</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            All applicants across the organisation.
+          </p>
+        </div>
+        <InviteApplicantForm />
       </div>
 
       {fetchError && (
@@ -97,12 +102,13 @@ export default async function ApplicantsPage() {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
             {applicants.length === 0 && !fetchError && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-400">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-400">
                   No applicants yet.
                 </td>
               </tr>
@@ -110,7 +116,7 @@ export default async function ApplicantsPage() {
             {applicants.map((a) => (
               <tr
                 key={a.id}
-                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                className="hover:bg-gray-50 transition-colors"
               >
                 <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
                   <Link href={`/admin/applicants/${a.id}`} className="block w-full">
@@ -142,6 +148,15 @@ export default async function ApplicantsPage() {
                   <Link href={`/admin/applicants/${a.id}`} className="block w-full">
                     {formatDate(a.created_at)}
                   </Link>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {['hired', 'rejected', 'withdrawn'].includes(a.status) ? (
+                    <span className="text-xs text-gray-400">Closed</span>
+                  ) : a.form_status === 'submitted' ? (
+                    <span className="text-xs text-gray-400">Submitted</span>
+                  ) : (
+                    <ResendInviteButton applicantId={a.id} />
+                  )}
                 </td>
               </tr>
             ))}

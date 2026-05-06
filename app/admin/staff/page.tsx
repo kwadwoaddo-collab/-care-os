@@ -1,5 +1,6 @@
 import StaffTable, { type StaffProfileWithCompliance } from './StaffTable'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
+import AddExistingStaffForm from './AddExistingStaffForm'
 
 // ── Data Fetching ─────────────────────────────────────────────────────────────
 
@@ -136,11 +137,14 @@ export default async function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Staff</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {staff.length} profile{staff.length !== 1 ? 's' : ''}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Staff</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {staff.length} profile{staff.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <AddExistingStaffForm />
       </div>
 
       {/* ── Summary cards ────────────────────────────────────────────────── */}

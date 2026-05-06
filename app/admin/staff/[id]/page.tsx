@@ -492,6 +492,10 @@ export default async function StaffDetailPage({
               <Field label="App. status" value={applicant.status.replace(/_/g, ' ')} />
               <Field label="Applied"     value={formatDate(applicant.created_at)} />
             </dl>
+          ) : sp.applicant_id === null ? (
+            <p className="text-sm text-gray-500">
+              Created directly in workforce management.
+            </p>
           ) : (
             <p className="text-sm text-gray-400">No linked applicant.</p>
           )}

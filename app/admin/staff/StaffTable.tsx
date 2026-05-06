@@ -6,14 +6,15 @@ import Link from 'next/link'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface StaffProfileWithCompliance {
-  id:         string
-  first_name: string | null
-  last_name:  string | null
-  email:      string | null
-  job_role:   string | null
-  status:     string
-  start_date: string | null
-  created_at: string
+  id:           string
+  first_name:   string | null
+  last_name:    string | null
+  email:        string | null
+  job_role:     string | null
+  status:       string
+  start_date:   string | null
+  created_at:   string
+  applicant_id: string | null
   compliance: {
     percentage:   number
     tier:         'green' | 'amber' | 'red'
@@ -52,6 +53,7 @@ const STAFF_STATUS_CLS: Record<string, string> = {
   active:         'bg-green-50  text-green-700  ring-green-600/20',
   suspended:      'bg-orange-50 text-orange-700 ring-orange-600/20',
   terminated:     'bg-red-50    text-red-700    ring-red-600/20',
+  inactive:       'bg-gray-50   text-gray-600   ring-gray-500/20',
 }
 
 const COMPLIANCE_TIER_CLS: Record<string, string> = {
@@ -160,6 +162,7 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Readiness</th>
@@ -178,6 +181,15 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{s.job_role ?? '—'}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <StatusBadge status={s.status} map={STAFF_STATUS_CLS} />
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      s.applicant_id
+                        ? 'bg-indigo-50 text-indigo-600 ring-indigo-600/20'
+                        : 'bg-gray-50 text-gray-500 ring-gray-400/20'
+                    }`}>
+                      {s.applicant_id ? 'recruited' : 'existing'}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(s.start_date)}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
