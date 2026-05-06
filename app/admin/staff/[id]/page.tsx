@@ -5,6 +5,8 @@ import {
   complianceTier,
   TIER_CLS,
 } from '@/lib/compliance/calculateCompliance'
+import StaffDocumentUpload from './StaffDocumentUpload'
+import StaffStatusControl  from './StaffStatusControl'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,7 @@ interface Document {
   id:            string
   document_type: string
   file_name:     string
+  file_path:     string | null
   file_size:     number | null
   expiry_date:   string | null
   created_at:    string
@@ -108,6 +111,32 @@ const STATUS_CLS: Record<string, string> = {
   active:         'bg-green-50  text-green-700  ring-green-600/20',
   suspended:      'bg-orange-50 text-orange-700 ring-orange-600/20',
   terminated:     'bg-red-50    text-red-700    ring-red-600/20',
+  inactive:       'bg-gray-50   text-gray-600   ring-gray-500/20',
+}
+
+// Document expiry status badge
+const DOC_STATUS_CLS: Record<string, string> = {
+  expired:       'bg-red-50    text-red-700    ring-red-600/20',
+  expiring_soon: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+  valid:         'bg-green-50  text-green-700  ring-green-600/20',
+  no_expiry:     'bg-gray-50   text-gray-500   ring-gray-400/20',
+}
+
+function docExpiryStatus(expiryDate: string | null): string {
+  if (!expiryDate)             return 'no_expiry'
+  if (isExpired(expiryDate))   return 'expired'
+  if (isExpiringSoon(expiryDate)) return 'expiring_soon'
+  return 'valid'
+}
+
+function docExpiryLabel(status: string): string {
+  const map: Record<string, string> = {
+    expired:       'Expired',
+    expiring_soon: 'Expiring soon',
+    valid:         'Valid',
+    no_expiry:     'No expiry',
+  }
+  return map[status] ?? status
 }
 
 const COMPLIANCE_CLS: Record<string, string> = {
@@ -326,8 +355,15 @@ export default async function StaffDetailPage({
 
       <div className="space-y-4">
 
-        {/* ── Compliance summary card (Task 4) ───────────────────────────── */}
+        {/* ── Compliance summary card ─────────────────────────────────────── */}
         <ComplianceCard documents={documents} />
+
+        {/* ── Status control ──────────────────────────────────────────────── */}
+        <StaffStatusControl
+          staffProfileId={sp.id}
+          currentStatus={sp.status}
+          isCompliant={calculateCompliance(documents).compliant}
+        />
 
         {/* ── Personal Info ──────────────────────────────────────────────── */}
         <SectionBox title="Personal Info">
@@ -366,49 +402,62 @@ export default async function StaffDetailPage({
           )}
         </SectionBox>
 
-        {/* ── Documents with expiry highlighting (Tasks 4 + 6) ───────────── */}
+        {/* ── Upload Document ──────────────────────────────────────────────── */}
+        <StaffDocumentUpload staffProfileId={sp.id} />
+
+        {/* ── Documents table ─────────────────────────────────────────────── */}
         <SectionBox title="Documents">
           {documents.length === 0 ? (
             <p className="text-sm text-gray-400">No documents uploaded.</p>
           ) : (
-            <>
-              {/* Legend */}
-              <div className="flex flex-wrap gap-3 mb-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-200 inline-block" /> Expired</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-yellow-200 inline-block" /> Expiring soon</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-green-100 inline-block" /> Valid</span>
-              </div>
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
                   <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    <th className="text-left pb-2">Document</th>
-                    <th className="text-left pb-2">Type</th>
-                    <th className="text-left pb-2">Size</th>
-                    <th className="text-left pb-2">Expires</th>
-                    <th className="text-left pb-2">Uploaded</th>
+                    <th className="text-left pb-2 pr-4">File name</th>
+                    <th className="text-left pb-2 pr-4">Type</th>
+                    <th className="text-left pb-2 pr-4">Expiry</th>
+                    <th className="text-left pb-2 pr-4">Status</th>
+                    <th className="text-left pb-2 pr-4">Uploaded</th>
+                    <th className="text-left pb-2">Download</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {documents.map((doc) => (
-                    <tr key={doc.id} className={expiryRowCls(doc.expiry_date)}>
-                      <td className="py-2 pr-4 text-gray-900 truncate max-w-xs">{doc.file_name}</td>
-                      <td className="py-2 pr-4 text-gray-600">{doc.document_type.replace(/_/g, ' ')}</td>
-                      <td className="py-2 pr-4 text-gray-500">{formatBytes(doc.file_size)}</td>
-                      <td className={`py-2 pr-4 ${expiryTextCls(doc.expiry_date)}`}>
-                        {doc.expiry_date ? (
-                          <>
-                            {formatDate(doc.expiry_date)}
-                            {isExpired(doc.expiry_date)     && <span className="ml-1 text-xs">(expired)</span>}
-                            {isExpiringSoon(doc.expiry_date) && <span className="ml-1 text-xs">(soon)</span>}
-                          </>
-                        ) : '—'}
-                      </td>
-                      <td className="py-2 text-gray-500">{formatDate(doc.created_at)}</td>
-                    </tr>
-                  ))}
+                  {documents.map((doc) => {
+                    const expStatus = docExpiryStatus(doc.expiry_date)
+                    return (
+                      <tr key={doc.id} className={expiryRowCls(doc.expiry_date)}>
+                        <td className="py-2 pr-4 text-gray-900 truncate max-w-[200px]">{doc.file_name}</td>
+                        <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">{doc.document_type.replace(/_/g, ' ')}</td>
+                        <td className={`py-2 pr-4 whitespace-nowrap ${expiryTextCls(doc.expiry_date)}`}>
+                          {doc.expiry_date ? formatDate(doc.expiry_date) : '—'}
+                        </td>
+                        <td className="py-2 pr-4">
+                          <Badge status={expStatus} map={DOC_STATUS_CLS} />
+                          {/* Override label via span trick */}
+                          <span className="sr-only">{docExpiryLabel(expStatus)}</span>
+                        </td>
+                        <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">{formatDate(doc.created_at)}</td>
+                        <td className="py-2">
+                          {doc.file_path ? (
+                            <a
+                              href={`/api/admin/documents/download?path=${encodeURIComponent(doc.file_path)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+                            >
+                              Download
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
-            </>
+            </div>
           )}
         </SectionBox>
 

@@ -44,16 +44,35 @@ export async function GET(
     applicant = data ?? null
   }
 
-  // ── Documents linked to applicant ─────────────────────────────────────────
-  let documents: unknown[] = []
+  // ── Documents: merge staff-profile docs + applicant docs (deduplicated) ──────
+  let documents: Record<string, unknown>[] = []
+
+  // 1. Documents uploaded directly against this staff profile
+  const { data: staffDocs } = await adminClient
+    .from('documents')
+    .select('id, document_type, file_name, file_path, file_size, mime_type, expiry_date, created_at')
+    .eq('staff_profile_id', staffProfile.id)
+    .order('created_at', { ascending: false })
+
+  if (staffDocs) documents.push(...(staffDocs as Record<string, unknown>[]))
+
+  // 2. Documents uploaded via the applicant flow
   if (staffProfile.applicant_id) {
-    const { data } = await adminClient
+    const { data: applicantDocs } = await adminClient
       .from('documents')
       .select('id, document_type, file_name, file_path, file_size, mime_type, expiry_date, created_at')
       .eq('applicant_id', staffProfile.applicant_id)
       .order('created_at', { ascending: false })
-    documents = data ?? []
+    if (applicantDocs) documents.push(...(applicantDocs as Record<string, unknown>[]))
   }
+
+  // 3. Deduplicate by id (a doc could be linked to both)
+  const seenDocIds = new Set<unknown>()
+  documents = documents.filter((d) => {
+    if (seenDocIds.has(d.id)) return false
+    seenDocIds.add(d.id)
+    return true
+  })
 
   // ── Compliance items (if any) ─────────────────────────────────────────────
   const { data: complianceItems } = await adminClient
