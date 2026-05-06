@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ApplicantActions from './ApplicantActions'
+import DocumentsSection, { type Document } from './DocumentsSection'
 import InterviewsSection, { type Interview } from './InterviewsSection'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -53,6 +54,16 @@ async function getInterviews(applicantId: string): Promise<Interview[]> {
   )
   if (!res.ok) return [] // Non-fatal: show empty section on error
   return res.json() as Promise<Interview[]>
+}
+
+async function getDocuments(applicantId: string): Promise<Document[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(
+    `${baseUrl}/api/admin/documents?applicant_id=${applicantId}`,
+    { cache: 'no-store' }
+  )
+  if (!res.ok) return [] // Non-fatal: show empty section on error
+  return res.json() as Promise<Document[]>
 }
 
 // ── Helper Components ─────────────────────────────────────────────────────────
@@ -315,7 +326,10 @@ export default async function ApplicantDetailPage({
   }
 
   const { applicant, response, answers } = data
-  const interviews = await getInterviews(applicant.id)
+  const [interviews, documents] = await Promise.all([
+    getInterviews(applicant.id),
+    getDocuments(applicant.id),
+  ])
 
   return (
     <div>
@@ -340,6 +354,9 @@ export default async function ApplicantDetailPage({
       <ApplicantActions applicantId={applicant.id} currentStatus={applicant.status} />
 
       <div className="space-y-4">
+
+        {/* ── Documents ─────────────────────────────────────────────────────── */}
+        <DocumentsSection applicantId={applicant.id} initialDocuments={documents} />
 
         {/* ── Interviews ────────────────────────────────────────────────────── */}
         <InterviewsSection applicantId={applicant.id} initialInterviews={interviews} />

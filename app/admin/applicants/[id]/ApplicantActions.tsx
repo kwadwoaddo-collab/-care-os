@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 interface Props {
   applicantId: string
   currentStatus: string
 }
 
-type ActionStatus = 'idle' | 'saving' | 'success' | 'error'
+type ActionStatus    = 'idle' | 'saving' | 'success' | 'error'
+type ConvertStatus   = 'idle' | 'loading' | 'done' | 'error'
 
 const STATUS_BADGE_MAP: Record<string, string> = {
   applied:              'bg-blue-50 text-blue-700 ring-blue-600/20',
@@ -51,9 +53,13 @@ const ACTIONS: { label: string; targetStatus: string; btnCls: string }[] = [
 ]
 
 export default function ApplicantActions({ applicantId, currentStatus }: Props) {
-  const [status, setStatus] = useState(currentStatus)
+  const [status, setStatus]             = useState(currentStatus)
   const [actionStatus, setActionStatus] = useState<ActionStatus>('idle')
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage]           = useState<string | null>(null)
+
+  const [convertStatus, setConvertStatus]   = useState<ConvertStatus>('idle')
+  const [convertMessage, setConvertMessage] = useState<string | null>(null)
+  const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
 
   async function handleAction(targetStatus: string) {
     setActionStatus('saving')
@@ -77,6 +83,32 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
     } catch (err) {
       setActionStatus('error')
       setMessage(err instanceof Error ? err.message : 'Something went wrong')
+    }
+  }
+
+  async function handleConvert() {
+    setConvertStatus('loading')
+    setConvertMessage(null)
+    try {
+      const res = await fetch(`/api/admin/applicants/${applicantId}/convert`, {
+        method: 'POST',
+      })
+      const body = await res.json() as {
+        staff_profile?: { id: string }
+        already_converted?: boolean
+        error?: string
+      }
+      if (!res.ok) {
+        throw new Error(body.error ?? `Request failed (${res.status})`)
+      }
+      setStaffProfileId(body.staff_profile?.id ?? null)
+      setConvertStatus('done')
+      setConvertMessage(
+        body.already_converted ? 'Already converted — staff profile exists.' : 'Staff profile created.'
+      )
+    } catch (err) {
+      setConvertStatus('error')
+      setConvertMessage(err instanceof Error ? err.message : 'Something went wrong')
     }
   }
 
@@ -134,6 +166,52 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
           {actionStatus === 'success' ? '✓ ' : '✕ '}
           {message}
         </p>
+      )}
+
+      {/* Convert to Staff — only shown when hired */}
+      {status === 'hired' && (
+        <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
+          <button
+            id="btn-convert-to-staff"
+            onClick={handleConvert}
+            disabled={convertStatus === 'loading' || convertStatus === 'done'}
+            className={[
+              'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+              convertStatus === 'done'
+                ? 'bg-green-50 text-green-700 ring-green-600/20 opacity-60 cursor-not-allowed'
+                : convertStatus === 'loading'
+                ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
+                : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
+            ].join(' ')}
+          >
+            {convertStatus === 'loading' ? (
+              <span className="flex items-center gap-1">
+                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Converting…
+              </span>
+            ) : convertStatus === 'done' ? (
+              '✓ Staff profile created'
+            ) : (
+              'Convert to Staff'
+            )}
+          </button>
+
+          {convertStatus === 'done' && staffProfileId && (
+            <Link
+              href={`/admin/staff/${staffProfileId}`}
+              className="text-xs text-indigo-600 underline hover:text-indigo-800 transition-colors"
+            >
+              View staff profile →
+            </Link>
+          )}
+
+          {convertMessage && convertStatus === 'error' && (
+            <p className="text-xs text-red-600">✕ {convertMessage}</p>
+          )}
+        </div>
       )}
     </div>
   )

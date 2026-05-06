@@ -65,6 +65,8 @@ export async function PATCH(
   if (score !== undefined)   patch.score   = score === null ? null : Number(score)
   if (outcome !== undefined) patch.outcome = outcome
 
+  console.log('[admin/interviews/[id]] patch payload:', patch)
+
   const { data: interview, error: updateError } = await adminClient
     .from('interviews')
     .update(patch)
@@ -73,8 +75,20 @@ export async function PATCH(
     .single()
 
   if (updateError || !interview) {
-    console.error('[admin/interviews/[id]] update failed:', updateError)
-    return NextResponse.json({ error: 'Failed to update interview' }, { status: 500 })
+    console.error('[admin/interviews/[id]] update failed — code:', updateError?.code)
+    console.error('[admin/interviews/[id]] update failed — message:', updateError?.message)
+    console.error('[admin/interviews/[id]] update failed — details:', updateError?.details)
+    console.error('[admin/interviews/[id]] update failed — hint:', updateError?.hint)
+    return NextResponse.json(
+      {
+        error: 'Failed to update interview',
+        supabase_code:    updateError?.code    ?? null,
+        supabase_message: updateError?.message ?? null,
+        supabase_details: updateError?.details ?? null,
+        supabase_hint:    updateError?.hint    ?? null,
+      },
+      { status: 500 }
+    )
   }
 
   // ── Fetch company_id for audit log ────────────────────────────────────────

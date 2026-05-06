@@ -8,6 +8,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <a href="/admin/applicants" className="hover:text-gray-900 transition-colors">
               Applicants
             </a>
+            <a href="/admin/staff" className="hover:text-gray-900 transition-colors">
+              Staff
+            </a>
           </nav>
         </div>
       </header>
