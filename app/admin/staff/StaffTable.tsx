@@ -19,10 +19,24 @@ export interface StaffProfileWithCompliance {
     tier:         'green' | 'amber' | 'red'
     compliant:    boolean
     expiringSoon: boolean
+    hasExpired:   boolean
+  }
+  readiness: {
+    ready: boolean
+    score: number
   }
 }
 
-type FilterType = 'all' | 'compliant' | 'non_compliant' | 'expiring_soon'
+type FilterType =
+  | 'all'
+  | 'compliant'
+  | 'non_compliant'
+  | 'expiring_soon'
+  | 'expired'
+  | 'suspended'
+  | 'active'
+  | 'ready'
+  | 'not_ready'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -46,6 +60,20 @@ const COMPLIANCE_TIER_CLS: Record<string, string> = {
   red:   'bg-red-50    text-red-700    ring-red-600/20',
 }
 
+const RISK_CLS: Record<string, string> = {
+  high:   'bg-red-50    text-red-700    ring-red-600/20',
+  medium: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+  low:    'bg-green-50  text-green-700  ring-green-600/20',
+}
+
+function riskLevel(
+  c: StaffProfileWithCompliance['compliance']
+): 'high' | 'medium' | 'low' {
+  if (c.hasExpired || !c.compliant) return 'high'
+  if (c.expiringSoon)               return 'medium'
+  return 'low'
+}
+
 function StatusBadge({ status, map }: { status: string; map: Record<string, string> }) {
   const cls = map[status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
   return (
@@ -61,25 +89,39 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
   const [filter, setFilter] = useState<FilterType>('all')
 
   const filtered = staff.filter((s) => {
-    if (filter === 'compliant')      return s.compliance.compliant
-    if (filter === 'non_compliant')  return !s.compliance.compliant
-    if (filter === 'expiring_soon')  return s.compliance.expiringSoon
+    if (filter === 'compliant')     return s.compliance.compliant
+    if (filter === 'non_compliant') return !s.compliance.compliant
+    if (filter === 'expiring_soon') return s.compliance.expiringSoon
+    if (filter === 'expired')       return s.compliance.hasExpired
+    if (filter === 'suspended')     return s.status === 'suspended'
+    if (filter === 'active')        return s.status === 'active'
+    if (filter === 'ready')         return s.readiness.ready
+    if (filter === 'not_ready')     return !s.readiness.ready
     return true
   })
 
-  // Summary counts for filter pills
   const counts = {
     all:           staff.length,
     compliant:     staff.filter((s) => s.compliance.compliant).length,
     non_compliant: staff.filter((s) => !s.compliance.compliant).length,
     expiring_soon: staff.filter((s) => s.compliance.expiringSoon).length,
+    expired:       staff.filter((s) => s.compliance.hasExpired).length,
+    suspended:     staff.filter((s) => s.status === 'suspended').length,
+    active:        staff.filter((s) => s.status === 'active').length,
+    ready:         staff.filter((s) => s.readiness.ready).length,
+    not_ready:     staff.filter((s) => !s.readiness.ready).length,
   }
 
   const FILTERS: { key: FilterType; label: string }[] = [
     { key: 'all',           label: `All (${counts.all})` },
+    { key: 'active',        label: `Active (${counts.active})` },
+    { key: 'ready',         label: `Ready to work (${counts.ready})` },
+    { key: 'not_ready',     label: `Not ready (${counts.not_ready})` },
     { key: 'compliant',     label: `Compliant (${counts.compliant})` },
-    { key: 'non_compliant', label: `Non-compliant (${counts.non_compliant})` },
     { key: 'expiring_soon', label: `Expiring soon (${counts.expiring_soon})` },
+    { key: 'expired',       label: `Expired (${counts.expired})` },
+    { key: 'non_compliant', label: `Non-compliant (${counts.non_compliant})` },
+    { key: 'suspended',     label: `Suspended (${counts.suspended})` },
   ]
 
   return (
@@ -119,6 +161,8 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Readiness</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compliance</th>
               </tr>
             </thead>
@@ -137,13 +181,43 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                   </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(s.start_date)}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
+                    <StatusBadge
+                      status={riskLevel(s.compliance)}
+                      map={RISK_CLS}
+                    />
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center rounded-full w-2 h-2 ${
+                          s.readiness.ready ? 'bg-green-500' : 'bg-red-500'
+                        }`}
+                      />
+                      <span className="text-xs text-gray-700 tabular-nums">
+                        {s.readiness.score}%
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                          s.readiness.ready
+                            ? 'bg-green-50 text-green-700 ring-green-600/20'
+                            : 'bg-red-50 text-red-700 ring-red-600/20'
+                        }`}
+                      >
+                        {s.readiness.ready ? 'ready' : 'not ready'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <StatusBadge status={`${s.compliance.percentage}%`} map={{}} />
                       <StatusBadge
                         status={s.compliance.tier}
                         map={COMPLIANCE_TIER_CLS}
                       />
-                      {s.compliance.expiringSoon && (
+                      {s.compliance.hasExpired && (
+                        <span className="text-xs text-red-600 font-medium">⚠ expired</span>
+                      )}
+                      {!s.compliance.hasExpired && s.compliance.expiringSoon && (
                         <span className="text-xs text-yellow-600">⚠ expiring</span>
                       )}
                     </div>

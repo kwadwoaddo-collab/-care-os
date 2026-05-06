@@ -5,26 +5,35 @@ import {
   complianceTier,
   TIER_CLS,
 } from '@/lib/compliance/calculateCompliance'
-import StaffDocumentUpload from './StaffDocumentUpload'
-import StaffStatusControl  from './StaffStatusControl'
+import StaffDocumentUpload       from './StaffDocumentUpload'
+import StaffStatusControl        from './StaffStatusControl'
+import ComplianceReviewSection   from './ComplianceReviewSection'
+import StaffAvailabilitySection  from './StaffAvailabilitySection'
+import {
+  parseAvailabilityRecord,
+  type StaffAvailability,
+} from '@/lib/staff/types'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface StaffProfile {
-  id:           string
-  company_id:   string
-  applicant_id: string | null
-  profile_id:   string | null
-  first_name:   string | null
-  last_name:    string | null
-  email:        string | null
-  phone:        string | null
-  job_role:     string | null
-  job_title:    string | null
-  status:       string
-  start_date:   string | null
-  created_at:   string
-  updated_at:   string
+  id:                 string
+  company_id:         string
+  applicant_id:       string | null
+  profile_id:         string | null
+  first_name:         string | null
+  last_name:          string | null
+  email:              string | null
+  phone:              string | null
+  job_role:           string | null
+  job_title:          string | null
+  status:             string
+  start_date:         string | null
+  created_at:         string
+  updated_at:         string
+  last_reviewed_at?:  string | null
+  last_reviewed_by?:  string | null
+  last_review_notes?: string | null
 }
 
 interface Applicant {
@@ -72,6 +81,14 @@ async function getStaffDetail(id: string): Promise<ApiResponse> {
   if (res.status === 404) notFound()
   if (!res.ok) throw new Error(`Failed to fetch staff profile: ${res.status}`)
   return res.json() as Promise<ApiResponse>
+}
+
+async function getAvailability(id: string): Promise<StaffAvailability | null> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/staff/${id}/availability`, { cache: 'no-store' })
+  if (!res.ok) return null
+  const raw = await res.json() as Record<string, unknown>
+  return parseAvailabilityRecord(id, raw)
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -316,6 +333,9 @@ export default async function StaffDetailPage({
 }) {
   const { id } = await params
 
+  // Start both fetches in parallel
+  const availabilityPromise = getAvailability(id)
+
   let data: ApiResponse
   try {
     data = await getStaffDetail(id)
@@ -326,6 +346,8 @@ export default async function StaffDetailPage({
       </div>
     )
   }
+
+  const availability = await availabilityPromise.catch(() => null)
 
   const { staff_profile: sp, applicant, documents, compliance_items } = data
 
@@ -357,6 +379,14 @@ export default async function StaffDetailPage({
 
         {/* ── Compliance summary card ─────────────────────────────────────── */}
         <ComplianceCard documents={documents} />
+
+        {/* ── Compliance review ───────────────────────────────────────────── */}
+        <ComplianceReviewSection
+          staffProfileId={sp.id}
+          lastReviewedAt={sp.last_reviewed_at}
+          lastReviewedBy={sp.last_reviewed_by}
+          lastReviewNotes={sp.last_review_notes}
+        />
 
         {/* ── Status control ──────────────────────────────────────────────── */}
         <StaffStatusControl
@@ -485,6 +515,12 @@ export default async function StaffDetailPage({
             </div>
           )}
         </SectionBox>
+
+        {/* ── Availability & Shift Readiness ──────────────────────────────── */}
+        <StaffAvailabilitySection
+          staffProfileId={sp.id}
+          initial={availability ?? parseAvailabilityRecord(sp.id, null)}
+        />
 
       </div>
     </div>

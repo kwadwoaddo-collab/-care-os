@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS staff_availability (
+  id                    UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  staff_profile_id      UUID         NOT NULL REFERENCES staff_profiles(id) ON DELETE CASCADE,
+  monday                JSONB        DEFAULT '{}',
+  tuesday               JSONB        DEFAULT '{}',
+  wednesday             JSONB        DEFAULT '{}',
+  thursday              JSONB        DEFAULT '{}',
+  friday                JSONB        DEFAULT '{}',
+  saturday              JSONB        DEFAULT '{}',
+  sunday                JSONB        DEFAULT '{}',
+  max_weekly_hours      INTEGER,
+  preferred_shift_type  TEXT,
+  can_work_nights       BOOLEAN      DEFAULT false,
+  can_work_weekends     BOOLEAN      DEFAULT false,
+  is_driver             BOOLEAN      DEFAULT false,
+  has_own_car           BOOLEAN      DEFAULT false,
+  work_areas            TEXT[],
+  unavailable_dates     JSONB        DEFAULT '[]',
+  notes                 TEXT,
+  created_at            TIMESTAMPTZ  DEFAULT now(),
+  updated_at            TIMESTAMPTZ  DEFAULT now(),
+  UNIQUE (staff_profile_id)
+);

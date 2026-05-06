@@ -5,6 +5,8 @@ import {
   complianceTier,
   type ComplianceDocument,
 } from '@/lib/compliance/calculateCompliance'
+import { parseAvailabilityRecord } from '@/lib/staff/types'
+import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
@@ -32,41 +34,68 @@ export async function GET() {
     return NextResponse.json([])
   }
 
-  // ── Batch-fetch documents for all applicant_ids ────────────────────────────
-  const applicantIds = staff
-    .map((s) => s.applicant_id)
-    .filter((id): id is string => id !== null)
+  const staffIds     = staff.map((s) => s.id)
+  const applicantIds = staff.map((s) => s.applicant_id).filter((id): id is string => id !== null)
 
-  let docsByApplicant: Record<string, ComplianceDocument[]> = {}
+  // ── Batch-fetch documents + availability in parallel ──────────────────────
+  const [docsResult, availResult] = await Promise.all([
+    applicantIds.length > 0
+      ? adminClient
+          .from('documents')
+          .select('id, document_type, file_name, expiry_date, applicant_id')
+          .in('applicant_id', applicantIds)
+      : Promise.resolve({ data: [], error: null }),
 
-  if (applicantIds.length > 0) {
-    const { data: allDocs, error: docsError } = await adminClient
-      .from('documents')
-      .select('id, document_type, file_name, expiry_date, applicant_id')
-      .in('applicant_id', applicantIds)
+    adminClient
+      .from('staff_availability')
+      .select('*')
+      .in('staff_profile_id', staffIds),
+  ])
 
-    if (docsError) {
-      console.error('[admin/staff] documents fetch error:', docsError.message)
-    } else {
-      for (const doc of allDocs ?? []) {
-        const aid = (doc as { applicant_id: string }).applicant_id
-        if (!docsByApplicant[aid]) docsByApplicant[aid] = []
-        docsByApplicant[aid].push(doc as ComplianceDocument)
-      }
+  // Index documents by applicant_id
+  const docsByApplicant: Record<string, ComplianceDocument[]> = {}
+  if (docsResult.error) {
+    console.error('[admin/staff] documents fetch error:', docsResult.error.message)
+  } else {
+    for (const doc of docsResult.data ?? []) {
+      const aid = (doc as { applicant_id: string }).applicant_id
+      if (!docsByApplicant[aid]) docsByApplicant[aid] = []
+      docsByApplicant[aid].push(doc as ComplianceDocument)
     }
   }
 
-  // ── Attach compliance summary to each staff member ─────────────────────────
+  // Index availability by staff_profile_id
+  const availByStaff: Record<string, Record<string, unknown>> = {}
+  if (availResult.error) {
+    console.error('[admin/staff] availability fetch error:', availResult.error.message)
+  } else {
+    for (const row of availResult.data ?? []) {
+      const spid = (row as { staff_profile_id: string }).staff_profile_id
+      availByStaff[spid] = row as Record<string, unknown>
+    }
+  }
+
+  // ── Build result ──────────────────────────────────────────────────────────
   const result = staff.map((s) => {
     const docs    = s.applicant_id ? (docsByApplicant[s.applicant_id] ?? []) : []
     const summary = calculateCompliance(docs)
+
+    const availRaw   = availByStaff[s.id] ?? null
+    const availability = parseAvailabilityRecord(s.id, availRaw)
+    const readiness  = calculateReadiness(s.status, summary.compliant, availRaw ? availability : null)
+
     return {
       ...s,
       compliance: {
-        percentage:  summary.percentage,
-        tier:        complianceTier(summary.percentage),
-        compliant:   summary.compliant,
+        percentage:   summary.percentage,
+        tier:         complianceTier(summary.percentage),
+        compliant:    summary.compliant,
         expiringSoon: summary.expiringSoon.length > 0,
+        hasExpired:   summary.expiredDocuments.length > 0,
+      },
+      readiness: {
+        ready: readiness.ready,
+        score: readiness.score,
       },
     }
   })
