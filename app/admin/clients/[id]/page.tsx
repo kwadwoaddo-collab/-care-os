@@ -35,11 +35,34 @@ interface Shift {
   end_time:          string
   status:            string
   assigned_staff_id: string | null
+  care_package_id:   string | null
   staff_profiles: {
     first_name: string | null
     last_name:  string | null
     email:      string | null
   } | null
+  care_packages: {
+    id:    string
+    title: string
+  } | null
+}
+
+interface CarePackageVisit {
+  id:          string
+  day_of_week: number
+  start_time:  string
+  end_time:    string
+}
+
+interface CarePackage {
+  id:                  string
+  title:               string
+  status:              string
+  weekly_hours:        number | null
+  start_date:          string
+  end_date:            string | null
+  funding_type:        string | null
+  care_package_visits: CarePackageVisit[]
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -112,6 +135,13 @@ async function getClientShifts(clientId: string): Promise<Shift[]> {
   return res.json() as Promise<Shift[]>
 }
 
+async function getClientCarePackages(clientId: string): Promise<CarePackage[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/clients/${clientId}/care-packages`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json() as Promise<CarePackage[]>
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ClientDetailPage({
@@ -120,7 +150,11 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [client, shifts] = await Promise.all([getClient(id), getClientShifts(id)])
+  const [client, shifts, carePackages] = await Promise.all([
+    getClient(id),
+    getClientShifts(id),
+    getClientCarePackages(id),
+  ])
 
   if (!client) notFound()
 
@@ -211,6 +245,60 @@ export default async function ClientDetailPage({
         </section>
       )}
 
+      {/* Care packages */}
+      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800">Care packages</h2>
+          <a href="/admin/care-packages" className="text-xs text-indigo-600 hover:underline">
+            Manage →
+          </a>
+        </div>
+
+        {carePackages.length === 0 ? (
+          <div className="p-6 text-center text-sm text-gray-400">
+            No care packages for this client.
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {carePackages.map((pkg) => {
+              const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+              const PKG_STATUS_CLS: Record<string, string> = {
+                active: 'bg-green-50  text-green-700  ring-green-600/20',
+                draft:  'bg-gray-50   text-gray-500   ring-gray-400/20',
+                paused: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+                ended:  'bg-gray-50   text-gray-400   ring-gray-300/20',
+              }
+              const statusCls = PKG_STATUS_CLS[pkg.status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
+              const sortedVisits = [...pkg.care_package_visits].sort((a, b) => a.day_of_week - b.day_of_week)
+              const visitSummary = sortedVisits.length === 0
+                ? 'No visits'
+                : sortedVisits.map((v) => `${DAYS_SHORT[v.day_of_week]} ${v.start_time.slice(0, 5)}–${v.end_time.slice(0, 5)}`).join(', ')
+              return (
+                <div key={pkg.id} className="px-5 py-4 flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-gray-900">{pkg.title}</span>
+                      <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${statusCls}`}>
+                        {pkg.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">{visitSummary}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    {pkg.weekly_hours != null && (
+                      <p className="text-sm font-medium text-gray-700 tabular-nums">{pkg.weekly_hours} hrs/wk</p>
+                    )}
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      From {formatDate(pkg.start_date)}{pkg.end_date ? ` to ${formatDate(pkg.end_date)}` : ''}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
+
       {/* Recent shifts */}
       <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
@@ -242,7 +330,12 @@ export default async function ClientDetailPage({
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">
                       {formatTime(shift.start_time)} – {formatTime(shift.end_time)}
                     </td>
-                    <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{shift.title}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-gray-900">{shift.title}</span>
+                      {shift.care_packages && (
+                        <span className="ml-1.5 text-xs text-indigo-500">{shift.care_packages.title}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {shift.assigned_staff_id ? (
                         <a

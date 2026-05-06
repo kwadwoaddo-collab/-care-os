@@ -22,13 +22,16 @@ export async function GET() {
     .select(`
       id, company_id, assigned_staff_id, created_by,
       title, shift_date, start_time, end_time,
-      location, client_name, client_id, shift_type, status, notes,
+      location, client_name, client_id, care_package_id, shift_type, status, notes,
       created_at, updated_at,
       staff_profiles!assigned_staff_id (
         id, first_name, last_name, email
       ),
       clients!client_id (
         id, first_name, last_name
+      ),
+      care_packages!care_package_id (
+        id, title
       )
     `)
     .order('shift_date', { ascending: true })
@@ -74,11 +77,12 @@ interface CreateShiftBody {
   shift_date:        string
   start_time:        string
   end_time:          string
-  location?:         string
-  client_name?:      string
-  client_id?:        string
-  shift_type?:       string
-  notes?:            string
+  location?:          string
+  client_name?:       string
+  client_id?:         string
+  care_package_id?:   string
+  shift_type?:        string
+  notes?:             string
 }
 
 export async function POST(request: NextRequest) {
@@ -202,10 +206,11 @@ export async function POST(request: NextRequest) {
       shift_date,
       start_time,
       end_time,
-      location:    body.location    ?? null,
-      client_name: body.client_name ?? null,
-      client_id:   body.client_id   ?? null,
-      shift_type:  body.shift_type  ?? null,
+      location:         body.location         ?? null,
+      client_name:      body.client_name      ?? null,
+      client_id:        body.client_id        ?? null,
+      care_package_id:  body.care_package_id  ?? null,
+      shift_type:       body.shift_type       ?? null,
       notes:       body.notes       ?? null,
       status:      'scheduled',
     })

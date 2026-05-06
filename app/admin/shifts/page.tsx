@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import ShiftsTable, { type Shift } from './ShiftsTable'
 import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
 
@@ -52,6 +53,7 @@ export default async function ShiftsPage() {
   const todayCount    = shifts.filter((s) => s.shift_date === today).length
   const upcomingCount = shifts.filter((s) => s.shift_date >  today).length
   const scheduledCount = shifts.filter((s) => s.status === 'scheduled' || s.status === 'confirmed').length
+  const openCount     = shifts.filter((s) => !s.assigned_staff_id).length
 
   // Hard-code company_id for now (same pattern used in rest of app)
   // TODO: derive from session when auth is restored
@@ -92,6 +94,24 @@ export default async function ShiftsPage() {
           <p className="text-2xl font-semibold tabular-nums text-gray-900">{scheduledCount}</p>
         </div>
       </div>
+
+      {/* Open shifts callout */}
+      <Link
+        href="/admin/shifts/open"
+        className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-5 py-4 hover:bg-orange-100 transition-colors group"
+      >
+        <div>
+          <p className="text-sm font-semibold text-orange-800">
+            {openCount === 0
+              ? 'All shifts are assigned'
+              : `${openCount} unassigned shift${openCount !== 1 ? 's' : ''} need${openCount === 1 ? 's' : ''} staff`}
+          </p>
+          <p className="text-xs text-orange-600 mt-0.5">View open shifts queue →</p>
+        </div>
+        <span className={`text-3xl font-bold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-orange-300'}`}>
+          {openCount}
+        </span>
+      </Link>
 
       {/* Table */}
       {shifts.length === 0 ? (

@@ -14,24 +14,21 @@ export async function GET(
   const { id } = await params
 
   const { data, error } = await adminClient
-    .from('shifts')
+    .from('care_packages')
     .select(`
-      id, title, shift_date, start_time, end_time, status, assigned_staff_id, care_package_id,
-      staff_profiles!assigned_staff_id (
-        first_name, last_name, email
-      ),
-      care_packages!care_package_id (
-        id, title
+      id, title, status, weekly_hours, start_date, end_date, funding_type,
+      care_package_visits (
+        id, day_of_week, start_time, end_time, shift_type,
+        requires_driver, requires_double_up
       )
     `)
     .eq('client_id', id)
-    .order('shift_date', { ascending: false })
-    .limit(20)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[admin/clients/[id]/shifts] GET error:', error.message)
+    console.error('[admin/clients/[id]/care-packages] GET error:', error.message)
     return NextResponse.json(
-      { error: 'Failed to fetch shifts', supabase_message: error.message },
+      { error: 'Failed to fetch care packages', supabase_message: error.message },
       { status: 500 }
     )
   }

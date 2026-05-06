@@ -29,6 +29,11 @@ export interface Shift {
     first_name: string
     last_name:  string
   } | null
+  care_package_id: string | null
+  care_packages: {
+    id:    string
+    title: string
+  } | null
 }
 
 type FilterKey = 'all' | 'today' | 'upcoming' | 'completed' | 'cancelled'
@@ -192,7 +197,14 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                         <span className="text-sm text-gray-400">Unassigned</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-900 whitespace-nowrap">{shift.title}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-gray-900">{shift.title}</span>
+                      {shift.care_packages && (
+                        <span className="ml-1.5 text-xs text-indigo-500">
+                          {shift.care_packages.title}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {formatDate(shift.shift_date)}
                       {isToday(shift.shift_date) && (

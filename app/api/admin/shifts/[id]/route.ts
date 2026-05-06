@@ -11,16 +11,17 @@ type ShiftStatus = typeof ALLOWED_STATUSES[number]
 type ShiftType   = typeof ALLOWED_TYPES[number]
 
 interface PatchBody {
-  status?:      ShiftStatus
-  shift_type?:  ShiftType
-  title?:       string
-  shift_date?:  string
-  start_time?:  string
-  end_time?:    string
-  location?:    string
-  client_name?: string
-  client_id?:   string | null
-  notes?:       string
+  status?:           ShiftStatus
+  shift_type?:       ShiftType
+  title?:            string
+  shift_date?:       string
+  start_time?:       string
+  end_time?:         string
+  location?:         string
+  client_name?:      string
+  client_id?:        string | null
+  care_package_id?:  string | null
+  notes?:            string
 }
 
 // ── PATCH /api/admin/shifts/[id] ──────────────────────────────────────────────
@@ -52,7 +53,7 @@ export async function PATCH(
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   const allowed: Array<keyof PatchBody> = [
     'status', 'shift_type', 'title', 'shift_date',
-    'start_time', 'end_time', 'location', 'client_name', 'client_id', 'notes',
+    'start_time', 'end_time', 'location', 'client_name', 'client_id', 'care_package_id', 'notes',
   ]
   for (const key of allowed) {
     if (key in body) updates[key] = body[key] ?? null
