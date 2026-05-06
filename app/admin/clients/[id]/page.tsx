@@ -47,6 +47,23 @@ interface Shift {
   } | null
 }
 
+interface VisitNoteSummary {
+  id:                string
+  status:            string
+  incident_reported: boolean
+  submitted_at:      string | null
+  created_at:        string
+  shifts: {
+    shift_date: string
+    start_time: string
+    end_time:   string
+  } | null
+  staff_profiles: {
+    first_name: string | null
+    last_name:  string | null
+  } | null
+}
+
 interface CarePackageVisit {
   id:          string
   day_of_week: number
@@ -142,6 +159,13 @@ async function getClientCarePackages(clientId: string): Promise<CarePackage[]> {
   return res.json() as Promise<CarePackage[]>
 }
 
+async function getClientVisitNotes(clientId: string): Promise<VisitNoteSummary[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/visit-notes?client_id=${clientId}`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json() as Promise<VisitNoteSummary[]>
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ClientDetailPage({
@@ -150,10 +174,11 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [client, shifts, carePackages] = await Promise.all([
+  const [client, shifts, carePackages, visitNotes] = await Promise.all([
     getClient(id),
     getClientShifts(id),
     getClientCarePackages(id),
+    getClientVisitNotes(id),
   ])
 
   if (!client) notFound()
@@ -353,6 +378,76 @@ export default async function ClientDetailPage({
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Recent visit notes */}
+      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800">Recent visit notes</h2>
+          <a href="/admin/visit-notes" className="text-xs text-indigo-600 hover:underline">
+            All notes →
+          </a>
+        </div>
+
+        {visitNotes.length === 0 ? (
+          <div className="p-6 text-center text-sm text-gray-400">
+            No visit notes for this client yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100 text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {visitNotes.map((vn) => {
+                  const NOTE_STATUS_CLS: Record<string, string> = {
+                    draft:     'bg-gray-50   text-gray-600   ring-gray-400/20',
+                    submitted: 'bg-green-50  text-green-700  ring-green-600/20',
+                    locked:    'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
+                  }
+                  const snCls  = NOTE_STATUS_CLS[vn.status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
+                  const staffN = vn.staff_profiles
+                    ? [vn.staff_profiles.first_name, vn.staff_profiles.last_name].filter(Boolean).join(' ') || '—'
+                    : '—'
+                  return (
+                    <tr key={vn.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                        {vn.shifts ? formatDate(vn.shifts.shift_date) : formatDate(vn.created_at)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{staffN}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${snCls}`}>
+                          {vn.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {vn.incident_reported ? (
+                          <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">
+                            Yes
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <a href={`/admin/visit-notes/${vn.id}`} className="text-xs text-indigo-600 hover:underline">
+                          View →
+                        </a>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

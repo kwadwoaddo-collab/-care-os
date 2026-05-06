@@ -104,11 +104,36 @@ interface StaffShift {
   timesheet_status: string | null
 }
 
+interface StaffVisitNote {
+  id:                string
+  status:            string
+  incident_reported: boolean
+  submitted_at:      string | null
+  created_at:        string
+  shifts: {
+    shift_date: string
+    start_time: string
+    end_time:   string
+  } | null
+  clients: {
+    id:         string
+    first_name: string
+    last_name:  string
+  } | null
+}
+
 async function getRecentShifts(id: string): Promise<StaffShift[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const res = await fetch(`${baseUrl}/api/admin/staff/${id}/shifts`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<StaffShift[]>
+}
+
+async function getRecentVisitNotes(id: string): Promise<StaffVisitNote[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/visit-notes?staff_profile_id=${id}`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json() as Promise<StaffVisitNote[]>
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -370,8 +395,9 @@ export default async function StaffDetailPage({
   const { id } = await params
 
   // Start fetches in parallel
-  const availabilityPromise  = getAvailability(id)
-  const recentShiftsPromise  = getRecentShifts(id)
+  const availabilityPromise   = getAvailability(id)
+  const recentShiftsPromise   = getRecentShifts(id)
+  const recentNotesPromise    = getRecentVisitNotes(id)
 
   let data: ApiResponse
   try {
@@ -384,8 +410,9 @@ export default async function StaffDetailPage({
     )
   }
 
-  const availability  = await availabilityPromise.catch(() => null)
-  const recentShifts  = await recentShiftsPromise.catch(() => [])
+  const availability   = await availabilityPromise.catch(() => null)
+  const recentShifts   = await recentShiftsPromise.catch(() => [])
+  const recentNotes    = await recentNotesPromise.catch(() => [])
 
   const { staff_profile: sp, applicant, documents, compliance_items } = data
 
@@ -559,6 +586,76 @@ export default async function StaffDetailPage({
           staffProfileId={sp.id}
           initial={availability ?? parseAvailabilityRecord(sp.id, null)}
         />
+
+        {/* ── Recent Visit Notes ──────────────────────────────────────────── */}
+        <SectionBox title="Recent Visit Notes">
+          {recentNotes.length === 0 ? (
+            <p className="text-sm text-gray-400">No visit notes recorded yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100 text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                    <th className="text-left pb-2 pr-4">Date</th>
+                    <th className="text-left pb-2 pr-4">Client</th>
+                    <th className="text-left pb-2 pr-4">Status</th>
+                    <th className="text-left pb-2 pr-4">Incident</th>
+                    <th className="text-left pb-2">Link</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recentNotes.map((vn) => {
+                    const NOTE_STATUS_CLS: Record<string, string> = {
+                      draft:     'bg-gray-50   text-gray-600   ring-gray-400/20',
+                      submitted: 'bg-green-50  text-green-700  ring-green-600/20',
+                      locked:    'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
+                    }
+                    const snCls     = NOTE_STATUS_CLS[vn.status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
+                    const clientN   = vn.clients
+                      ? `${vn.clients.first_name} ${vn.clients.last_name}`
+                      : '—'
+                    const noteDate  = vn.shifts?.shift_date ?? vn.created_at.slice(0, 10)
+                    return (
+                      <tr key={vn.id}>
+                        <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">
+                          {formatDate(noteDate)}
+                        </td>
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                          {vn.clients ? (
+                            <Link href={`/admin/clients/${vn.clients.id}`} className="text-indigo-700 hover:underline">
+                              {clientN}
+                            </Link>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="py-2 pr-4">
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${snCls}`}>
+                            {vn.status}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-4">
+                          {vn.incident_reported ? (
+                            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">
+                              Yes
+                            </span>
+                          ) : (
+                            <span className="text-xs text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="py-2">
+                          <Link href={`/admin/visit-notes/${vn.id}`} className="text-xs text-indigo-600 hover:underline">
+                            View →
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </SectionBox>
 
         {/* ── Recent Shifts ───────────────────────────────────────────────── */}
         <SectionBox title="Recent Shifts">

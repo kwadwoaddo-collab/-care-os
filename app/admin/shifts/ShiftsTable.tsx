@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState }    from 'react'
+import { useRouter }   from 'next/navigation'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -93,6 +94,39 @@ function Badge({ value, map }: { value: string; map: Record<string, string> }) {
   )
 }
 
+// ── Visit Note button ─────────────────────────────────────────────────────────
+
+function VisitNoteButton({ shiftId }: { shiftId: string }) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  async function handleClick() {
+    setLoading(true)
+    const res = await fetch('/api/admin/visit-notes', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ shift_id: shiftId }),
+    })
+    const data = await res.json() as { id?: string; note_id?: string }
+    const noteId = res.status === 201 ? data.id : data.note_id
+    if (noteId) {
+      router.push(`/admin/visit-notes/${noteId}`)
+    } else {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="text-xs text-indigo-600 hover:underline disabled:opacity-40"
+    >
+      {loading ? '…' : 'Visit Note'}
+    </button>
+  )
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
@@ -174,6 +208,7 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -242,6 +277,9 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                           <Badge value={shift.timesheet_status} map={TIMESHEET_STATUS_CLS} />
                         )}
                       </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <VisitNoteButton shiftId={shift.id} />
                     </td>
                   </tr>
                 ))}
