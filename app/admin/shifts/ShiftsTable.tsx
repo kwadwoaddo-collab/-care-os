@@ -318,6 +318,12 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                     <td className="px-4 py-3 whitespace-nowrap">
                       {shift.worker_ack_status ? (
                         <Badge value={shift.worker_ack_status} map={ACK_CLS} />
+                      ) : shift.assigned_staff_id &&
+                          shift.status !== 'completed' &&
+                          shift.status !== 'cancelled' ? (
+                        <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-50 text-gray-500 ring-gray-300">
+                          not responded
+                        </span>
                       ) : (
                         <span className="text-xs text-gray-400">—</span>
                       )}

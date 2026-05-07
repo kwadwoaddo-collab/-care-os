@@ -175,6 +175,10 @@ export default async function AdminDashboard() {
   const today = new Date().toISOString().slice(0, 10)
 
   // All queries fire in parallel — no waterfalls
+  const in14days = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  const todayStart = `${today}T00:00:00.000Z`
+
   const [
     staffStatusResult,
     todayShiftsResult,
@@ -183,6 +187,11 @@ export default async function AdminDashboard() {
     pkgCountResult,
     draftNotesCountResult,
     hrIncompleteResult,
+    declinedShiftsResult,
+    runningLateResult,
+    unacknowledgedResult,
+    notifFailedResult,
+    notifTodayResult,
     incidentsResult,
     complianceRes,
     auditRes,
@@ -239,6 +248,44 @@ export default async function AdminDashboard() {
       .eq('onboarding_completed', false)
       .not('status', 'eq', 'terminated'),
 
+    // Declined shifts (next 14 days)
+    adminClient
+      .from('shifts')
+      .select('id', { count: 'exact', head: true })
+      .gte('shift_date', today)
+      .lte('shift_date', in14days)
+      .eq('worker_ack_status', 'declined'),
+
+    // Running late (today)
+    adminClient
+      .from('shifts')
+      .select('id', { count: 'exact', head: true })
+      .eq('shift_date', today)
+      .eq('worker_ack_status', 'running_late'),
+
+    // Unacknowledged assigned shifts (next 14 days)
+    adminClient
+      .from('shifts')
+      .select('id', { count: 'exact', head: true })
+      .gte('shift_date', today)
+      .lte('shift_date', in14days)
+      .not('assigned_staff_id', 'is', null)
+      .is('worker_ack_status', null)
+      .in('status', ['scheduled', 'confirmed']),
+
+    // Failed notifications (last 7 days)
+    adminClient
+      .from('notification_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'failed'),
+
+    // Notifications sent today
+    adminClient
+      .from('notification_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'sent')
+      .gte('created_at', todayStart),
+
     // Recent incidents (from incidents table)
     adminClient
       .from('incidents')
@@ -274,7 +321,13 @@ export default async function AdminDashboard() {
   const activeClients = clientCountResult.count     ?? 0
   const activePkgs    = pkgCountResult.count         ?? 0
   const draftNotes    = draftNotesCountResult.count  ?? 0
-  const hrIncomplete  = hrIncompleteResult.count     ?? 0
+  const hrIncomplete      = hrIncompleteResult.count      ?? 0
+  const declinedShifts    = declinedShiftsResult.count    ?? 0
+  const runningLate       = runningLateResult.count       ?? 0
+  const unacknowledged    = unacknowledgedResult.count    ?? 0
+  const opsAlerts         = declinedShifts + runningLate
+  const notifFailed       = notifFailedResult.count  ?? 0
+  const notifToday        = notifTodayResult.count   ?? 0
 
   const nonCompliant    = compliance?.summary.nonCompliantCount ?? 0
   const expiredCount    = compliance?.summary.expiredCount      ?? 0
@@ -367,7 +420,46 @@ export default async function AdminDashboard() {
           href="/admin/staff"
           urgent={hrIncomplete > 0}
         />
+        <SummaryCard
+          label="Notifications today"
+          count={notifToday}
+          sub={notifFailed > 0 ? `${notifFailed} failed — check logs` : 'Sent successfully'}
+          href="/admin/notifications"
+          urgent={notifFailed > 0}
+        />
       </div>
+
+      {/* ── Operational alerts ─────────────────────────────────────────────── */}
+      {(opsAlerts > 0 || unacknowledged > 0) && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3.5">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-base">⚠</span>
+              <p className="text-sm font-semibold text-amber-800">Rota action required</p>
+            </div>
+            <a href="/admin/shifts/operations" className="text-xs text-amber-700 font-medium hover:underline whitespace-nowrap">
+              View Shift Ops →
+            </a>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-4 text-sm text-amber-700">
+            {declinedShifts > 0 && (
+              <span>
+                <strong className="font-semibold">{declinedShifts}</strong> shift{declinedShifts !== 1 ? 's' : ''} declined
+              </span>
+            )}
+            {runningLate > 0 && (
+              <span>
+                <strong className="font-semibold">{runningLate}</strong> worker{runningLate !== 1 ? 's' : ''} running late today
+              </span>
+            )}
+            {unacknowledged > 0 && (
+              <span>
+                <strong className="font-semibold">{unacknowledged}</strong> shift{unacknowledged !== 1 ? 's' : ''} without a worker response
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Main content: 2/3 + 1/3 ────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

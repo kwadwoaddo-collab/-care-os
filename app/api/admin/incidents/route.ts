@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { sendNotification } from '@/lib/notifications/sendNotification'
 import {
   getPaginationParams,
   getRange,
@@ -199,6 +200,52 @@ export async function POST(request: NextRequest) {
       metadata:    { incident_type, severity: severity ?? 'medium', client_id, staff_profile_id },
     })
   } catch { /* non-critical */ }
+
+  // Alert coordinators for high/critical incidents (fire-and-forget)
+  const effectiveSeverity = (severity ?? 'medium') as string
+  if (effectiveSeverity === 'high' || effectiveSeverity === 'critical') {
+    void (async () => {
+      try {
+        // Fetch client and worker names for the notification
+        const [clientResult, staffResult] = await Promise.all([
+          client_id
+            ? adminClient.from('clients').select('first_name, last_name').eq('id', client_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+          staff_profile_id
+            ? adminClient.from('staff_profiles').select('first_name, last_name').eq('id', staff_profile_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ])
+
+        const clientName = clientResult.data
+          ? `${(clientResult.data as { first_name: string; last_name: string }).first_name} ${(clientResult.data as { first_name: string; last_name: string }).last_name}`
+          : null
+        const workerName = staffResult.data
+          ? `${(staffResult.data as { first_name: string; last_name: string }).first_name} ${(staffResult.data as { first_name: string; last_name: string }).last_name}`
+          : null
+
+        const adminLink = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/admin/incidents/${incident.id}`
+
+        await sendNotification({
+          type:            'incident.escalated',
+          companyId,
+          entityId:        incident.id as string,
+          recipientEmails: [],
+          data: {
+            companyName:  '',
+            incidentType: incident_type as string,
+            severity:     effectiveSeverity,
+            description:  (description as string) ?? '',
+            clientName,
+            workerName,
+            occurredAt:   (occurred_at as string) ?? new Date().toISOString(),
+            adminLink,
+          },
+        })
+      } catch (err) {
+        console.error('[incidents] notification error:', err)
+      }
+    })()
+  }
 
   return NextResponse.json(incident, { status: 201 })
 }

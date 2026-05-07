@@ -8,6 +8,7 @@ import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { sendNotification } from '@/lib/notifications/sendNotification'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -38,7 +39,7 @@ export async function PATCH(
   // ── Fetch the target shift ─────────────────────────────────────────────────
   const { data: shift, error: shiftErr } = await adminClient
     .from('shifts')
-    .select('id, company_id, shift_date, start_time, end_time, shift_type, client_id, status, assigned_staff_id')
+    .select('id, company_id, title, shift_date, start_time, end_time, shift_type, client_id, client_name, status, assigned_staff_id')
     .eq('id', shiftId)
     .eq('company_id', companyId)
     .maybeSingle()
@@ -171,21 +172,55 @@ export async function PATCH(
     )
   }
 
-  // ── Audit log ──────────────────────────────────────────────────────────────
-  try {
-    await adminClient.from('audit_logs').insert({
-      company_id:  companyId,
-      actor_id:    null,
-      action:      'shift.assigned',
-      entity_type: 'shift',
-      entity_id:   shiftId,
-      metadata:    {
-        staff_profile_id: staffProfileId,
-        shift_date:       shift.shift_date,
-        previous_staff:   shift.assigned_staff_id,
-      },
-    })
-  } catch { /* non-critical */ }
+  // ── Audit log + shift-assigned notification (fire-and-forget) ────────────
+  void (async () => {
+    try {
+      await adminClient.from('audit_logs').insert({
+        company_id:  companyId,
+        actor_id:    null,
+        action:      'shift.assigned',
+        entity_type: 'shift',
+        entity_id:   shiftId,
+        metadata:    {
+          staff_profile_id: staffProfileId,
+          shift_date:       shift.shift_date,
+          previous_staff:   shift.assigned_staff_id,
+        },
+      })
+    } catch { /* non-critical */ }
+
+    // Notify the assigned worker if they have an email and opt-in
+    const { data: sp } = await adminClient
+      .from('staff_profiles')
+      .select('first_name, last_name, email, receive_shift_emails')
+      .eq('id', staffProfileId)
+      .maybeSingle()
+
+    const workerEmail = sp?.email as string | null
+    const workerName  = [sp?.first_name, sp?.last_name].filter(Boolean).join(' ') || 'Worker'
+    const receiveEmails = (sp?.receive_shift_emails as boolean | null) ?? true
+
+    if (workerEmail && receiveEmails) {
+      const portalLink = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/worker/dashboard`
+      await sendNotification({
+        type:           'shift.assigned',
+        companyId,
+        entityId:       shiftId,
+        recipientEmail: workerEmail,
+        data: {
+          companyName: '',
+          workerName,
+          shiftTitle:  shift.title    as string,
+          shiftDate:   shift.shift_date as string,
+          startTime:   (shift.start_time as string).slice(0, 5),
+          endTime:     (shift.end_time   as string).slice(0, 5),
+          clientName:  shift.client_id ? null : (shift.client_name as string | null),
+          location:    null,
+          portalLink,
+        },
+      }).catch((err) => console.error('[assign] notification error:', err))
+    }
+  })()
 
   // ── Compliance expiry warning (7-day window) ───────────────────────────────
   const now = Date.now()
