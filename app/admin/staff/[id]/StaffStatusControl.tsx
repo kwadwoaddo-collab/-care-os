@@ -3,6 +3,12 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
+function formatDate(iso: string): string {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  })
+}
+
 const STATUSES = [
   { value: 'pre_employment', label: 'Pre-employment', cls: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20 hover:bg-yellow-100' },
   { value: 'active',         label: 'Active',         cls: 'bg-green-50  text-green-700  ring-green-600/20  hover:bg-green-100' },
@@ -24,38 +30,56 @@ interface StaffStatusControlProps {
   isCompliant:    boolean
 }
 
+interface FutureShiftWarning {
+  future_shift_count: number
+  next_shift_date:    string
+  pendingStatus:      string
+}
+
 export default function StaffStatusControl({
   staffProfileId,
   currentStatus,
   isCompliant,
 }: StaffStatusControlProps) {
   const router = useRouter()
-  const [error,      setError]      = useState<string | null>(null)
-  const [issues,     setIssues]     = useState<ComplianceIssues | null>(null)
-  const [isPending,  startTransition] = useTransition()
-  const [localStatus, setLocalStatus] = useState(currentStatus)
+  const [error,          setError]         = useState<string | null>(null)
+  const [issues,         setIssues]        = useState<ComplianceIssues | null>(null)
+  const [isPending,      startTransition]  = useTransition()
+  const [localStatus,    setLocalStatus]   = useState(currentStatus)
+  const [shiftWarning,   setShiftWarning]  = useState<FutureShiftWarning | null>(null)
 
-  async function handleStatusChange(newStatus: string) {
-    if (newStatus === localStatus) return
+  async function doStatusChange(newStatus: string, force = false) {
     setError(null)
     setIssues(null)
 
     startTransition(async () => {
       try {
         const res = await fetch(`/api/admin/staff/${staffProfileId}/status`, {
-          method: 'PATCH',
+          method:  'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus }),
+          body:    JSON.stringify({ status: newStatus, force }),
         })
         const json = await res.json() as {
-          error?: string
-          compliance?: ComplianceIssues
-          staff_profile?: { status: string }
+          error?:              string
+          compliance?:         ComplianceIssues
+          staff_profile?:      { status: string }
+          needs_confirmation?: boolean
+          future_shift_count?: number
+          next_shift_date?:    string
         }
 
         if (!res.ok) {
           setError(json.error ?? 'Failed to update status.')
           if (json.compliance) setIssues(json.compliance)
+          return
+        }
+
+        if (json.needs_confirmation) {
+          setShiftWarning({
+            future_shift_count: json.future_shift_count ?? 0,
+            next_shift_date:    json.next_shift_date ?? '',
+            pendingStatus:      newStatus,
+          })
           return
         }
 
@@ -65,6 +89,18 @@ export default function StaffStatusControl({
         setError('Network error — please try again.')
       }
     })
+  }
+
+  function handleStatusChange(newStatus: string) {
+    if (newStatus === localStatus) return
+    void doStatusChange(newStatus, false)
+  }
+
+  function confirmStatusChange() {
+    if (!shiftWarning) return
+    const pending = shiftWarning.pendingStatus
+    setShiftWarning(null)
+    void doStatusChange(pending, true)
   }
 
   return (
@@ -134,6 +170,39 @@ export default function StaffStatusControl({
           <p className="text-xs text-gray-400">Updating…</p>
         )}
       </div>
+
+      {/* Future shift confirmation modal */}
+      {shiftWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-white shadow-xl p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900">Future shifts assigned</h3>
+            <p className="text-sm text-gray-600">
+              This staff member has{' '}
+              <span className="font-semibold text-orange-700">
+                {shiftWarning.future_shift_count} upcoming shift{shiftWarning.future_shift_count !== 1 ? 's' : ''}
+              </span>{' '}
+              (next: {formatDate(shiftWarning.next_shift_date)}).
+              Changing their status will not automatically unassign them.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setShiftWarning(null)}
+                className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmStatusChange}
+                className="rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
+              >
+                Continue anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

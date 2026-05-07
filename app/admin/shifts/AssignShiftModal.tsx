@@ -54,10 +54,11 @@ function ScoreBadge({ score, eligible }: { score: number; eligible: boolean }) {
 export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) {
   const router = useRouter()
 
-  const [recommendations, setRecommendations] = useState<Recommendation[] | null>(null)
-  const [loading,         setLoading]         = useState(true)
-  const [assigning,       setAssigning]       = useState<string | null>(null)
-  const [error,           setError]           = useState<string | null>(null)
+  const [recommendations,    setRecommendations]    = useState<Recommendation[] | null>(null)
+  const [loading,            setLoading]            = useState(true)
+  const [assigning,          setAssigning]          = useState<string | null>(null)
+  const [error,              setError]              = useState<string | null>(null)
+  const [complianceWarning,  setComplianceWarning]  = useState<string[] | null>(null)
 
   useEffect(() => {
     fetch(`/api/admin/shifts/${shift.id}/recommendations`)
@@ -69,16 +70,25 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
   async function handleAssign(staffProfileId: string) {
     setAssigning(staffProfileId)
     setError(null)
+    setComplianceWarning(null)
     const res = await fetch(`/api/admin/shifts/${shift.id}/assign`, {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ staff_profile_id: staffProfileId }),
     })
+    const data = await res.json() as {
+      error?:              string
+      compliance_warning?: { message: string; expiringSoon: string[] }
+    }
     if (res.ok) {
       router.refresh()
-      onAssigned()
+      if (data.compliance_warning) {
+        setComplianceWarning(data.compliance_warning.expiringSoon)
+        setAssigning(null)
+      } else {
+        onAssigned()
+      }
     } else {
-      const data = await res.json() as { error?: string }
       setError(data.error ?? 'Failed to assign shift')
       setAssigning(null)
     }
@@ -119,6 +129,22 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
           {error && (
             <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
               {error}
+            </div>
+          )}
+
+          {complianceWarning && (
+            <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800 space-y-1">
+              <p className="font-medium">⚠ Compliance expires within 7 days</p>
+              <p className="text-xs">
+                {complianceWarning.map((t) => t.replace(/_/g, ' ')).join(', ')}
+              </p>
+              <p className="text-xs">Shift assigned. Review staff compliance before the visit date.</p>
+              <button
+                onClick={onAssigned}
+                className="mt-1 text-xs font-medium text-amber-900 underline"
+              >
+                Dismiss
+              </button>
             </div>
           )}
 

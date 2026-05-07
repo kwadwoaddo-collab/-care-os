@@ -26,10 +26,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const status =
-    body && typeof body === 'object' && 'status' in body
-      ? (body as Record<string, unknown>).status
-      : undefined
+  const b = (body && typeof body === 'object') ? (body as Record<string, unknown>) : {}
+
+  const status = b.status
+  const force  = b.force === true
 
   if (typeof status !== 'string' || !ALLOWED_STATUSES.has(status)) {
     return NextResponse.json(
@@ -54,6 +54,28 @@ export async function PATCH(
   }
 
   const companyId = staffProfile.company_id as string
+
+  // ── Future shift warning for restrictive status changes ─────────────────────
+  const RESTRICTIVE = new Set(['suspended', 'inactive', 'terminated'])
+  if (RESTRICTIVE.has(status) && !force) {
+    const today = new Date().toISOString().slice(0, 10)
+    const { data: futureShifts } = await adminClient
+      .from('shifts')
+      .select('id, shift_date')
+      .eq('assigned_staff_id', staffProfileId)
+      .gte('shift_date', today)
+      .in('status', ['scheduled', 'confirmed'])
+      .order('shift_date', { ascending: true })
+
+    if (futureShifts && futureShifts.length > 0) {
+      const first = futureShifts[0] as { shift_date: string }
+      return NextResponse.json({
+        needs_confirmation:  true,
+        future_shift_count:  futureShifts.length,
+        next_shift_date:     first.shift_date,
+      })
+    }
+  }
 
   // ── Compliance gate for "active" ────────────────────────────────────────────
   if (status === 'active') {

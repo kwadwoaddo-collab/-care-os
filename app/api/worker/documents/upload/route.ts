@@ -2,14 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
 
-const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'])
+const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png'])
 const ALLOWED_MIME_TYPES  = new Set([
   'application/pdf',
   'image/jpeg',
   'image/jpg',
   'image/png',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ])
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 

@@ -8,6 +8,8 @@ import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
@@ -182,6 +184,27 @@ export async function PATCH(
       },
     })
   } catch { /* non-critical */ }
+
+  // ── Compliance expiry warning (7-day window) ───────────────────────────────
+  const now = Date.now()
+  const expiringSoon = docs
+    .filter((d) => {
+      if (!d.expiry_date) return false
+      const exp = new Date(d.expiry_date).getTime()
+      return exp > now && exp - now <= SEVEN_DAYS_MS
+    })
+    .map((d) => d.document_type)
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+
+  if (expiringSoon.length > 0) {
+    return NextResponse.json({
+      ...updated,
+      compliance_warning: {
+        message:      'One or more compliance documents expire within 7 days',
+        expiringSoon,
+      },
+    })
+  }
 
   return NextResponse.json(updated)
 }
