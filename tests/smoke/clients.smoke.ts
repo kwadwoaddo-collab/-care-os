@@ -1,14 +1,9 @@
 /**
  * tests/smoke/clients.smoke.ts
  *
- * Smoke test: Client list and creation via admin UI.
+ * Smoke test: Client list data presence and create-client action.
  *
  * Auth: loaded from storageState (see playwright.config.ts).
- * Each test gets an isolated browser context pre-seeded with the QA admin
- * session — no per-test Supabase login needed.
- *
- * Usage:
- *   npx playwright test tests/smoke/clients.smoke.ts
  */
 
 import { test, expect } from '@playwright/test'
@@ -16,33 +11,36 @@ import { expectAdminPage } from './helpers/auth'
 
 test('Clients list is accessible and contains QA data', async ({ page }) => {
   await expectAdminPage(page, '/admin/clients')
-
   await expect(page.locator('h1, h2').first()).toBeVisible()
-
-  const qaClientsCount = await page.locator('text=[QA]').count()
-  expect(qaClientsCount).toBeGreaterThan(0)
+  const qaCount = await page.locator('text=[QA]').count()
+  expect(qaCount).toBeGreaterThan(0)
 })
 
 test('Create QA client via admin UI', async ({ page }) => {
   await expectAdminPage(page, '/admin/clients')
 
-  const newClientBtn = page.locator(
-    'a:has-text("New Client"), a:has-text("Add Client"), button:has-text("New Client"), button:has-text("Add Client")'
-  ).first()
+  // Unique label so multiple runs don't collide
+  const ts       = Date.now()
+  const lastName = `AutoTest-${ts}`
 
-  if (await newClientBtn.count() === 0) {
-    test.skip(true, 'No "New Client" button found — UI may differ')
-    return
-  }
+  // Open the modal
+  await page.locator('[data-testid="create-client-btn"]').click()
+  await expect(page.locator('[data-testid="create-client-form"]')).toBeVisible()
 
-  await newClientBtn.click()
+  // Fill required fields
+  await page.locator('[data-testid="create-client-first-name"]').fill('[QA]')
+  await page.locator('[data-testid="create-client-last-name"]').fill(lastName)
 
-  await page.fill('input[name="first_name"], #first_name', '[QA]')
-  await page.fill('input[name="last_name"], #last_name', 'Smoke Test Client')
-  await page.fill('input[name="email"], #email', 'qa.smoke.client@sprintscaleit.co.uk')
+  // Dispatch native click — the modal backdrop (fixed inset-0) intercepts
+  // Playwright's synthetic pointer events even with { force: true }. Calling
+  // the DOM click() method bypasses pointer-event hit testing entirely.
+  await page.locator('[data-testid="create-client-submit"]').evaluate(
+    (el) => (el as HTMLButtonElement).click()
+  )
 
-  await page.click('button[type="submit"]:has-text("Save"), button[type="submit"]:has-text("Create"), button[type="submit"]:has-text("Add")')
+  // Modal closes after success and router.refresh() fires
+  await expect(page.locator('[data-testid="create-client-form"]')).not.toBeVisible({ timeout: 10_000 })
 
-  await expect(page).toHaveURL(/\/admin\/clients/, { timeout: 10_000 })
-  await expect(page.locator('text=Smoke Test Client')).toBeVisible({ timeout: 5_000 })
+  // New client should appear at the top of the list (ordered by created_at desc)
+  await expect(page.locator(`text=${lastName}`)).toBeVisible({ timeout: 10_000 })
 })

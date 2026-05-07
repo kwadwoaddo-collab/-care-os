@@ -6,6 +6,7 @@ import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
 
+import { adminFetch } from '@/lib/admin/serverFetch'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type SearchParams = Record<string, string | string[] | undefined>
@@ -28,7 +29,7 @@ async function getApplicants(
   params: URLSearchParams
 ): Promise<{ data: ApplicantRow[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/applicants?${params.toString()}`, {
+  const res = await adminFetch(`${baseUrl}/api/admin/applicants?${params.toString()}`, {
     cache: 'no-store',
   })
   if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }

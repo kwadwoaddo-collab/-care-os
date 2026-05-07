@@ -9,6 +9,7 @@ export default function CreateIncidentButton() {
   return (
     <>
       <button
+        data-testid="create-incident-btn"
         onClick={() => setOpen(true)}
         className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
       >

@@ -1,4 +1,5 @@
 import TimesheetsTable, { type Timesheet } from './TimesheetsTable'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // Routes and DB always work regardless of feature flag.
 // The nav link is hidden when ENABLE_TIMESHEETS=false, but this URL is
@@ -6,7 +7,7 @@ import TimesheetsTable, { type Timesheet } from './TimesheetsTable'
 
 async function getTimesheets(): Promise<Timesheet[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/timesheets`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/timesheets`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<Timesheet[]>
 }

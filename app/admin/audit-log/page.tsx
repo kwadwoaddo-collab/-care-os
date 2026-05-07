@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+import { adminFetch } from '@/lib/admin/serverFetch'
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface AuditEntry {

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link          from 'next/link'
 import VisitNoteForm, { type VisitNote } from './VisitNoteForm'
 import CreateIncidentFromNoteButton from './CreateIncidentFromNoteButton'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ interface LinkedIncident {
 
 async function getVisitNote(id: string): Promise<VisitNoteExtended | null> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/visit-notes/${id}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/visit-notes/${id}`, { cache: 'no-store' })
   if (res.status === 404) return null
   if (!res.ok) return null
   return res.json() as Promise<VisitNoteExtended>

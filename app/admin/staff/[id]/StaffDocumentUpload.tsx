@@ -85,6 +85,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
         <h2 className="text-sm font-semibold text-gray-700">Upload Document</h2>
         <button
           type="button"
+          data-testid="doc-upload-toggle"
           onClick={() => { setOpen((o) => !o); setError(null); setSuccess(false) }}
           className="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
         >
@@ -95,12 +96,12 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
       {open && (
         <div className="p-4">
           {success && (
-            <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
+            <div data-testid="doc-upload-success" className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
               ✓ Document uploaded successfully.
             </div>
           )}
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+            <div data-testid="doc-upload-error" className="mb-4 rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -148,6 +149,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
               </label>
               <input
                 id="doc-file"
+                data-testid="doc-upload-file"
                 ref={fileRef}
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
@@ -173,6 +175,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
             <div className="flex items-center gap-3 pt-1">
               <button
                 type="submit"
+                data-testid="doc-upload-submit"
                 disabled={isPending}
                 className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
               >

@@ -99,6 +99,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
 
   return (
     <div
+      data-testid="assign-modal"
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
@@ -178,6 +179,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
                           </span>
                         </div>
                         <button
+                          data-testid="assign-worker-btn"
                           onClick={() => handleAssign(rec.staff_profile_id)}
                           disabled={assigning !== null}
                           className="flex-shrink-0 text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

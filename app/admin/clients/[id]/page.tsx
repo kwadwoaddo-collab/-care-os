@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import EditClientForm from './EditClientForm'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -162,7 +163,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 async function getClient(id: string): Promise<Client | null> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients/${id}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/clients/${id}`, { cache: 'no-store' })
   if (res.status === 404) return null
   if (!res.ok) return null
   return res.json() as Promise<Client>
@@ -170,28 +171,28 @@ async function getClient(id: string): Promise<Client | null> {
 
 async function getClientShifts(clientId: string): Promise<Shift[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients/${clientId}/shifts`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/clients/${clientId}/shifts`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<Shift[]>
 }
 
 async function getClientCarePackages(clientId: string): Promise<CarePackage[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients/${clientId}/care-packages`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/clients/${clientId}/care-packages`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<CarePackage[]>
 }
 
 async function getClientVisitNotes(clientId: string): Promise<VisitNoteSummary[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/visit-notes?client_id=${clientId}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/visit-notes?client_id=${clientId}`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<VisitNoteSummary[]>
 }
 
 async function getClientIncidents(clientId: string): Promise<IncidentSummary[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/incidents?client_id=${clientId}&pageSize=10`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/incidents?client_id=${clientId}&pageSize=10`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: IncidentSummary[] }
   return json.data

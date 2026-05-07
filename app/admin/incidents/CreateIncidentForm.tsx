@@ -179,7 +179,7 @@ export default function CreateIncidentForm({
 
         {/* Success state */}
         {success ? (
-          <div className="p-6 space-y-4">
+          <div data-testid="create-incident-success" className="p-6 space-y-4">
             <div className="bg-green-50 border border-green-200 rounded-md px-4 py-3">
               <p className="text-sm font-medium text-green-800">Incident created successfully</p>
             </div>
@@ -265,6 +265,7 @@ export default function CreateIncidentForm({
               <label className={LABEL}>Description *</label>
               <textarea
                 rows={3}
+                data-testid="create-incident-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
@@ -352,6 +353,7 @@ export default function CreateIncidentForm({
               </button>
               <button
                 type="submit"
+                data-testid="create-incident-submit"
                 disabled={loading || !description.trim()}
                 className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >

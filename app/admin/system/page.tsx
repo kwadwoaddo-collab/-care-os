@@ -1,5 +1,6 @@
 // app/admin/system/page.tsx
 // System health dashboard for pre-launch operational visibility.
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 interface HealthData {
   database:         boolean
@@ -13,7 +14,7 @@ interface HealthData {
 async function getHealth(): Promise<HealthData | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/admin/system/health`, {
+    const res = await adminFetch(`${baseUrl}/api/admin/system/health`, {
       cache: 'no-store',
     })
     if (!res.ok) return null

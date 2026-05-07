@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import IncidentEditForm from './IncidentEditForm'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -91,7 +92,7 @@ function staffName(s: { first_name: string | null; last_name: string | null; ema
 
 async function getIncident(id: string): Promise<Incident | null> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/incidents/${id}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/incidents/${id}`, { cache: 'no-store' })
   if (res.status === 404) return null
   if (!res.ok) return null
   return res.json() as Promise<Incident>

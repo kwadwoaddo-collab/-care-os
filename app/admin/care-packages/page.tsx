@@ -1,5 +1,6 @@
 import CreateCarePackageForm, { type ClientOption }  from './CreateCarePackageForm'
 import CarePackageStatusControl                      from './CarePackageStatusControl'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,14 +68,14 @@ function visitSummary(visits: CarePackageVisit[]): string {
 
 async function getCarePackages(): Promise<CarePackage[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/care-packages`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/care-packages`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<CarePackage[]>
 }
 
 async function getActiveClients(): Promise<ClientOption[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients?pageSize=100`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/clients?pageSize=100`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: (ClientOption & { status: string })[] }
   return json.data.filter((c) => c.status === 'active' || c.status === 'prospective')

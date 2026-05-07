@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import type { OnboardingResponse, OnboardingRow } from '@/app/api/admin/onboarding/route'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getOnboarding(): Promise<OnboardingResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res     = await fetch(`${baseUrl}/api/admin/onboarding`, { cache: 'no-store' })
+  const res     = await adminFetch(`${baseUrl}/api/admin/onboarding`, { cache: 'no-store' })
   if (!res.ok) throw new Error('Failed to fetch onboarding data')
   return res.json() as Promise<OnboardingResponse>
 }

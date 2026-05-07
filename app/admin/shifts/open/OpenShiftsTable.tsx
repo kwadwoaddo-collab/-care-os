@@ -143,6 +143,7 @@ export default function OpenShiftsTable({ shifts }: { shifts: OpenShiftRow[] }) 
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <button
+                      data-testid="assign-shift-btn"
                       onClick={() =>
                         setSelected({
                           id:          shift.id,

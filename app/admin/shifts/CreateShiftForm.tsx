@@ -120,6 +120,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
     <>
       <button
         type="button"
+        data-testid="create-shift-btn"
         onClick={() => setOpen(true)}
         className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
       >
@@ -151,6 +152,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 <input
                   required
                   type="text"
+                  data-testid="create-shift-title"
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
                   placeholder="e.g. Morning care visit"
@@ -164,6 +166,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 <input
                   required
                   type="date"
+                  data-testid="create-shift-date"
                   value={form.shift_date}
                   onChange={(e) => set('shift_date', e.target.value)}
                   className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -177,6 +180,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   <input
                     required
                     type="time"
+                    data-testid="create-shift-start"
                     value={form.start_time}
                     onChange={(e) => set('start_time', e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -187,6 +191,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   <input
                     required
                     type="time"
+                    data-testid="create-shift-end"
                     value={form.end_time}
                     onChange={(e) => set('end_time', e.target.value)}
                     className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -317,6 +322,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 </button>
                 <button
                   type="submit"
+                  data-testid="create-shift-submit"
                   disabled={isPending}
                   className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >

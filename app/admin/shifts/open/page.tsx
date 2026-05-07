@@ -1,6 +1,7 @@
 import Link           from 'next/link'
 import OpenShiftsTable, { type OpenShiftRow, type Urgency } from './OpenShiftsTable'
 import { type Shift } from '../ShiftsTable'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Urgency ────────────────────────────────────────────────────────────────────
 
@@ -20,7 +21,7 @@ function getUrgency(shiftDate: string, startTime: string): Urgency {
 
 async function getOpenShifts(): Promise<OpenShiftRow[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/shifts?pageSize=100`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/shifts?pageSize=100`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: Shift[] }
   const all = json.data

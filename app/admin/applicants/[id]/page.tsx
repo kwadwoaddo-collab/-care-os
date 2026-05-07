@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import ApplicantActions from './ApplicantActions'
 import DocumentsSection, { type Document } from './DocumentsSection'
 import InterviewsSection, { type Interview } from './InterviewsSection'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ interface ApiResponse {
 
 async function getApplicant(id: string): Promise<ApiResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/applicants/${id}`, {
+  const res = await adminFetch(`${baseUrl}/api/admin/applicants/${id}`, {
     cache: 'no-store',
   })
   if (res.status === 404) notFound()

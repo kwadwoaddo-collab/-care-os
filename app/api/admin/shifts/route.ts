@@ -196,22 +196,8 @@ export async function POST(request: NextRequest) {
     }
 
   } else {
-    // No staff assigned — fall back to the first company in the table.
-    const { data: company, error: companyErr } = await adminClient
-      .from('companies')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
-
-    if (companyErr || !company) {
-      console.error('[admin/shifts] no company found:', companyErr?.message)
-      return NextResponse.json(
-        { error: 'No company found for shift creation' },
-        { status: 500 }
-      )
-    }
-
-    company_id = company.id as string
+    // No staff assigned — scope to the authenticated user's company.
+    company_id = companyId
   }
 
   // ── Insert shift ───────────────────────────────────────────────────────────

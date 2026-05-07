@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import type { AlertItem, AlertsResponse, AlertsSummary } from '@/app/api/admin/compliance/alerts/route'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getAlerts(): Promise<AlertsResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/compliance/alerts`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/compliance/alerts`, { cache: 'no-store' })
   if (!res.ok) throw new Error('Failed to fetch compliance alerts')
   return res.json() as Promise<AlertsResponse>
 }

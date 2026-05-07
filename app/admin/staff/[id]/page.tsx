@@ -19,6 +19,7 @@ import {
   parseAvailabilityRecord,
   type StaffAvailability,
 } from '@/lib/staff/types'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ interface ApiResponse {
 
 async function getStaffDetail(id: string): Promise<ApiResponse> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/staff/${id}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/staff/${id}`, { cache: 'no-store' })
   if (res.status === 404) notFound()
   if (!res.ok) throw new Error(`Failed to fetch staff profile: ${res.status}`)
   return res.json() as Promise<ApiResponse>
@@ -134,7 +135,7 @@ async function getStaffDetail(id: string): Promise<ApiResponse> {
 
 async function getAvailability(id: string): Promise<StaffAvailability | null> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/staff/${id}/availability`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/staff/${id}/availability`, { cache: 'no-store' })
   if (!res.ok) return null
   const raw = await res.json() as Record<string, unknown>
   return parseAvailabilityRecord(id, raw)
@@ -183,21 +184,21 @@ interface StaffIncident {
 
 async function getRecentShifts(id: string): Promise<StaffShift[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/staff/${id}/shifts`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/staff/${id}/shifts`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<StaffShift[]>
 }
 
 async function getRecentVisitNotes(id: string): Promise<StaffVisitNote[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/visit-notes?staff_profile_id=${id}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/visit-notes?staff_profile_id=${id}`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<StaffVisitNote[]>
 }
 
 async function getRecentIncidents(id: string): Promise<StaffIncident[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/incidents?staff_profile_id=${id}&pageSize=10`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/incidents?staff_profile_id=${id}&pageSize=10`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: StaffIncident[] }
   return json.data
