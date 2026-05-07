@@ -1,8 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// TODO: Remove DEV_BYPASS_AUTH before production deployment.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+// Bypass is opt-in: both NODE_ENV=development AND QA_BYPASS_AUTH=true must be set.
+// Set QA_BYPASS_AUTH=true in .env.local to enable — never in production.
+const shouldBypassAuth =
+  process.env.NODE_ENV === 'development' &&
+  process.env.QA_BYPASS_AUTH === 'true'
 
 // Paths under /admin that are public (no session required)
 const ADMIN_PUBLIC = new Set(['/admin/login', '/admin/logout'])
@@ -10,8 +13,8 @@ const ADMIN_PUBLIC = new Set(['/admin/login', '/admin/logout'])
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ── Development: allow all requests through ──────────────────────────────
-  if (DEV_BYPASS_AUTH) {
+  // ── QA bypass (opt-in: NODE_ENV=development + QA_BYPASS_AUTH=true) ──────
+  if (shouldBypassAuth) {
     return NextResponse.next()
   }
 
@@ -59,13 +62,16 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all admin routes (pages and API).
-     * Exclude:
-     *   - _next/static, _next/image, favicon
-     *   - Public applicant routes (/apply/*, /api/applicant/*)
-     *   - Worker token-based routes (handled in-handler)
+     * Match admin PAGE routes only — not API routes.
+     *
+     * API routes (/api/admin/*) are intentionally excluded: they are protected
+     * by requireAdmin() which returns JSON { error: 'Unauthorized' } (401).
+     * Including them here would cause the middleware to redirect unauthenticated
+     * server-side fetches to /admin/login (HTML), making fetch().ok === true and
+     * crashing JSON.parse with "Unexpected token '<'".
+     *
+     * Excludes: _next/static, _next/image, favicon, /apply/*, worker token routes.
      */
     '/admin/:path*',
-    '/api/admin/:path*',
   ],
 }

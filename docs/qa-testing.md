@@ -140,6 +140,53 @@ This banner:
 
 ---
 
+## Auth Bypass (`QA_BYPASS_AUTH`)
+
+By default, every admin route in Care OS requires a valid Supabase Auth session — even in local development. To enable the auth bypass for local QA testing, you must explicitly opt in.
+
+### How to enable
+
+Add to your `.env.local`:
+
+```env
+QA_BYPASS_AUTH=true
+```
+
+Both conditions must be true for the bypass to activate:
+
+| Condition | Required value |
+|-----------|---------------|
+| `NODE_ENV` | `development` |
+| `QA_BYPASS_AUTH` | `true` |
+
+If either is missing or wrong, the full Supabase Auth flow applies.
+
+### What the bypass does
+
+When active:
+- All `/admin/*` page and API routes are accessible without a login session
+- `requireAdmin()` returns a synthetic context: `userId = 'dev-admin'`, `role = 'company_admin'`
+- The company is resolved to the **SprintScale QA** company (by slug `sprintscale-qa`) or the first company in the database if the QA company doesn't exist
+- The admin middleware skips the session check and allows all requests through
+
+### What the bypass does NOT do
+
+- It does not bypass the **worker portal** — worker routes use token-based auth, which is unchanged
+- It does not bypass **applicant magic links**
+- It does not affect production in any way — `NODE_ENV` is never `'development'` on Vercel
+
+### Production safety
+
+`QA_BYPASS_AUTH` **must never be set in production** or in any Vercel environment variable. Vercel automatically sets `NODE_ENV=production` for all deployments, so even if the variable were accidentally added, the bypass logic requires both conditions to be true simultaneously.
+
+To be safe: never commit `.env.local` to version control, and never add `QA_BYPASS_AUTH` to Vercel's environment variable settings.
+
+### Without the bypass
+
+To test the real login flow locally, simply omit `QA_BYPASS_AUTH` from `.env.local` (or set it to `false`). You will be redirected to `/admin/login` and must sign in with a valid Supabase Auth account. See [Admin Auth Setup](admin-auth-setup.md) for how to create one.
+
+---
+
 ## Fake Email Mode (`QA_EMAIL_MODE`)
 
 By default, Care OS sends real emails via Resend. During QA stress testing you may want to suppress real sends while still verifying that notification logs are written.

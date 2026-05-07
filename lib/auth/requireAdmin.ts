@@ -19,8 +19,11 @@ export type AdminResult =
   | { ok: false; response: Response }
 
 // ── Dev bypass configuration (single source of truth) ─────────────────────────
-// TODO: Remove DEV_BYPASS_AUTH before production deployment.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+// Bypass is opt-in: both NODE_ENV=development AND QA_BYPASS_AUTH=true must be set.
+// Set QA_BYPASS_AUTH=true in .env.local to enable — never in production.
+const shouldBypassAuth =
+  process.env.NODE_ENV === 'development' &&
+  process.env.QA_BYPASS_AUTH === 'true'
 
 // Dev fallback company — resolved once per process.
 // Prefers QA company (slug = 'sprintscale-qa') when seeded, so smoke tests
@@ -67,8 +70,8 @@ async function getDevCompanyId(): Promise<string> {
  * ```
  */
 export async function requireAdmin(): Promise<AdminResult> {
-  // ── Development bypass ────────────────────────────────────────────────────
-  if (DEV_BYPASS_AUTH) {
+  // ── QA bypass (opt-in: NODE_ENV=development + QA_BYPASS_AUTH=true) ──────────
+  if (shouldBypassAuth) {
     const companyId = await getDevCompanyId()
     return {
       ok: true,
