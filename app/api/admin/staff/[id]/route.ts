@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const ALLOWED_PROFILE_STATUSES = new Set(['pre_employment', 'active', 'suspended', 'inactive'])
+const ALLOWED_PROFILE_STATUSES = new Set(['pre_employment', 'active', 'suspended', 'inactive', 'terminated'])
 
 export async function PATCH(
   request: NextRequest,
@@ -169,35 +170,8 @@ export async function GET(
     applicant = data ?? null
   }
 
-  // ── Documents: merge staff-profile docs + applicant docs (deduplicated) ──────
-  let documents: Record<string, unknown>[] = []
-
-  // 1. Documents uploaded directly against this staff profile
-  const { data: staffDocs } = await adminClient
-    .from('documents')
-    .select('id, document_type, file_name, file_path, file_size, mime_type, expiry_date, created_at')
-    .eq('staff_profile_id', staffProfile.id)
-    .order('created_at', { ascending: false })
-
-  if (staffDocs) documents.push(...(staffDocs as Record<string, unknown>[]))
-
-  // 2. Documents uploaded via the applicant flow
-  if (staffProfile.applicant_id) {
-    const { data: applicantDocs } = await adminClient
-      .from('documents')
-      .select('id, document_type, file_name, file_path, file_size, mime_type, expiry_date, created_at')
-      .eq('applicant_id', staffProfile.applicant_id)
-      .order('created_at', { ascending: false })
-    if (applicantDocs) documents.push(...(applicantDocs as Record<string, unknown>[]))
-  }
-
-  // 3. Deduplicate by id (a doc could be linked to both)
-  const seenDocIds = new Set<unknown>()
-  documents = documents.filter((d) => {
-    if (seenDocIds.has(d.id)) return false
-    seenDocIds.add(d.id)
-    return true
-  })
+  // ── Documents: merged and deduplicated from both sources ──────────────────
+  const documents = await getStaffDocuments(staffProfile.id, staffProfile.applicant_id as string | null)
 
   // ── Compliance items (if any) ─────────────────────────────────────────────
   const { data: complianceItems } = await adminClient

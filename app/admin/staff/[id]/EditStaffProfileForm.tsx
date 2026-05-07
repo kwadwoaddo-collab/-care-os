@@ -20,6 +20,7 @@ const STATUSES = [
   { value: 'active',         label: 'Active' },
   { value: 'suspended',      label: 'Suspended' },
   { value: 'inactive',       label: 'Inactive' },
+  { value: 'terminated',     label: 'Terminated' },
 ] as const
 
 export default function EditStaffProfileForm({ staff }: { staff: StaffProfile }) {

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
+import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
-const ALLOWED_STATUSES = new Set(['pre_employment', 'active', 'suspended', 'inactive'])
+const ALLOWED_STATUSES = new Set(['pre_employment', 'active', 'suspended', 'inactive', 'terminated'])
 
 export async function PATCH(
   request: NextRequest,
@@ -56,34 +57,7 @@ export async function PATCH(
 
   // ── Compliance gate for "active" ────────────────────────────────────────────
   if (status === 'active') {
-    // Gather all documents for this staff member
-    let documents: { id: string; document_type: string; file_name: string; expiry_date: string | null }[] = []
-
-    // Fetch by staff_profile_id first (newly uploaded staff docs)
-    const { data: staffDocs } = await adminClient
-      .from('documents')
-      .select('id, document_type, file_name, expiry_date')
-      .eq('staff_profile_id', staffProfileId)
-
-    if (staffDocs) documents.push(...staffDocs)
-
-    // Also fetch by applicant_id (docs uploaded via applicant flow)
-    if (staffProfile.applicant_id) {
-      const { data: applicantDocs } = await adminClient
-        .from('documents')
-        .select('id, document_type, file_name, expiry_date')
-        .eq('applicant_id', staffProfile.applicant_id)
-      if (applicantDocs) documents.push(...applicantDocs)
-    }
-
-    // Deduplicate by id
-    const seen = new Set<string>()
-    documents = documents.filter((d) => {
-      if (seen.has(d.id)) return false
-      seen.add(d.id)
-      return true
-    })
-
+    const documents = await getStaffDocuments(staffProfileId, staffProfile.applicant_id as string | null)
     const compliance = calculateCompliance(documents)
 
     if (!compliance.compliant) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
+import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
@@ -34,21 +35,8 @@ export async function GET(
     return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
   }
 
-  // ── Fetch documents (via applicant_id) ────────────────────────────────────
-  let documents: { id: string; document_type: string; file_name: string; expiry_date: string | null }[] = []
-  if (staffProfile.applicant_id) {
-    const { data, error } = await adminClient
-      .from('documents')
-      .select('id, document_type, file_name, expiry_date')
-      .eq('applicant_id', staffProfile.applicant_id)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('[staff/compliance] fetch documents error:', error.message)
-    } else {
-      documents = data ?? []
-    }
-  }
+  // ── Fetch documents from both sources ─────────────────────────────────────
+  const documents = await getStaffDocuments(staffProfile.id, staffProfile.applicant_id as string | null)
 
   // ── Compute compliance ────────────────────────────────────────────────────
   const summary = calculateCompliance(documents)

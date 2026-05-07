@@ -8,6 +8,7 @@ const STATUSES = [
   { value: 'active',         label: 'Active',         cls: 'bg-green-50  text-green-700  ring-green-600/20  hover:bg-green-100' },
   { value: 'suspended',      label: 'Suspended',      cls: 'bg-orange-50 text-orange-700 ring-orange-600/20 hover:bg-orange-100' },
   { value: 'inactive',       label: 'Inactive',       cls: 'bg-gray-50   text-gray-600   ring-gray-500/20   hover:bg-gray-100' },
+  { value: 'terminated',     label: 'Terminated',     cls: 'bg-red-50    text-red-700    ring-red-600/20    hover:bg-red-100' },
 ]
 
 interface ComplianceIssues {

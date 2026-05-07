@@ -115,7 +115,7 @@ export async function POST(
   }
 
   if (toInsert.length === 0) {
-    return NextResponse.json({ created: 0, skipped: 0, message: 'All shifts already exist for the next 14 days' })
+    return NextResponse.json({ created: 0, skipped, message: 'All shifts already exist for the next 14 days' })
   }
 
   const { error: insertErr } = await adminClient.from('shifts').insert(toInsert)
