@@ -74,10 +74,10 @@ async function getCarePackages(): Promise<CarePackage[]> {
 
 async function getActiveClients(): Promise<ClientOption[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
+  const res = await fetch(`${baseUrl}/api/admin/clients?pageSize=100`, { cache: 'no-store' })
   if (!res.ok) return []
-  const all = await res.json() as (ClientOption & { status: string })[]
-  return all.filter((c) => c.status === 'active' || c.status === 'prospective')
+  const json = await res.json() as { data: (ClientOption & { status: string })[] }
+  return json.data.filter((c) => c.status === 'active' || c.status === 'prospective')
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────

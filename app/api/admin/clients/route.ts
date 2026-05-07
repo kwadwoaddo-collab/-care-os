@@ -1,29 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
 
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 // ── GET /api/admin/clients ────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!DEV_BYPASS_AUTH) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await adminClient
+  const sp          = request.nextUrl.searchParams
+  const search      = sp.get('search')       ?? ''
+  const status      = sp.get('status')       ?? ''
+  const riskLevel   = sp.get('risk_level')   ?? ''
+  const fundingType = sp.get('funding_type') ?? ''
+  const { page, pageSize } = getPaginationParams(Object.fromEntries(sp.entries()))
+
+  let query = adminClient
     .from('clients')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[admin/clients] GET error:', error.message)
-    return NextResponse.json(
-      { error: 'Failed to fetch clients', supabase_message: error.message },
-      { status: 500 }
+  if (status)      query = query.eq('status',       status)
+  if (riskLevel)   query = query.eq('risk_level',   riskLevel)
+  if (fundingType) query = query.eq('funding_type', fundingType)
+  if (search) {
+    query = query.or(
+      `first_name.ilike.%${search}%,last_name.ilike.%${search}%,preferred_name.ilike.%${search}%,postcode.ilike.%${search}%,phone.ilike.%${search}%`
     )
   }
 
-  return NextResponse.json(data ?? [])
+  const { from, to } = getRange(page, pageSize)
+  query = query.range(from, to)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('[admin/clients] GET error:', error.message)
+    return NextResponse.json({ error: 'Failed to fetch clients' }, { status: 500 })
+  }
+
+  const meta = buildPaginationMeta(count ?? 0, page, pageSize)
+  return NextResponse.json({ data: data ?? [], meta })
 }
 
 // ── POST /api/admin/clients ───────────────────────────────────────────────────

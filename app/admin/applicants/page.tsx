@@ -1,6 +1,14 @@
 import Link from 'next/link'
 import InviteApplicantForm from './InviteApplicantForm'
 import ResendInviteButton from './ResendInviteButton'
+import ListFilters from '@/components/admin/ListFilters'
+import Pagination  from '@/components/admin/Pagination'
+import type { PaginationMeta } from '@/lib/pagination'
+import { sp } from '@/lib/pagination'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type SearchParams = Record<string, string | string[] | undefined>
 
 interface ApplicantRow {
   id: string
@@ -14,16 +22,20 @@ interface ApplicantRow {
   submitted_at: string | null
 }
 
-async function getApplicants(): Promise<ApplicantRow[]> {
+// ── Data fetching ─────────────────────────────────────────────────────────────
+
+async function getApplicants(
+  params: URLSearchParams
+): Promise<{ data: ApplicantRow[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/applicants`, {
+  const res = await fetch(`${baseUrl}/api/admin/applicants?${params.toString()}`, {
     cache: 'no-store',
   })
-  if (!res.ok) {
-    throw new Error(`Failed to fetch applicants: ${res.status}`)
-  }
-  return res.json() as Promise<ApplicantRow[]>
+  if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
+  return res.json() as Promise<{ data: ApplicantRow[]; meta: PaginationMeta }>
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
@@ -64,109 +76,131 @@ function formatDate(iso: string): string {
   })
 }
 
-export default async function ApplicantsPage() {
-  let applicants: ApplicantRow[] = []
-  let fetchError: string | null = null
+// ── Page ──────────────────────────────────────────────────────────────────────
 
-  try {
-    applicants = await getApplicants()
-  } catch (err) {
-    fetchError = err instanceof Error ? err.message : 'Unknown error'
-  }
+export default async function ApplicantsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const raw = await searchParams
+
+  const params = new URLSearchParams()
+  if (sp(raw, 'search'))      params.set('search',      sp(raw, 'search'))
+  if (sp(raw, 'status'))      params.set('status',      sp(raw, 'status'))
+  if (sp(raw, 'form_status')) params.set('form_status', sp(raw, 'form_status'))
+  if (sp(raw, 'page'))        params.set('page',        sp(raw, 'page'))
+  if (sp(raw, 'pageSize'))    params.set('pageSize',    sp(raw, 'pageSize'))
+
+  const { data: applicants, meta } = await getApplicants(params)
+
+  const hasFilters = !!(sp(raw, 'search') || sp(raw, 'status') || sp(raw, 'form_status'))
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Applicants</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            All applicants across the organisation.
+          <p className="mt-0.5 text-sm text-gray-500">
+            {meta.total} applicant{meta.total !== 1 ? 's' : ''}
           </p>
         </div>
         <InviteApplicantForm />
       </div>
 
-      {fetchError && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 mb-6">
-          {fetchError}
+      {/* Filters */}
+      <ListFilters fields={[
+        { type: 'text',   name: 'search',      placeholder: 'Search name, email, role…', label: 'Search' },
+        { type: 'select', name: 'status',      label: 'Status', options: [
+            { value: 'applied',              label: 'Applied' },
+            { value: 'shortlisted',          label: 'Shortlisted' },
+            { value: 'interview_scheduled',  label: 'Interview scheduled' },
+            { value: 'hired',                label: 'Hired' },
+            { value: 'rejected',             label: 'Rejected' },
+            { value: 'withdrawn',            label: 'Withdrawn' },
+        ]},
+        { type: 'select', name: 'form_status', label: 'Form status', options: [
+            { value: 'draft',     label: 'Draft' },
+            { value: 'submitted', label: 'Submitted' },
+        ]},
+      ]} />
+
+      {/* Table */}
+      {applicants.length === 0 ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+          {hasFilters
+            ? 'No results found. Try changing your filters.'
+            : 'No applicants yet.'}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Role</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {applicants.map((a) => (
+                  <tr
+                    key={a.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        {a.first_name ?? ''} {a.last_name ?? ''}
+                        {!a.first_name && !a.last_name && <span className="text-gray-400">—</span>}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        {a.email}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        {a.job_role ?? <span className="text-gray-400">—</span>}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        <StatusBadge status={a.status} />
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        <FormStatusBadge status={a.form_status} />
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                      <Link href={`/admin/applicants/${a.id}`} className="block w-full">
+                        {formatDate(a.created_at)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {['hired', 'rejected', 'withdrawn'].includes(a.status) ? (
+                        <span className="text-xs text-gray-400">Closed</span>
+                      ) : a.form_status === 'submitted' ? (
+                        <span className="text-xs text-gray-400">Submitted</span>
+                      ) : (
+                        <ResendInviteButton applicantId={a.id} />
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination meta={meta} searchParams={raw} />
         </div>
       )}
-
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Role</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {applicants.length === 0 && !fetchError && (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-400">
-                  No applicants yet.
-                </td>
-              </tr>
-            )}
-            {applicants.map((a) => (
-              <tr
-                key={a.id}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    {a.first_name ?? ''} {a.last_name ?? ''}
-                    {!a.first_name && !a.last_name && <span className="text-gray-400">—</span>}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    {a.email}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    {a.job_role ?? <span className="text-gray-400">—</span>}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    <StatusBadge status={a.status} />
-                  </Link>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    <FormStatusBadge status={a.form_status} />
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
-                  <Link href={`/admin/applicants/${a.id}`} className="block w-full">
-                    {formatDate(a.created_at)}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {['hired', 'rejected', 'withdrawn'].includes(a.status) ? (
-                    <span className="text-xs text-gray-400">Closed</span>
-                  ) : a.form_status === 'submitted' ? (
-                    <span className="text-xs text-gray-400">Submitted</span>
-                  ) : (
-                    <ResendInviteButton applicantId={a.id} />
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="mt-3 text-xs text-gray-400">
-        {applicants.length} applicant{applicants.length !== 1 ? 's' : ''}
-      </p>
     </div>
   )
 }

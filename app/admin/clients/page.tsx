@@ -1,6 +1,12 @@
 import CreateClientForm from './CreateClientForm'
+import ListFilters from '@/components/admin/ListFilters'
+import Pagination  from '@/components/admin/Pagination'
+import type { PaginationMeta } from '@/lib/pagination'
+import { sp } from '@/lib/pagination'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type SearchParams = Record<string, string | string[] | undefined>
 
 export interface Client {
   id:           string
@@ -49,19 +55,38 @@ function formatDate(iso: string | null): string {
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
-async function getClients(): Promise<Client[]> {
+async function getClients(
+  params: URLSearchParams
+): Promise<{ data: Client[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json() as Promise<Client[]>
+  const res = await fetch(`${baseUrl}/api/admin/clients?${params.toString()}`, { cache: 'no-store' })
+  if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
+  return res.json() as Promise<{ data: Client[]; meta: PaginationMeta }>
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default async function ClientsPage() {
-  const clients = await getClients()
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const raw = await searchParams
 
-  const total    = clients.length
+  const params = new URLSearchParams()
+  if (sp(raw, 'search'))       params.set('search',       sp(raw, 'search'))
+  if (sp(raw, 'status'))       params.set('status',       sp(raw, 'status'))
+  if (sp(raw, 'risk_level'))   params.set('risk_level',   sp(raw, 'risk_level'))
+  if (sp(raw, 'funding_type')) params.set('funding_type', sp(raw, 'funding_type'))
+  if (sp(raw, 'page'))         params.set('page',         sp(raw, 'page'))
+  if (sp(raw, 'pageSize'))     params.set('pageSize',     sp(raw, 'pageSize'))
+
+  const { data: clients, meta } = await getClients(params)
+
+  const hasFilters = !!(sp(raw, 'search') || sp(raw, 'status') || sp(raw, 'risk_level') || sp(raw, 'funding_type'))
+
+  // Summary counts from current page total (meta.total includes filter)
+  const total    = meta.total
   const active   = clients.filter((c) => c.status === 'active').length
   const paused   = clients.filter((c) => c.status === 'paused').length
   const highRisk = clients.filter((c) => c.risk_level === 'high' || c.risk_level === 'critical').length
@@ -102,65 +127,94 @@ export default async function ClientsPage() {
         </div>
       </div>
 
+      {/* Filters */}
+      <ListFilters fields={[
+        { type: 'text',   name: 'search',       placeholder: 'Search name, postcode, phone…', label: 'Search' },
+        { type: 'select', name: 'status',       label: 'Status', options: [
+            { value: 'active',      label: 'Active' },
+            { value: 'prospective', label: 'Prospective' },
+            { value: 'paused',      label: 'Paused' },
+            { value: 'ended',       label: 'Ended' },
+        ]},
+        { type: 'select', name: 'risk_level',   label: 'Risk level', options: [
+            { value: 'low',      label: 'Low' },
+            { value: 'standard', label: 'Standard' },
+            { value: 'high',     label: 'High' },
+            { value: 'critical', label: 'Critical' },
+        ]},
+        { type: 'select', name: 'funding_type', label: 'Funding type', options: [
+            { value: 'private',        label: 'Private' },
+            { value: 'local_authority', label: 'Local authority' },
+            { value: 'nhs',            label: 'NHS' },
+            { value: 'direct_payment', label: 'Direct payment' },
+            { value: 'other',          label: 'Other' },
+        ]},
+      ]} />
+
       {/* Table */}
       {clients.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          No clients yet. Create one to get started.
+          {hasFilters
+            ? 'No results found. Try changing your filters.'
+            : 'No clients yet. Create one to get started.'}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postcode</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Care start</th>
-                  <th className="px-4 py-3"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {clients.map((client) => (
-                  <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="font-medium text-gray-900">
-                        {client.first_name} {client.last_name}
-                      </span>
-                      {client.preferred_name && (
-                        <span className="ml-1.5 text-xs text-gray-400">({client.preferred_name})</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {client.postcode ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge value={client.status} map={STATUS_CLS} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {client.funding_type ? client.funding_type.replace(/_/g, ' ') : '—'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge value={client.risk_level} map={RISK_CLS} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {formatDate(client.care_start_date)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
-                      <a
-                        href={`/admin/clients/${client.id}`}
-                        className="text-xs text-indigo-600 hover:underline"
-                      >
-                        View →
-                      </a>
-                    </td>
+        <div className="space-y-3">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postcode</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Care start</th>
+                    <th className="px-4 py-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {clients.map((client) => (
+                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="font-medium text-gray-900">
+                          {client.first_name} {client.last_name}
+                        </span>
+                        {client.preferred_name && (
+                          <span className="ml-1.5 text-xs text-gray-400">({client.preferred_name})</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                        {client.postcode ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Badge value={client.status} map={STATUS_CLS} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                        {client.funding_type ? client.funding_type.replace(/_/g, ' ') : '—'}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Badge value={client.risk_level} map={RISK_CLS} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                        {formatDate(client.care_start_date)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-right">
+                        <a
+                          href={`/admin/clients/${client.id}`}
+                          className="text-xs text-indigo-600 hover:underline"
+                        >
+                          View →
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+          <Pagination meta={meta} searchParams={raw} />
         </div>
       )}
     </div>

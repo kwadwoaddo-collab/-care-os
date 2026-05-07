@@ -1,8 +1,14 @@
 import Link from 'next/link'
 import ShiftsTable, { type Shift } from './ShiftsTable'
 import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
+import ListFilters from '@/components/admin/ListFilters'
+import Pagination  from '@/components/admin/Pagination'
+import type { PaginationMeta } from '@/lib/pagination'
+import { sp } from '@/lib/pagination'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+type SearchParams = Record<string, string | string[] | undefined>
 
 interface StaffListItem {
   id:         string
@@ -15,27 +21,29 @@ interface StaffListItem {
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
-async function getShifts(): Promise<Shift[]> {
+async function getShifts(
+  params: URLSearchParams
+): Promise<{ data: Shift[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/shifts`, { cache: 'no-store' })
-  if (!res.ok) return []
-  return res.json() as Promise<Shift[]>
+  const res = await fetch(`${baseUrl}/api/admin/shifts?${params.toString()}`, { cache: 'no-store' })
+  if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
+  return res.json() as Promise<{ data: Shift[]; meta: PaginationMeta }>
 }
 
 async function getReadyStaff(): Promise<ReadyStaff[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const res = await fetch(`${baseUrl}/api/admin/staff`, { cache: 'no-store' })
   if (!res.ok) return []
-  const all = await res.json() as StaffListItem[]
-  return all.filter((s) => s.status === 'active' && s.readiness.ready)
+  const json = await res.json() as { data: StaffListItem[]; meta: PaginationMeta }
+  return json.data.filter((s) => s.status === 'active' && s.readiness.ready)
 }
 
 async function getActiveClients(): Promise<ActiveClient[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const res = await fetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
   if (!res.ok) return []
-  const all = await res.json() as (ActiveClient & { status: string })[]
-  return all.filter((c) => c.status === 'active')
+  const json = await res.json() as { data: (ActiveClient & { status: string })[]; meta: PaginationMeta }
+  return json.data.filter((c) => c.status === 'active')
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -46,10 +54,35 @@ function todayStr() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default async function ShiftsPage() {
-  const [shifts, readyStaff, activeClients] = await Promise.all([getShifts(), getReadyStaff(), getActiveClients()])
+export default async function ShiftsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const raw = await searchParams
 
-  const today     = todayStr()
+  const params = new URLSearchParams()
+  if (sp(raw, 'search'))     params.set('search',     sp(raw, 'search'))
+  if (sp(raw, 'status'))     params.set('status',     sp(raw, 'status'))
+  if (sp(raw, 'shift_type')) params.set('shift_type', sp(raw, 'shift_type'))
+  if (sp(raw, 'assigned'))   params.set('assigned',   sp(raw, 'assigned'))
+  if (sp(raw, 'date_from'))  params.set('date_from',  sp(raw, 'date_from'))
+  if (sp(raw, 'date_to'))    params.set('date_to',    sp(raw, 'date_to'))
+  if (sp(raw, 'page'))       params.set('page',       sp(raw, 'page'))
+  if (sp(raw, 'pageSize'))   params.set('pageSize',   sp(raw, 'pageSize'))
+
+  const [{ data: shifts, meta }, readyStaff, activeClients] = await Promise.all([
+    getShifts(params),
+    getReadyStaff(),
+    getActiveClients(),
+  ])
+
+  const hasFilters = !!(
+    sp(raw, 'search') || sp(raw, 'status') || sp(raw, 'shift_type') ||
+    sp(raw, 'assigned') || sp(raw, 'date_from') || sp(raw, 'date_to')
+  )
+
+  const today         = todayStr()
   const todayCount    = shifts.filter((s) => s.shift_date === today).length
   const upcomingCount = shifts.filter((s) => s.shift_date >  today).length
   const scheduledCount = shifts.filter((s) => s.status === 'scheduled' || s.status === 'confirmed').length
@@ -67,7 +100,7 @@ export default async function ShiftsPage() {
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Shifts</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {shifts.length} shift{shifts.length !== 1 ? 's' : ''}
+            {meta.total} shift{meta.total !== 1 ? 's' : ''}
           </p>
         </div>
         <CreateShiftForm companyId={companyId} readyStaff={readyStaff} activeClients={activeClients} />
@@ -77,7 +110,7 @@ export default async function ShiftsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">Total</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{shifts.length}</p>
+          <p className="text-2xl font-semibold tabular-nums text-gray-900">{meta.total}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">Today</p>
@@ -113,13 +146,43 @@ export default async function ShiftsPage() {
         </span>
       </Link>
 
+      {/* Filters */}
+      <ListFilters fields={[
+        { type: 'text',   name: 'search',     placeholder: 'Search title, location, client…', label: 'Search' },
+        { type: 'select', name: 'status',     label: 'Status', options: [
+            { value: 'scheduled', label: 'Scheduled' },
+            { value: 'confirmed', label: 'Confirmed' },
+            { value: 'completed', label: 'Completed' },
+            { value: 'cancelled', label: 'Cancelled' },
+            { value: 'no_show',   label: 'No show' },
+        ]},
+        { type: 'select', name: 'shift_type', label: 'Shift type', options: [
+            { value: 'day',       label: 'Day' },
+            { value: 'night',     label: 'Night' },
+            { value: 'sleep_in',  label: 'Sleep-in' },
+            { value: 'live_in',   label: 'Live-in' },
+            { value: 'emergency', label: 'Emergency' },
+        ]},
+        { type: 'select', name: 'assigned',   label: 'Assignment', options: [
+            { value: 'assigned',   label: 'Assigned' },
+            { value: 'unassigned', label: 'Unassigned' },
+        ]},
+        { type: 'date',   name: 'date_from',  label: 'From date' },
+        { type: 'date',   name: 'date_to',    label: 'To date' },
+      ]} />
+
       {/* Table */}
       {shifts.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          No shifts yet. Create one to get started.
+          {hasFilters
+            ? 'No results found. Try changing your filters.'
+            : 'No shifts yet. Create one to get started.'}
         </div>
       ) : (
-        <ShiftsTable shifts={shifts} />
+        <div className="space-y-3">
+          <ShiftsTable shifts={shifts} />
+          <Pagination meta={meta} searchParams={raw} />
+        </div>
       )}
     </div>
   )

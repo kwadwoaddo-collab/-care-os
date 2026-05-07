@@ -20,9 +20,10 @@ function getUrgency(shiftDate: string, startTime: string): Urgency {
 
 async function getOpenShifts(): Promise<OpenShiftRow[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/shifts`, { cache: 'no-store' })
+  const res = await fetch(`${baseUrl}/api/admin/shifts?pageSize=100`, { cache: 'no-store' })
   if (!res.ok) return []
-  const all = await res.json() as Shift[]
+  const json = await res.json() as { data: Shift[] }
+  const all = json.data
 
   return all
     .filter((s) => !s.assigned_staff_id)

@@ -1,54 +1,68 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
-export async function GET() {
-  // ── Auth ─────────────────────────────────────────────────────────────────────
-  // DEV_BYPASS_AUTH: skip session check in development.
-  // To restore: validate the session from the request cookie and confirm admin role.
+export async function GET(request: NextRequest) {
   if (!DEV_BYPASS_AUTH) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // ── Fetch applicants with their latest form_response status ──────────────────
-  const { data, error } = await adminClient
+  const sp         = request.nextUrl.searchParams
+  const search     = sp.get('search')      ?? ''
+  const status     = sp.get('status')      ?? ''
+  const formStatus = sp.get('form_status') ?? ''
+  const { page, pageSize } = getPaginationParams(Object.fromEntries(sp.entries()))
+
+  let query = adminClient
     .from('applicants')
     .select(
-      `id,
-       first_name,
-       last_name,
-       email,
-       job_role,
-       status,
-       created_at,
-       form_responses ( status, submitted_at )`
+      `id, first_name, last_name, email, job_role, status, created_at,
+       form_responses ( status, submitted_at )`,
+      { count: 'exact' }
     )
     .order('created_at', { ascending: false })
+
+  if (status) query = query.eq('status', status)
+  if (search) {
+    query = query.or(
+      `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,job_role.ilike.%${search}%`
+    )
+  }
+
+  const { from, to } = getRange(page, pageSize)
+  query = query.range(from, to)
+
+  const { data, error, count } = await query
 
   if (error) {
     console.error('[admin/applicants] fetch failed:', error)
     return NextResponse.json({ error: 'Failed to fetch applicants' }, { status: 500 })
   }
 
-  const applicants = (data ?? []).map((row) => {
-    // form_responses is an array (one-to-many); take the first entry if present
-    const responses = row.form_responses as Array<{ status: string; submitted_at: string | null }> | null
+  let applicants = (data ?? []).map((row) => {
+    const responses    = row.form_responses as Array<{ status: string; submitted_at: string | null }> | null
     const formResponse = responses && responses.length > 0 ? responses[0] : null
-
     return {
-      id:              row.id,
-      first_name:      row.first_name,
-      last_name:       row.last_name,
-      email:           row.email,
-      job_role:        row.job_role,
-      status:          row.status,
-      created_at:      row.created_at,
-      form_status:     formResponse?.status ?? null,
-      submitted_at:    formResponse?.submitted_at ?? null,
+      id:           row.id,
+      first_name:   row.first_name,
+      last_name:    row.last_name,
+      email:        row.email,
+      job_role:     row.job_role,
+      status:       row.status,
+      created_at:   row.created_at,
+      form_status:  formResponse?.status       ?? null,
+      submitted_at: formResponse?.submitted_at ?? null,
     }
   })
 
-  return NextResponse.json(applicants)
+  // form_status is computed post-join — filter in memory
+  if (formStatus) applicants = applicants.filter((a) => a.form_status === formStatus)
+
+  const total = formStatus ? applicants.length : (count ?? applicants.length)
+  const meta  = buildPaginationMeta(total, page, pageSize)
+
+  return NextResponse.json({ data: applicants, meta })
 }

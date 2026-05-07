@@ -6,48 +6,66 @@ import {
 } from '@/lib/compliance/calculateCompliance'
 import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
+import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 // ── GET /api/admin/shifts ─────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!DEV_BYPASS_AUTH) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await adminClient
+  const sp         = request.nextUrl.searchParams
+  const search     = sp.get('search')     ?? ''
+  const status     = sp.get('status')     ?? ''
+  const shiftType  = sp.get('shift_type') ?? ''
+  const assigned   = sp.get('assigned')   ?? '' // 'assigned' | 'unassigned'
+  const dateFrom   = sp.get('date_from')  ?? ''
+  const dateTo     = sp.get('date_to')    ?? ''
+  const { page, pageSize } = getPaginationParams(Object.fromEntries(sp.entries()))
+
+  let query = adminClient
     .from('shifts')
     .select(`
       id, company_id, assigned_staff_id, created_by,
       title, shift_date, start_time, end_time,
       location, client_name, client_id, care_package_id, shift_type, status, notes,
       created_at, updated_at,
-      staff_profiles!assigned_staff_id (
-        id, first_name, last_name, email
-      ),
-      clients!client_id (
-        id, first_name, last_name
-      ),
-      care_packages!care_package_id (
-        id, title
-      )
-    `)
+      staff_profiles!assigned_staff_id ( id, first_name, last_name, email ),
+      clients!client_id              ( id, first_name, last_name ),
+      care_packages!care_package_id  ( id, title )
+    `, { count: 'exact' })
     .order('shift_date', { ascending: true })
     .order('start_time', { ascending: true })
 
+  if (status)    query = query.eq('status',     status)
+  if (shiftType) query = query.eq('shift_type', shiftType)
+  if (dateFrom)  query = query.gte('shift_date', dateFrom)
+  if (dateTo)    query = query.lte('shift_date', dateTo)
+  if (assigned === 'assigned')   query = query.not('assigned_staff_id', 'is', null)
+  if (assigned === 'unassigned') query = query.is('assigned_staff_id', null)
+  if (search) {
+    query = query.or(
+      `title.ilike.%${search}%,location.ilike.%${search}%,client_name.ilike.%${search}%`
+    )
+  }
+
+  const { from, to } = getRange(page, pageSize)
+  query = query.range(from, to)
+
+  const { data, error, count } = await query
+
   if (error) {
     console.error('[admin/shifts] GET error:', error.message)
-    return NextResponse.json(
-      { error: 'Failed to fetch shifts', supabase_message: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch shifts' }, { status: 500 })
   }
 
   const shifts = data ?? []
 
-  // ── Attach timesheet status for each shift (if one exists) ────────────────
+  // Attach timesheet status for the current page only
   let timesheetStatusByShift: Record<string, string> = {}
   if (shifts.length > 0) {
     const shiftIds = shifts.map((s) => s.id)
@@ -61,12 +79,13 @@ export async function GET() {
     }
   }
 
-  const result = shifts.map((s) => ({
+  const pageData = shifts.map((s) => ({
     ...s,
     timesheet_status: timesheetStatusByShift[s.id] ?? null,
   }))
 
-  return NextResponse.json(result)
+  const meta = buildPaginationMeta(count ?? pageData.length, page, pageSize)
+  return NextResponse.json({ data: pageData, meta })
 }
 
 // ── POST /api/admin/shifts ────────────────────────────────────────────────────
