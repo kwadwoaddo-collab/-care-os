@@ -20,6 +20,7 @@ require('dotenv').config({ path: '.env.local' })
 
 import { createClient } from '@supabase/supabase-js'
 import * as readline from 'readline'
+import ws from 'ws'
 import { QA_COMPANY_SLUG, QA_COMPANY_NAME } from './qa-helpers'
 
 const SUPABASE_URL     = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -32,7 +33,8 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = createClient<any>(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
+  auth:     { autoRefreshToken: false, persistSession: false },
+  realtime: { transport: ws },
 })
 
 const args    = process.argv.slice(2)

@@ -27,6 +27,7 @@
 require('dotenv').config({ path: '.env.local' })
 
 import { createClient } from '@supabase/supabase-js'
+import ws from 'ws'
 import {
   QA_TAG,
   QA_COMPANY_NAME,
@@ -57,7 +58,9 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = createClient<any>(SUPABASE_URL, SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
+  auth:      { autoRefreshToken: false, persistSession: false },
+  // Node 20 requires explicit WebSocket transport
+  realtime:  { transport: ws },
 })
 
 const args    = process.argv.slice(2)

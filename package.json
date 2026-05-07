@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "qa:seed": "tsx scripts/seed-qa-environment.ts",
+    "qa:reset": "tsx scripts/reset-qa-environment.ts",
+    "qa:dry": "tsx scripts/seed-qa-environment.ts --dry-run",
+    "qa:smoke": "playwright test tests/smoke/",
+    "qa:cycle": "tsx scripts/reset-qa-environment.ts --force && tsx scripts/seed-qa-environment.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
@@ -20,6 +25,7 @@
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
