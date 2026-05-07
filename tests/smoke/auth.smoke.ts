@@ -4,15 +4,13 @@
  * Smoke test: Login flow for QA environment.
  *
  * Verifies that QA auth users can sign in successfully and are
- * redirected to the admin dashboard.
+ * redirected off the login page into an authenticated area.
  *
  * Usage:
  *   npx playwright test tests/smoke/auth.smoke.ts
  */
 
 import { test, expect } from '@playwright/test'
-
-const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
 
 const QA_USERS = [
   { email: 'qa-admin@sprintscaleit.co.uk',       password: 'ChangeMe123!', role: 'company_admin' },
@@ -22,15 +20,18 @@ const QA_USERS = [
 
 for (const user of QA_USERS) {
   test(`Login as ${user.role} (${user.email})`, async ({ page }) => {
-    await page.goto(`${BASE_URL}/admin/login`)
+    await page.goto('/admin/login')
 
-    // Fill login form
-    await page.fill('input[type="email"], input[name="email"], #email', user.email)
-    await page.fill('input[type="password"], input[name="password"], #password', user.password)
+    await page.fill('input[name="email"], input[type="email"], #email', user.email)
+    await page.fill('input[name="password"], input[type="password"], #password', user.password)
     await page.click('button[type="submit"], #login-btn, button:has-text("Sign in"), button:has-text("Login")')
 
-    // Should be redirected to admin area or show authenticated state
-    await expect(page).toHaveURL(/\/(admin|worker)/, { timeout: 10_000 })
+    // Must navigate away from /admin/login — /admin/login matching /\/admin/ is
+    // a false-positive; use a predicate to catch silent login failures.
+    await page.waitForURL(
+      (url) => !new URL(url).pathname.startsWith('/admin/login'),
+      { timeout: 15_000 },
+    )
 
     // QA banner should be visible since this is the QA company
     const banner = page.locator('#qa-environment-banner')
@@ -42,15 +43,16 @@ for (const user of QA_USERS) {
 }
 
 test('Login with invalid credentials shows error', async ({ page }) => {
-  await page.goto(`${BASE_URL}/admin/login`)
+  await page.goto('/admin/login')
 
-  await page.fill('input[type="email"], input[name="email"], #email', 'notreal@example.com')
-  await page.fill('input[type="password"], input[name="password"], #password', 'wrongpassword')
+  await page.fill('input[name="email"], input[type="email"], #email', 'notreal@example.com')
+  await page.fill('input[name="password"], input[type="password"], #password', 'wrongpassword')
   await page.click('button[type="submit"], #login-btn, button:has-text("Sign in"), button:has-text("Login")')
 
-  // Should NOT navigate away — still on login page or show error
-  await page.waitForTimeout(2000)
+  // Should NOT navigate away from the login page
+  await page.waitForTimeout(2_000)
   const url = page.url()
-  const isStillOnLogin = url.includes('login') || url.includes('error')
-  expect(isStillOnLogin || (await page.locator('text=/invalid|incorrect|error/i').count()) > 0).toBeTruthy()
+  const isStillOnLogin = url.includes('/login')
+  const hasErrorText   = (await page.locator('text=/invalid|incorrect|error/i').count()) > 0
+  expect(isStillOnLogin || hasErrorText).toBeTruthy()
 })

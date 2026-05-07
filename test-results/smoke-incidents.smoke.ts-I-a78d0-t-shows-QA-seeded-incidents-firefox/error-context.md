@@ -7,7 +7,7 @@
 # Test info
 
 - Name: smoke/incidents.smoke.ts >> Incidents list shows QA-seeded incidents
-- Location: tests/smoke/incidents.smoke.ts:30:5
+- Location: tests/smoke/incidents.smoke.ts:23:5
 
 # Error details
 
@@ -56,23 +56,58 @@ Received:   0
         - link "Logout" [ref=e20] [cursor=pointer]:
           - /url: /admin/logout
     - main [ref=e21]:
-      - generic [ref=e23]:
-        - generic [ref=e24]:
-          - paragraph [ref=e25]: Care OS
-          - heading "Admin Login" [level=1] [ref=e26]
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - heading "Incidents" [level=1] [ref=e25]
+            - paragraph [ref=e26]: 0 incidents
+          - button "+ Create Incident" [ref=e27]
         - generic [ref=e28]:
           - generic [ref=e29]:
-            - generic [ref=e30]: Email address
-            - textbox "Email address" [ref=e31]:
-              - /placeholder: admin@example.com
+            - paragraph [ref=e30]: Open
+            - paragraph [ref=e31]: "0"
           - generic [ref=e32]:
-            - generic [ref=e33]: Password
-            - textbox "Password" [ref=e34]:
-              - /placeholder: ••••••••
-          - button "Sign in" [ref=e35]
-  - button "Open Next.js Dev Tools" [ref=e41] [cursor=pointer]:
-    - img [ref=e42]
-  - alert [ref=e46]
+            - paragraph [ref=e33]: High / Critical
+            - paragraph [ref=e34]: "0"
+          - generic [ref=e35]:
+            - paragraph [ref=e36]: Investigating
+            - paragraph [ref=e37]: "0"
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: Resolved this month
+            - paragraph [ref=e40]: "0"
+        - generic [ref=e41]:
+          - textbox "Search description…" [ref=e42]
+          - combobox [ref=e43]:
+            - 'option "Status: All" [selected]'
+            - option "Open"
+            - option "Investigating"
+            - option "Resolved"
+            - option "Closed"
+          - combobox [ref=e44]:
+            - 'option "Severity: All" [selected]'
+            - option "Low"
+            - option "Medium"
+            - option "High"
+            - option "Critical"
+          - combobox [ref=e45]:
+            - 'option "Type: All" [selected]'
+            - option "Fall"
+            - option "Medication error"
+            - option "Safeguarding"
+            - option "Injury"
+            - option "Behaviour"
+            - option "Missed visit"
+            - option "Property damage"
+            - option "Complaint"
+            - option "Other"
+          - button "Search" [ref=e46]
+        - generic [ref=e47]:
+          - img [ref=e49]
+          - paragraph [ref=e51]: No incidents recorded yet
+          - paragraph [ref=e52]: Incidents are created automatically when a carer flags an issue on a visit note, or log one manually using the button above.
+  - button "Open Next.js Dev Tools" [ref=e58] [cursor=pointer]:
+    - img [ref=e59]
+  - alert [ref=e63]
 ```
 
 # Test source
@@ -81,82 +116,69 @@ Received:   0
   1  | /**
   2  |  * tests/smoke/incidents.smoke.ts
   3  |  *
-  4  |  * Smoke test: Incident creation via admin UI.
+  4  |  * Smoke test: Incident list and creation via admin UI.
   5  |  *
-  6  |  * Usage:
-  7  |  *   npx playwright test tests/smoke/incidents.smoke.ts
-  8  |  */
-  9  | 
-  10 | import { test, expect, type Page } from '@playwright/test'
-  11 | 
-  12 | const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
+  6  |  * Auth: loaded from storageState (see playwright.config.ts).
+  7  |  * Each test gets an isolated browser context pre-seeded with the QA admin
+  8  |  * session — no per-test Supabase login needed.
+  9  |  *
+  10 |  * Usage:
+  11 |  *   npx playwright test tests/smoke/incidents.smoke.ts
+  12 |  */
   13 | 
-  14 | async function loginAsQaAdmin(page: Page) {
-  15 |   await page.goto(`${BASE_URL}/admin/login`)
-  16 |   await page.fill('input[type="email"], #email', 'qa-admin@sprintscaleit.co.uk')
-  17 |   await page.fill('input[type="password"], #password', 'ChangeMe123!')
-  18 |   await page.click('button[type="submit"], button:has-text("Sign in"), button:has-text("Login")')
-  19 |   await expect(page).toHaveURL(/\/admin/, { timeout: 10_000 })
-  20 | }
-  21 | 
-  22 | test('Incidents list loads correctly', async ({ page }) => {
-  23 |   await loginAsQaAdmin(page)
-  24 |   await page.goto(`${BASE_URL}/admin/incidents`)
+  14 | import { test, expect } from '@playwright/test'
+  15 | import { expectAdminPage } from './helpers/auth'
+  16 | 
+  17 | test('Incidents list loads correctly', async ({ page }) => {
+  18 |   await expectAdminPage(page, '/admin/incidents')
+  19 | 
+  20 |   await expect(page.locator('h1, h2').first()).toBeVisible()
+  21 | })
+  22 | 
+  23 | test('Incidents list shows QA-seeded incidents', async ({ page }) => {
+  24 |   await expectAdminPage(page, '/admin/incidents')
   25 | 
-  26 |   await expect(page).not.toHaveURL(/error/)
-  27 |   await expect(page.locator('h1, h2').first()).toBeVisible()
-  28 | })
-  29 | 
-  30 | test('Incidents list shows QA-seeded incidents', async ({ page }) => {
-  31 |   await loginAsQaAdmin(page)
-  32 |   await page.goto(`${BASE_URL}/admin/incidents`)
-  33 | 
-  34 |   await page.waitForTimeout(1500)
-  35 |   const qaCount = await page.locator('text=[QA]').count()
-> 36 |   expect(qaCount).toBeGreaterThan(0)
+  26 |   await page.waitForTimeout(1_500)
+  27 |   const qaCount = await page.locator('text=[QA]').count()
+> 28 |   expect(qaCount).toBeGreaterThan(0)
      |                   ^ Error: expect(received).toBeGreaterThan(expected)
-  37 | })
-  38 | 
-  39 | test('Create an incident via admin UI', async ({ page }) => {
-  40 |   await loginAsQaAdmin(page)
-  41 |   await page.goto(`${BASE_URL}/admin/incidents`)
+  29 | })
+  30 | 
+  31 | test('Create an incident via admin UI', async ({ page }) => {
+  32 |   await expectAdminPage(page, '/admin/incidents')
+  33 | 
+  34 |   const newBtn = page.locator(
+  35 |     'a:has-text("New Incident"), a:has-text("Report"), button:has-text("Report"), button:has-text("New Incident")'
+  36 |   ).first()
+  37 | 
+  38 |   if (await newBtn.count() === 0) {
+  39 |     test.skip(true, 'No "New Incident" button found — UI may differ')
+  40 |     return
+  41 |   }
   42 | 
-  43 |   const newBtn = page.locator(
-  44 |     'a:has-text("New Incident"), a:has-text("Report"), button:has-text("Report"), button:has-text("New Incident")'
-  45 |   ).first()
-  46 | 
-  47 |   if (await newBtn.count() === 0) {
-  48 |     test.skip(true, 'No "New Incident" button found — UI may differ')
-  49 |     return
-  50 |   }
-  51 | 
-  52 |   await newBtn.click()
-  53 | 
-  54 |   // Fill description
-  55 |   const descInput = page.locator('textarea[name="description"], #description, textarea').first()
-  56 |   if (await descInput.count() > 0) {
-  57 |     await descInput.fill('[QA] Smoke test incident — auto-generated, safe to delete.')
+  43 |   await newBtn.click()
+  44 | 
+  45 |   const descInput = page.locator('textarea[name="description"], #description, textarea').first()
+  46 |   if (await descInput.count() > 0) {
+  47 |     await descInput.fill('[QA] Smoke test incident — auto-generated, safe to delete.')
+  48 |   }
+  49 | 
+  50 |   const typeSelect = page.locator('select[name="incident_type"], #incident_type').first()
+  51 |   if (await typeSelect.count() > 0) {
+  52 |     await typeSelect.selectOption('fall')
+  53 |   }
+  54 | 
+  55 |   const severitySelect = page.locator('select[name="severity"], #severity').first()
+  56 |   if (await severitySelect.count() > 0) {
+  57 |     await severitySelect.selectOption('low')
   58 |   }
   59 | 
-  60 |   // Select type if available
-  61 |   const typeSelect = page.locator('select[name="incident_type"], #incident_type').first()
-  62 |   if (await typeSelect.count() > 0) {
-  63 |     await typeSelect.selectOption('fall')
-  64 |   }
-  65 | 
-  66 |   // Select severity
-  67 |   const severitySelect = page.locator('select[name="severity"], #severity').first()
-  68 |   if (await severitySelect.count() > 0) {
-  69 |     await severitySelect.selectOption('low')
-  70 |   }
-  71 | 
-  72 |   // Submit
-  73 |   const submitBtn = page.locator('button[type="submit"]').first()
-  74 |   if (await submitBtn.count() > 0) {
-  75 |     await submitBtn.click()
-  76 |     await page.waitForTimeout(2000)
-  77 |     await expect(page).not.toHaveURL(/error/)
-  78 |   }
-  79 | })
-  80 | 
+  60 |   const submitBtn = page.locator('button[type="submit"]').first()
+  61 |   if (await submitBtn.count() > 0) {
+  62 |     await submitBtn.click()
+  63 |     await page.waitForTimeout(2_000)
+  64 |     await expect(page).not.toHaveURL(/error/)
+  65 |   }
+  66 | })
+  67 | 
 ```
