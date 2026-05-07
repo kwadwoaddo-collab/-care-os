@@ -9,6 +9,8 @@ import StaffDocumentUpload       from './StaffDocumentUpload'
 import StaffStatusControl        from './StaffStatusControl'
 import ComplianceReviewSection   from './ComplianceReviewSection'
 import StaffAvailabilitySection  from './StaffAvailabilitySection'
+import PortalInviteButton        from './PortalInviteButton'
+import EditStaffProfileForm      from './EditStaffProfileForm'
 import {
   parseAvailabilityRecord,
   type StaffAvailability,
@@ -432,12 +434,20 @@ export default async function StaffDetailPage({
       </Link>
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">{displayName}</h1>
-          {sp.email && <p className="text-sm text-gray-500 mt-0.5">{sp.email}</p>}
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">{displayName}</h1>
+            {sp.email && <p className="text-sm text-gray-500 mt-0.5">{sp.email}</p>}
+          </div>
+          <Badge status={sp.status} map={STATUS_CLS} />
         </div>
-        <Badge status={sp.status} map={STATUS_CLS} />
+        <div className="flex items-center gap-2">
+          <EditStaffProfileForm staff={sp} />
+          {(sp.status === 'pre_employment' || sp.status === 'active') && (
+            <PortalInviteButton staffProfileId={sp.id} />
+          )}
+        </div>
       </div>
 
       <div className="space-y-4">
