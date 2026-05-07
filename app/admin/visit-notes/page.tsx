@@ -1,10 +1,11 @@
 import VisitNotesTable, { type VisitNoteSummary } from './VisitNotesTable'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getVisitNotes(): Promise<VisitNoteSummary[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/visit-notes`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/visit-notes`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<VisitNoteSummary[]>
 }

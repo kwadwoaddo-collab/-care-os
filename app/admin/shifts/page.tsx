@@ -5,6 +5,7 @@ import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -25,14 +26,14 @@ async function getShifts(
   params: URLSearchParams
 ): Promise<{ data: Shift[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/shifts?${params.toString()}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/shifts?${params.toString()}`, { cache: 'no-store' })
   if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
   return res.json() as Promise<{ data: Shift[]; meta: PaginationMeta }>
 }
 
 async function getReadyStaff(): Promise<ReadyStaff[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/staff`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/staff`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: StaffListItem[]; meta: PaginationMeta }
   return json.data.filter((s) => s.status === 'active' && s.readiness.ready)
@@ -40,7 +41,7 @@ async function getReadyStaff(): Promise<ReadyStaff[]> {
 
 async function getActiveClients(): Promise<ActiveClient[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: (ActiveClient & { status: string })[]; meta: PaginationMeta }
   return json.data.filter((c) => c.status === 'active')

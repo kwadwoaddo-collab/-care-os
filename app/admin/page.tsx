@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { adminClient } from '@/lib/supabase/admin'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -299,10 +300,10 @@ export default async function AdminDashboard() {
       .limit(5),
 
     // Compliance alerts API (complex calculation, reuse existing)
-    fetch(`${BASE}/api/admin/compliance/alerts`, { cache: 'no-store' }),
+    adminFetch(`${BASE}/api/admin/compliance/alerts`, { cache: 'no-store' }),
 
     // Audit log API (reuse existing, last 10)
-    fetch(`${BASE}/api/admin/audit-log`, { cache: 'no-store' }),
+    adminFetch(`${BASE}/api/admin/audit-log`, { cache: 'no-store' }),
   ])
 
   // Parse HTTP responses

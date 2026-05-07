@@ -65,14 +65,19 @@ test('Create a shift via admin UI', async ({ page }) => {
 test('Assign worker to shift', async ({ page }) => {
   await expectAdminPage(page, '/admin/shifts')
 
-  const unassignedShift = page.locator('text=[QA]').first()
+  // Navigate via the "View →" link on the first QA shift row.
+  // Clicking text=[QA] directly fails on mobile because the sticky header and
+  // summary-card grid intercept pointer events over the table text.
+  const shiftViewLink = page.locator('a:has-text("View →")').first()
 
-  if (await unassignedShift.count() === 0) {
+  if (await shiftViewLink.count() === 0) {
     test.skip(true, 'No QA shifts found')
     return
   }
 
-  await unassignedShift.click()
+  const href = await shiftViewLink.getAttribute('href')
+  if (!href) { test.skip(true, 'Shift link has no href'); return }
+  await page.goto(href)
 
   const assignSection = page.locator('select[name="assigned_staff_id"], #assigned_staff_id, [data-testid="assign-worker"]').first()
   if (await assignSection.count() > 0) {

@@ -4,6 +4,7 @@ import Pagination  from '@/components/admin/Pagination'
 import CreateIncidentButton from './CreateIncidentButton'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -70,7 +71,7 @@ async function getIncidents(
   params: URLSearchParams,
 ): Promise<{ data: IncidentRow[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/incidents?${params.toString()}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/incidents?${params.toString()}`, { cache: 'no-store' })
   if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
   return res.json() as Promise<{ data: IncidentRow[]; meta: PaginationMeta }>
 }

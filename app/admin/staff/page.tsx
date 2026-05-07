@@ -5,6 +5,7 @@ import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
+import { adminFetch } from '@/lib/admin/serverFetch'
 
 type SearchParams = Record<string, string | string[] | undefined>
 
@@ -14,14 +15,14 @@ async function getStaff(
   params: URLSearchParams
 ): Promise<{ data: StaffProfileWithCompliance[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/staff?${params.toString()}`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/staff?${params.toString()}`, { cache: 'no-store' })
   if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
   return res.json() as Promise<{ data: StaffProfileWithCompliance[]; meta: PaginationMeta }>
 }
 
 async function getAlerts(): Promise<AlertsResponse | null> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${baseUrl}/api/admin/compliance/alerts`, { cache: 'no-store' })
+  const res = await adminFetch(`${baseUrl}/api/admin/compliance/alerts`, { cache: 'no-store' })
   if (!res.ok) return null
   return res.json() as Promise<AlertsResponse>
 }

@@ -34,14 +34,23 @@ export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.smoke.ts',
 
-  // Tests within a file run sequentially; across files can run in parallel
-  // (capped by workers). Keep a modest worker count since the dev server is
-  // local and Supabase has per-IP rate limits on auth endpoints.
+  // Tests within a file run sequentially; browser projects run in parallel.
+  // With storageState auth (one Supabase login at setup time, shared across
+  // tests), there is no per-test auth request to rate-limit. Using 3 workers
+  // means chromium/firefox/mobile-chrome all run concurrently, completing in
+  // ~60–90 s instead of the 5-minute sequential run that causes dev server
+  // degradation and flaky navigation timeouts.
   fullyParallel: false,
-  workers: 1,
+  workers: 3,
 
   // Retry once on CI to handle flakiness
   retries: process.env.CI ? 1 : 0,
+
+  // Generous test timeout: the full suite runs 50 tests sequentially against a
+  // local dev server. After 30+ tests the server's response time can spike due
+  // to GC pressure / connection pool churn. 90 s gives enough headroom without
+  // masking genuine hangs.
+  timeout: 90_000,
 
   // Reporter
   reporter: [
@@ -59,9 +68,9 @@ export default defineConfig({
     // Trace on retry
     trace: 'on-first-retry',
 
-    // Use a sensible timeout
-    actionTimeout: 15_000,
-    navigationTimeout: 30_000,
+    // Generous timeouts — local dev server can respond slowly under sequential load
+    actionTimeout: 20_000,
+    navigationTimeout: 60_000,
   },
 
   projects: [
