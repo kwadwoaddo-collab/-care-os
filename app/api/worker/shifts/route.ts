@@ -14,11 +14,11 @@ export async function GET(request: NextRequest) {
 
   const { data: shifts, error } = await adminClient
     .from('shifts')
-    .select('id, title, shift_date, start_time, end_time, status, location, client_name, shift_type')
+    .select('id, title, shift_date, start_time, end_time, status, location, client_name, shift_type, worker_ack_status')
     .eq('assigned_staff_id', staffProfileId)
-    .order('shift_date', { ascending: false })
-    .order('start_time', { ascending: false })
-    .limit(50)
+    .order('shift_date', { ascending: true })
+    .order('start_time', { ascending: true })
+    .limit(60)
 
   if (error) {
     console.error('[worker/shifts] fetch error:', error.message)

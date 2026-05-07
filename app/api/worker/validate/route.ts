@@ -11,12 +11,13 @@ export async function GET(request: NextRequest) {
 
   const { worker } = result
   return NextResponse.json({
-    id:         worker.id,
-    first_name: worker.first_name,
-    last_name:  worker.last_name,
-    email:      worker.email,
-    status:     worker.status,
-    job_role:   worker.job_role,
-    start_date: worker.start_date,
+    id:                   worker.id,
+    first_name:           worker.first_name,
+    last_name:            worker.last_name,
+    email:                worker.email,
+    status:               worker.status,
+    job_role:             worker.job_role,
+    start_date:           worker.start_date,
+    onboarding_completed: worker.onboarding_completed,
   })
 }

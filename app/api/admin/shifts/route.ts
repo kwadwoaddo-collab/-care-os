@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       id, company_id, assigned_staff_id, created_by,
       title, shift_date, start_time, end_time,
       location, client_name, client_id, care_package_id, shift_type, status, notes,
+      worker_ack_status,
       created_at, updated_at,
       staff_profiles!assigned_staff_id ( id, first_name, last_name, email ),
       clients!client_id              ( id, first_name, last_name ),

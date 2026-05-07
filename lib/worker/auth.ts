@@ -3,15 +3,16 @@ import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 
 export interface WorkerProfile {
-  id:           string
-  company_id:   string
-  applicant_id: string | null
-  first_name:   string | null
-  last_name:    string | null
-  email:        string | null
-  status:       string
-  job_role:     string | null
-  start_date:   string | null
+  id:                   string
+  company_id:           string
+  applicant_id:         string | null
+  first_name:           string | null
+  last_name:            string | null
+  email:                string | null
+  status:               string
+  job_role:             string | null
+  start_date:           string | null
+  onboarding_completed: boolean
 }
 
 export type ValidateTokenResult =
@@ -29,7 +30,7 @@ export async function validateWorkerToken(
 
   const { data: sp, error } = await adminClient
     .from('staff_profiles')
-    .select('id, company_id, applicant_id, first_name, last_name, email, status, job_role, start_date, portal_token_expires_at')
+    .select('id, company_id, applicant_id, first_name, last_name, email, status, job_role, start_date, onboarding_completed, portal_token_expires_at')
     .eq('portal_token_hash', tokenHash)
     .maybeSingle()
 
@@ -56,15 +57,16 @@ export async function validateWorkerToken(
   return {
     ok: true,
     worker: {
-      id:           sp.id           as string,
-      company_id:   sp.company_id   as string,
-      applicant_id: sp.applicant_id as string | null,
-      first_name:   sp.first_name   as string | null,
-      last_name:    sp.last_name    as string | null,
-      email:        sp.email        as string | null,
-      status:       sp.status       as string,
-      job_role:     sp.job_role     as string | null,
-      start_date:   sp.start_date   as string | null,
+      id:                   sp.id                   as string,
+      company_id:           sp.company_id           as string,
+      applicant_id:         sp.applicant_id         as string | null,
+      first_name:           sp.first_name           as string | null,
+      last_name:            sp.last_name            as string | null,
+      email:                sp.email                as string | null,
+      status:               sp.status               as string,
+      job_role:             sp.job_role             as string | null,
+      start_date:           sp.start_date           as string | null,
+      onboarding_completed: (sp.onboarding_completed as boolean) ?? false,
     },
   }
 }

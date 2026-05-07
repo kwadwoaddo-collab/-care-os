@@ -17,8 +17,9 @@ export interface Shift {
   shift_type:        string | null
   status:            string
   notes:             string | null
-  assigned_staff_id: string | null
-  timesheet_status:  string | null
+  assigned_staff_id:  string | null
+  timesheet_status:   string | null
+  worker_ack_status:  string | null
   staff_profiles:    {
     id:         string
     first_name: string | null
@@ -83,6 +84,12 @@ const TYPE_CLS: Record<string, string> = {
   sleep_in:  'bg-purple-50 text-purple-700 ring-purple-600/20',
   live_in:   'bg-pink-50   text-pink-700   ring-pink-600/20',
   emergency: 'bg-red-50    text-red-700    ring-red-600/20',
+}
+
+const ACK_CLS: Record<string, string> = {
+  accepted:     'bg-green-50  text-green-700  ring-green-600/20',
+  declined:     'bg-red-50    text-red-700    ring-red-600/20',
+  running_late: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
 }
 
 function Badge({ value, map }: { value: string; map: Record<string, string> }) {
@@ -236,6 +243,7 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Worker Ack</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -306,6 +314,13 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
                           <Badge value={shift.timesheet_status} map={TIMESHEET_STATUS_CLS} />
                         )}
                       </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      {shift.worker_ack_status ? (
+                        <Badge value={shift.worker_ack_status} map={ACK_CLS} />
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <VisitNoteButton shiftId={shift.id} />
