@@ -40,6 +40,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </a>
             )}
           </nav>
+          <a
+            href="/admin/logout"
+            className="ml-auto text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            Logout
+          </a>
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>

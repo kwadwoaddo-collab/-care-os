@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { adminClient } from '@/lib/supabase/admin'
 import { unauthorized, forbidden } from '@/lib/auth/responses'
-import { isAdminRole, type Role } from '@/lib/auth/roles'
+import { isAdminRole, normaliseRole, type Role } from '@/lib/auth/roles'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ export async function requireAdmin(): Promise<AdminResult> {
       return { ok: false, response: unauthorized('Profile not found') }
     }
 
-    const role = profile.role as Role
+    const role = normaliseRole(profile.role as string)
 
     if (!isAdminRole(role)) {
       return { ok: false, response: forbidden('Insufficient permissions') }

@@ -4,11 +4,19 @@ import { NextResponse, type NextRequest } from 'next/server'
 // TODO: Remove DEV_BYPASS_AUTH before production deployment.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
+// Paths under /admin that are public (no session required)
+const ADMIN_PUBLIC = new Set(['/admin/login', '/admin/logout'])
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // ── Development: allow all requests through ──────────────────────────────
   if (DEV_BYPASS_AUTH) {
+    return NextResponse.next()
+  }
+
+  // ── Always allow public admin paths (login, logout) ───────────────────────
+  if (ADMIN_PUBLIC.has(pathname)) {
     return NextResponse.next()
   }
 
@@ -39,18 +47,11 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // ── Admin routes: require authenticated user ────────────────────────────
-  if (pathname.startsWith('/admin')) {
-    if (!user) {
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
+  if (!user) {
+    const loginUrl = new URL('/admin/login', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
   }
-
-  // ── Worker API routes: token-based auth handled by route handlers ───────
-  // Worker portal pages (/worker/*) — the client app validates its own token.
-  // Worker API routes (/api/worker/*) use requireWorker() in the handler.
-  // We allow these through middleware and let the handler enforce auth.
 
   return supabaseResponse
 }
