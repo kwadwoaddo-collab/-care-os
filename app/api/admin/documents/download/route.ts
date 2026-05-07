@@ -16,6 +16,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'path query param required' }, { status: 400 })
   }
 
+  // Verify the path belongs to a real document row — prevents signing arbitrary paths
+  const { data: docRow, error: docErr } = await adminClient
+    .from('documents')
+    .select('id')
+    .eq('file_path', filePath)
+    .maybeSingle()
+
+  if (docErr) {
+    console.error('[admin/documents/download] doc lookup error:', docErr.message)
+    return NextResponse.json({ error: 'Failed to verify document' }, { status: 500 })
+  }
+
+  if (!docRow) {
+    return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+  }
+
   // Generate a short-lived signed URL (60 seconds — enough for the browser to start the download)
   const { data, error } = await adminClient.storage
     .from('care-os-documents')

@@ -48,7 +48,7 @@ export default function StaffStatusControl({
   const [localStatus,    setLocalStatus]   = useState(currentStatus)
   const [shiftWarning,   setShiftWarning]  = useState<FutureShiftWarning | null>(null)
 
-  async function doStatusChange(newStatus: string, force = false) {
+  async function doStatusChange(newStatus: string, force = false, unassignShifts = false) {
     setError(null)
     setIssues(null)
 
@@ -57,7 +57,7 @@ export default function StaffStatusControl({
         const res = await fetch(`/api/admin/staff/${staffProfileId}/status`, {
           method:  'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ status: newStatus, force }),
+          body:    JSON.stringify({ status: newStatus, force, unassign_shifts: unassignShifts }),
         })
         const json = await res.json() as {
           error?:              string
@@ -96,11 +96,11 @@ export default function StaffStatusControl({
     void doStatusChange(newStatus, false)
   }
 
-  function confirmStatusChange() {
+  function confirmStatusChange(unassignShifts = false) {
     if (!shiftWarning) return
     const pending = shiftWarning.pendingStatus
     setShiftWarning(null)
-    void doStatusChange(pending, true)
+    void doStatusChange(pending, true, unassignShifts)
   }
 
   return (
@@ -184,20 +184,29 @@ export default function StaffStatusControl({
               (next: {formatDate(shiftWarning.next_shift_date)}).
               Changing their status will not automatically unassign them.
             </p>
-            <div className="flex gap-2 justify-end">
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShiftWarning(null)}
+                  className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => confirmStatusChange(false)}
+                  className="rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
+                >
+                  Continue anyway
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => setShiftWarning(null)}
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                onClick={() => confirmStatusChange(true)}
+                className="w-full rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 text-center"
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmStatusChange}
-                className="rounded-md bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700"
-              >
-                Continue anyway
+                Continue and unassign future shifts
               </button>
             </div>
           </div>

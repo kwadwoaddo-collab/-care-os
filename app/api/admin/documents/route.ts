@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
 
 // TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
-
-const ALLOWED_MIME_TYPES = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-])
-
-const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'])
-
-const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 const DOCUMENT_TYPES = new Set([
   'passport',
@@ -88,26 +76,12 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // ── Validate file size ────────────────────────────────────────────────────
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'File exceeds the 10 MB limit' }, { status: 422 })
+  // ── Validate file ─────────────────────────────────────────────────────────
+  const validation = validateUploadFile(file)
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 422 })
   }
-
-  // ── Validate file type ─────────────────────────────────────────────────────
   const originalName = file.name
-  const ext = originalName.split('.').pop()?.toLowerCase() ?? ''
-  if (!ALLOWED_EXTENSIONS.has(ext)) {
-    return NextResponse.json(
-      { error: `File type .${ext} is not allowed. Allowed: ${[...ALLOWED_EXTENSIONS].join(', ')}` },
-      { status: 422 }
-    )
-  }
-  if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
-    return NextResponse.json(
-      { error: `MIME type ${file.type} is not allowed` },
-      { status: 422 }
-    )
-  }
 
   // ── Fetch applicant for company_id ────────────────────────────────────────
   const { data: applicant, error: applicantError } = await adminClient

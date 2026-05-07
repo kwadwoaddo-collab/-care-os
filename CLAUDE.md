@@ -119,6 +119,14 @@ Forms must:
 
 ---
 
+## Claude Behaviour
+- Do not re-read files already read earlier in the current conversation unless there is reason to believe they changed.
+- Trust in-context file state from earlier in the same session.
+- Do not narrate a "let me read all relevant files first" phase — just start working.
+- Do not repeat analysis or file contents that are already in context.
+
+---
+
 ## Commands
 bash npm run dev npm run build npm run start npm run lint 
 

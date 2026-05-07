@@ -28,8 +28,9 @@ export async function PATCH(
 
   const b = (body && typeof body === 'object') ? (body as Record<string, unknown>) : {}
 
-  const status = b.status
-  const force  = b.force === true
+  const status         = b.status
+  const force          = b.force           === true
+  const unassignShifts = b.unassign_shifts === true
 
   if (typeof status !== 'string' || !ALLOWED_STATUSES.has(status)) {
     return NextResponse.json(
@@ -132,6 +133,45 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update status' }, { status: 500 })
   }
 
+  // ── Optionally unassign future shifts ──────────────────────────────────────
+  let unassignedCount = 0
+  if (unassignShifts) {
+    const today = new Date().toISOString().slice(0, 10)
+    const now   = new Date().toISOString()
+
+    // Revert confirmed → scheduled and clear assignment
+    await adminClient
+      .from('shifts')
+      .update({ assigned_staff_id: null, status: 'scheduled', updated_at: now })
+      .eq('assigned_staff_id', staffProfileId)
+      .gte('shift_date', today)
+      .eq('status', 'confirmed')
+
+    // Clear scheduled shifts
+    const { data: clearedScheduled } = await adminClient
+      .from('shifts')
+      .update({ assigned_staff_id: null, updated_at: now })
+      .eq('assigned_staff_id', staffProfileId)
+      .gte('shift_date', today)
+      .eq('status', 'scheduled')
+      .select('id')
+
+    unassignedCount = clearedScheduled?.length ?? 0
+
+    void adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
+      action:      'staff.future_shifts_unassigned_due_to_status_change',
+      entity_type: 'staff_profile',
+      entity_id:   staffProfileId,
+      metadata: {
+        new_status:       status,
+        unassigned_count: unassignedCount,
+        timestamp:        new Date().toISOString(),
+      },
+    })
+  }
+
   // ── Audit log — status updated (fire-and-forget) ────────────────────────────
   void (async () => {
     try {
@@ -142,9 +182,10 @@ export async function PATCH(
         entity_type: 'staff_profile',
         entity_id:   staffProfileId,
         metadata: {
-          previous_status: staffProfile.status,
-          new_status:      status,
-          timestamp:       new Date().toISOString(),
+          previous_status:  staffProfile.status,
+          new_status:       status,
+          unassigned_count: unassignedCount,
+          timestamp:        new Date().toISOString(),
         },
       })
       if (error) console.error('[staff/status] audit log failed:', error)
@@ -153,5 +194,5 @@ export async function PATCH(
     }
   })()
 
-  return NextResponse.json({ staff_profile: updated })
+  return NextResponse.json({ staff_profile: updated, unassigned_shifts: unassignedCount })
 }

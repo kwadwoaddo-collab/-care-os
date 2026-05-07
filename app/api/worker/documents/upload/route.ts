@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
-
-const ALLOWED_EXTENSIONS = new Set(['pdf', 'jpg', 'jpeg', 'png'])
-const ALLOWED_MIME_TYPES  = new Set([
-  'application/pdf',
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-])
-const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
+import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
 
 const DOCUMENT_TYPES = new Set([
   'passport',
@@ -55,16 +47,9 @@ export async function POST(request: NextRequest) {
       { status: 422 }
     )
   }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'File exceeds the 10 MB limit' }, { status: 422 })
-  }
-
-  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
-  if (!ALLOWED_EXTENSIONS.has(ext)) {
-    return NextResponse.json({ error: `File type .${ext} is not allowed` }, { status: 422 })
-  }
-  if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
-    return NextResponse.json({ error: `MIME type ${file.type} is not allowed` }, { status: 422 })
+  const validation = validateUploadFile(file)
+  if (!validation.valid) {
+    return NextResponse.json({ error: validation.error }, { status: 422 })
   }
 
   const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')

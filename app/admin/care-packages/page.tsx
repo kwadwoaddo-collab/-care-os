@@ -1,4 +1,5 @@
-import CreateCarePackageForm, { type ClientOption } from './CreateCarePackageForm'
+import CreateCarePackageForm, { type ClientOption }  from './CreateCarePackageForm'
+import CarePackageStatusControl                      from './CarePackageStatusControl'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -162,7 +163,10 @@ export default async function CarePackagesPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-900 whitespace-nowrap font-medium">{pkg.title}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <Badge value={pkg.status} map={STATUS_CLS} />
+                      <CarePackageStatusControl
+                        packageId={pkg.id}
+                        currentStatus={pkg.status}
+                      />
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate">
                       {visitSummary(pkg.care_package_visits)}
