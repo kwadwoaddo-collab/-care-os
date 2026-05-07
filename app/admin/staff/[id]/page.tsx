@@ -12,7 +12,9 @@ import StaffAvailabilitySection  from './StaffAvailabilitySection'
 import PortalInviteButton        from './PortalInviteButton'
 import EditStaffProfileForm      from './EditStaffProfileForm'
 import EditHrDetailsForm         from './EditHrDetailsForm'
+import OnboardingChecklist       from './OnboardingChecklist'
 import { calculateHrReadiness }  from '@/lib/staff/calculateHrReadiness'
+import { calculateOnboardingStatus } from '@/lib/staff/calculateOnboardingStatus'
 import {
   parseAvailabilityRecord,
   type StaffAvailability,
@@ -542,6 +544,82 @@ export default async function StaffDetailPage({
 
       <div className="space-y-4">
 
+        {/* ── Onboarding Checklist ────────────────────────────────────────── */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold text-gray-700">Operational Onboarding Checklist</h2>
+              {(() => {
+                const obs = calculateOnboardingStatus({
+                  first_name:              sp.first_name,
+                  last_name:               sp.last_name,
+                  date_of_birth:           sp.date_of_birth,
+                  nationality:             sp.nationality,
+                  address_line_1:          sp.address_line_1,
+                  city:                    sp.city,
+                  postcode:                sp.postcode,
+                  emergency_contact_name:  sp.emergency_contact_name,
+                  emergency_contact_phone: sp.emergency_contact_phone,
+                  ni_number:               sp.ni_number,
+                  employment_type:         sp.employment_type,
+                  starter_declaration:     sp.starter_declaration,
+                  bank_account_number:     sp.bank_account_number,
+                  bank_sort_code:          sp.bank_sort_code,
+                  bank_account_name:       sp.bank_account_name,
+                  right_to_work_checked:   sp.right_to_work_checked,
+                  dbs_checked:             sp.dbs_checked,
+                  dbs_expiry_date:         sp.dbs_expiry_date ?? null,
+                  uploadedDocumentTypes:   documents.map((d) => d.document_type),
+                })
+                return (
+                  <>
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      obs.ready
+                        ? 'bg-green-50 text-green-700 ring-green-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                    }`}>
+                      {obs.ready ? 'Complete' : `${obs.progress}% complete`}
+                    </span>
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      obs.payroll_ready
+                        ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
+                        : 'bg-gray-50 text-gray-500 ring-gray-400/20'
+                    }`}>
+                      {obs.payroll_ready ? '💷 Payroll Ready' : '💷 Not Payroll Ready'}
+                    </span>
+                  </>
+                )
+              })()}
+            </div>
+          </div>
+          <div className="p-4">
+            <OnboardingChecklist
+              staffProfileId={sp.id}
+              staff={{
+                first_name:              sp.first_name,
+                last_name:               sp.last_name,
+                date_of_birth:           sp.date_of_birth,
+                nationality:             sp.nationality,
+                address_line_1:          sp.address_line_1,
+                city:                    sp.city,
+                postcode:                sp.postcode,
+                emergency_contact_name:  sp.emergency_contact_name,
+                emergency_contact_phone: sp.emergency_contact_phone,
+                ni_number:               sp.ni_number,
+                employment_type:         sp.employment_type,
+                starter_declaration:     sp.starter_declaration,
+                bank_account_number:     sp.bank_account_number,
+                bank_sort_code:          sp.bank_sort_code,
+                bank_account_name:       sp.bank_account_name,
+                right_to_work_checked:   sp.right_to_work_checked,
+                dbs_checked:             sp.dbs_checked,
+                dbs_expiry_date:         sp.dbs_expiry_date ?? null,
+                uploadedDocumentTypes:   documents.map((d) => d.document_type),
+              }}
+            />
+          </div>
+        </div>
+
         {/* ── Compliance summary card ─────────────────────────────────────── */}
         <ComplianceCard documents={documents} />
 
@@ -575,7 +653,7 @@ export default async function StaffDetailPage({
         </SectionBox>
 
         {/* ── HR & Payroll ────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div id="hr-section" className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold text-gray-700">HR &amp; Payroll</h2>
@@ -732,7 +810,9 @@ export default async function StaffDetailPage({
         </SectionBox>
 
         {/* ── Upload Document ──────────────────────────────────────────────── */}
-        <StaffDocumentUpload staffProfileId={sp.id} />
+        <div id="documents-section">
+          <StaffDocumentUpload staffProfileId={sp.id} />
+        </div>
 
         {/* ── Documents table ─────────────────────────────────────────────── */}
         <SectionBox title="Documents">
