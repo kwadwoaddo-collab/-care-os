@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
       care_packages!care_package_id  ( id, title )
     `, { count: 'exact' })
     .eq('company_id', companyId)
-    .order('shift_date', { ascending: true })
-    .order('start_time', { ascending: true })
+    .order('created_at', { ascending: false })
+    .order('shift_date',  { ascending: false })
 
   if (status)    query = query.eq('status',     status)
   if (shiftType) query = query.eq('shift_type', shiftType)

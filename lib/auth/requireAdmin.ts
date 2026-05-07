@@ -22,15 +22,31 @@ export type AdminResult =
 // TODO: Remove DEV_BYPASS_AUTH before production deployment.
 const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
-// Dev fallback company — resolved once, cached for the process lifetime
+// Dev fallback company — resolved once per process.
+// Prefers QA company (slug = 'sprintscale-qa') when seeded, so smoke tests
+// always see QA data. Falls back to the first company in the table.
 let _devCompanyId: string | null = null
 
 async function getDevCompanyId(): Promise<string> {
   if (_devCompanyId) return _devCompanyId
 
+  // 1. Prefer the QA company so smoke tests hit QA data
+  const { data: qa } = await adminClient
+    .from('companies')
+    .select('id')
+    .eq('slug', 'sprintscale-qa')
+    .maybeSingle()
+
+  if (qa?.id) {
+    _devCompanyId = qa.id as string
+    return _devCompanyId
+  }
+
+  // 2. Fall back to whichever company exists (ordered for determinism)
   const { data } = await adminClient
     .from('companies')
     .select('id')
+    .order('created_at', { ascending: true })
     .limit(1)
     .maybeSingle()
 

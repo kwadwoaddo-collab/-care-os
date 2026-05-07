@@ -127,6 +127,7 @@ export default function VisitNotesTable({ notes }: { notes: VisitNoteSummary[] }
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift time</th>
@@ -141,6 +142,11 @@ export default function VisitNotesTable({ notes }: { notes: VisitNoteSummary[] }
                   <tr key={note.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                       {note.shifts ? formatDate(note.shifts.shift_date) : formatDate(note.created_at)}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap max-w-[180px]">
+                      <span className="text-xs font-medium text-gray-800 truncate block">
+                        {note.shifts?.title ?? '—'}
+                      </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {note.clients ? (

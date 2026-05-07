@@ -208,6 +208,7 @@ export default async function IncidentsPage({
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -222,6 +223,13 @@ export default async function IncidentsPage({
                     <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                         {formatDate(inc.occurred_at ?? inc.created_at)}
+                      </td>
+                      <td className="px-4 py-3 max-w-[220px]">
+                        <span className="text-xs text-gray-700 line-clamp-2 leading-snug">
+                          {inc.description.length > 80
+                            ? `${inc.description.slice(0, 80)}…`
+                            : inc.description}
+                        </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {inc.clients ? (
