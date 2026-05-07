@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     `)
 
   // ── Filters ───────────────────────────────────────────────────────────────
-  const { status: statusF, severity: severityF, incident_type, client_id, staff_profile_id, search } = sp
+  const { status: statusF, severity: severityF, incident_type, client_id, staff_profile_id, visit_note_id, search } = sp
 
   if (statusF && STATUSES.includes(statusF as typeof STATUSES[number])) {
     countQ = countQ.eq('status', statusF)
@@ -67,6 +67,10 @@ export async function GET(request: NextRequest) {
   if (staff_profile_id) {
     countQ = countQ.eq('staff_profile_id', staff_profile_id)
     dataQ  = dataQ.eq('staff_profile_id', staff_profile_id)
+  }
+  if (visit_note_id) {
+    countQ = countQ.eq('visit_note_id', visit_note_id)
+    dataQ  = dataQ.eq('visit_note_id', visit_note_id)
   }
   if (search) {
     const like = `%${search}%`
@@ -124,8 +128,23 @@ export async function POST(request: NextRequest) {
     follow_up_notes,
   } = body as Record<string, string | boolean | null | undefined>
 
+  // Resolve company_id — use provided value or fall back to first company
+  let resolvedCompanyId = company_id as string | undefined
+  if (!resolvedCompanyId) {
+    const { data: company, error: companyErr } = await adminClient
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .maybeSingle()
+
+    if (companyErr || !company) {
+      console.error('[incidents] no company found:', companyErr?.message)
+      return NextResponse.json({ error: 'No company found' }, { status: 500 })
+    }
+    resolvedCompanyId = company.id as string
+  }
+
   // Validate required fields
-  if (!company_id)     return NextResponse.json({ error: 'company_id is required' },     { status: 400 })
   if (!incident_type)  return NextResponse.json({ error: 'incident_type is required' },  { status: 400 })
   if (!description)    return NextResponse.json({ error: 'description is required' },    { status: 400 })
 
@@ -136,10 +155,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Invalid severity: ${String(severity)}` }, { status: 400 })
   }
 
+  // ── Deduplication: if visit_note_id provided, check for existing incident ──
+  if (visit_note_id) {
+    const { data: existing } = await adminClient
+      .from('incidents')
+      .select('id')
+      .eq('visit_note_id', visit_note_id as string)
+      .maybeSingle()
+
+    if (existing) {
+      return NextResponse.json(
+        { error: 'An incident already exists for this visit note', existing_incident_id: existing.id },
+        { status: 409 },
+      )
+    }
+  }
+
   const { data: incident, error } = await adminClient
     .from('incidents')
     .insert({
-      company_id,
+      company_id:             resolvedCompanyId,
       visit_note_id:          visit_note_id ?? null,
       shift_id:               shift_id ?? null,
       client_id:              client_id ?? null,

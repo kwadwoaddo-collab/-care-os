@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
+import CreateIncidentButton from './CreateIncidentButton'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
 
@@ -121,6 +122,7 @@ export default async function IncidentsPage({
             {meta.total} incident{meta.total !== 1 ? 's' : ''}
           </p>
         </div>
+        <CreateIncidentButton />
       </div>
 
       {/* Summary cards */}
