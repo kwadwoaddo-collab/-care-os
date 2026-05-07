@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { ipRateLimit } from '@/lib/rateLimit'
 
 const DOCUMENT_TYPES = new Set([
   'passport',
@@ -18,6 +19,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // 20 uploads per hour per IP
+  const rl = ipRateLimit(request, 'doc:upload', 20, 60 * 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many uploads — try again later' }, {
+      status: 429,
+      headers: { 'Retry-After': String(Math.ceil(rl.retryAfter / 1000)) },
+    })
+  }
+
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
   const { companyId } = auth.ctx

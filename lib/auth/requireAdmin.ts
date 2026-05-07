@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr'
 import { adminClient } from '@/lib/supabase/admin'
 import { unauthorized, forbidden } from '@/lib/auth/responses'
 import { isAdminRole, normaliseRole, type Role } from '@/lib/auth/roles'
+import { logger } from '@/lib/logger'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -20,10 +21,33 @@ export type AdminResult =
 
 // ── Dev bypass configuration (single source of truth) ─────────────────────────
 // Bypass is opt-in: both NODE_ENV=development AND QA_BYPASS_AUTH=true must be set.
-// Set QA_BYPASS_AUTH=true in .env.local to enable — never in production.
+// Set QA_BYPASS_AUTH=true in .env.local to enable — NEVER in production.
+//
+// Production guard: if this code path is somehow reached with NODE_ENV=production,
+// throw immediately rather than silently granting access.
+
+function validateBypassSafety(): void {
+  if (process.env.NODE_ENV === 'production') {
+    // This should be unreachable — shouldBypassAuth is false in production.
+    // If we are here, something is seriously wrong.
+    throw new Error(
+      '[requireAdmin] CRITICAL: auth bypass attempted in production. ' +
+      'QA_BYPASS_AUTH must never be active when NODE_ENV=production.'
+    )
+  }
+  logger.warn('[requireAdmin] QA_BYPASS_AUTH is active — dev context returned', {
+    note: 'This MUST NOT be enabled in production or Vercel env vars.',
+  })
+}
+
 const shouldBypassAuth =
   process.env.NODE_ENV === 'development' &&
   process.env.QA_BYPASS_AUTH === 'true'
+
+if (shouldBypassAuth) {
+  // Emit the warning once at module-load time so it appears in dev server logs.
+  logger.warn('[requireAdmin] QA auth bypass is ENABLED (NODE_ENV=development, QA_BYPASS_AUTH=true)')
+}
 
 // Dev fallback company — resolved once per process.
 // Prefers QA company (slug = 'sprintscale-qa') when seeded, so smoke tests
@@ -33,7 +57,6 @@ let _devCompanyId: string | null = null
 async function getDevCompanyId(): Promise<string> {
   if (_devCompanyId) return _devCompanyId
 
-  // 1. Prefer the QA company so smoke tests hit QA data
   const { data: qa } = await adminClient
     .from('companies')
     .select('id')
@@ -45,7 +68,6 @@ async function getDevCompanyId(): Promise<string> {
     return _devCompanyId
   }
 
-  // 2. Fall back to whichever company exists (ordered for determinism)
   const { data } = await adminClient
     .from('companies')
     .select('id')
@@ -72,6 +94,7 @@ async function getDevCompanyId(): Promise<string> {
 export async function requireAdmin(): Promise<AdminResult> {
   // ── QA bypass (opt-in: NODE_ENV=development + QA_BYPASS_AUTH=true) ──────────
   if (shouldBypassAuth) {
+    validateBypassSafety()   // throws in production; logs warning in dev
     const companyId = await getDevCompanyId()
     return {
       ok: true,
@@ -111,7 +134,6 @@ export async function requireAdmin(): Promise<AdminResult> {
       return { ok: false, response: unauthorized() }
     }
 
-    // Fetch profile for role + company_id
     const { data: profile, error: profileError } = await adminClient
       .from('profiles')
       .select('company_id, role')
@@ -137,17 +159,13 @@ export async function requireAdmin(): Promise<AdminResult> {
       },
     }
   } catch (err) {
-    console.error('[requireAdmin] unexpected error:', err)
+    logger.error('[requireAdmin] unexpected error', { error: String(err) })
     return { ok: false, response: unauthorized() }
   }
 }
 
 // ── Audit log helper ────────────────────────────────────────────────────────
 
-/**
- * Build consistent audit log fields from admin context.
- * Matches the audit_logs table schema: actor_id, company_id.
- */
 export function auditMeta(ctx: AdminContext) {
   return {
     actor_id:   ctx.userId,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { sendNotification } from '@/lib/notifications/sendNotification'
+import { ipRateLimit } from '@/lib/rateLimit'
 import {
   getPaginationParams,
   getRange,
@@ -103,6 +104,15 @@ export async function GET(request: NextRequest) {
 // ── POST /api/admin/incidents ─────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  // 10 incident creations per minute per IP
+  const rl = ipRateLimit(request, 'incidents:create', 10, 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, {
+      status: 429,
+      headers: { 'Retry-After': String(Math.ceil(rl.retryAfter / 1000)) },
+    })
+  }
+
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
   const { companyId } = auth.ctx

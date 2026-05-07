@@ -16,10 +16,11 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await adminClient
     .from('interviews')
-    .select('*')
+    .select('id, applicant_id, company_id, scheduled_at, interview_type, status, notes, score, recommendation, created_at')
     .eq('applicant_id', applicantId)
     .eq('company_id', companyId)
     .order('scheduled_at', { ascending: false })
+    .limit(50)
 
   if (error) {
     console.error('[admin/interviews] fetch failed:', error)

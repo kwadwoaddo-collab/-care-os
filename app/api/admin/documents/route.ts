@@ -29,10 +29,11 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await adminClient
     .from('documents')
-    .select('*')
+    .select('id, applicant_id, staff_profile_id, company_id, document_type, file_name, file_path, file_size, mime_type, expiry_date, created_at')
     .eq('applicant_id', applicantId)
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
+    .limit(100)
 
   if (error) {
     console.error('[admin/documents] fetch failed:', error)

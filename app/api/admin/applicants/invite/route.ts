@@ -3,8 +3,18 @@ import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 import { sendInviteEmail } from '@/lib/email/resend'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { ipRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
+  // 5 invites per 10 minutes per IP — prevents email spam
+  const rl = ipRateLimit(request, 'applicant:invite', 5, 10 * 60_000)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many invitations sent — try again later' }, {
+      status: 429,
+      headers: { 'Retry-After': String(Math.ceil(rl.retryAfter / 1000)) },
+    })
+  }
+
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
   const { companyId, userId } = auth.ctx
