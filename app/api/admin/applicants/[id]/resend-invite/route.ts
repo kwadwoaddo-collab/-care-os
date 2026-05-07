@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 import { sendInviteEmail } from '@/lib/email/resend'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const TERMINAL_STATUSES = ['hired', 'rejected', 'withdrawn']
 
@@ -12,24 +10,9 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Resolve admin profile for audit log
-  const { data: profile, error: profileError } = await adminClient
-    .from('profiles')
-    .select('id, role, company_id')
-    .eq('role', 'admin')
-    .limit(1)
-    .maybeSingle()
-
-  if (profileError || !profile) {
-    return NextResponse.json(
-      { error: 'Dev bypass: no admin profile found in database' },
-      { status: 500 }
-    )
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -38,7 +21,7 @@ export async function POST(
     .from('applicants')
     .select('id, email, first_name, last_name, job_role, status, company_id, form_responses(status)')
     .eq('id', id)
-    .eq('company_id', profile.company_id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchError) {
@@ -85,9 +68,9 @@ export async function POST(
   const magicLink = `${appUrl}/portal/apply?token=${rawToken}`
 
   // Audit log — fire-and-forget
-  adminClient.from('audit_logs').insert({
-    company_id:  profile.company_id,
-    actor_id:    profile.id,
+  void adminClient.from('audit_logs').insert({
+    company_id:  companyId,
+    actor_id:    auth.ctx.userId,
     action:      'applicant.invite_resent',
     entity_type: 'applicant',
     entity_id:   applicant.id,

@@ -1,3 +1,4 @@
+import 'server-only'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 

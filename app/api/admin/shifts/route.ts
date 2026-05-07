@@ -7,16 +7,14 @@ import {
 import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── GET /api/admin/shifts ─────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const sp         = request.nextUrl.searchParams
   const search     = sp.get('search')     ?? ''
@@ -38,6 +36,7 @@ export async function GET(request: NextRequest) {
       clients!client_id              ( id, first_name, last_name ),
       care_packages!care_package_id  ( id, title )
     `, { count: 'exact' })
+    .eq('company_id', companyId)
     .order('shift_date', { ascending: true })
     .order('start_time', { ascending: true })
 
@@ -105,9 +104,9 @@ interface CreateShiftBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: CreateShiftBody
   try {
@@ -247,10 +246,11 @@ export async function POST(request: NextRequest) {
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'shift.created',
       entity_type: 'shift',
       entity_id:   shift.id,
-      actor:       'admin',
       metadata:    { title, shift_date, assigned_staff_id, is_overnight },
     })
   } catch { /* non-critical */ }

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { searchParams } = new URL(request.url)
   const filePath = searchParams.get('path')
@@ -16,11 +14,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'path query param required' }, { status: 400 })
   }
 
-  // Verify the path belongs to a real document row — prevents signing arbitrary paths
+  // Verify the path belongs to a real document row owned by this company
   const { data: docRow, error: docErr } = await adminClient
     .from('documents')
-    .select('id')
+    .select('id, company_id')
     .eq('file_path', filePath)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (docErr) {

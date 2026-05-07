@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── GET /api/admin/visit-notes ────────────────────────────────────────────────
 // Supports ?client_id=xxx and ?staff_profile_id=xxx for filtering.
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { searchParams } = request.nextUrl
   const clientId        = searchParams.get('client_id')
@@ -24,6 +22,7 @@ export async function GET(request: NextRequest) {
       clients!client_id ( id, first_name, last_name ),
       staff_profiles!staff_profile_id ( id, first_name, last_name )
     `)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -47,9 +46,9 @@ interface CreateBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: CreateBody
   try {
@@ -68,6 +67,7 @@ export async function POST(request: NextRequest) {
     .from('shifts')
     .select('id, company_id, client_id, assigned_staff_id')
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (shiftErr || !shift) {
@@ -112,10 +112,11 @@ export async function POST(request: NextRequest) {
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'visit_note.created',
       entity_type: 'visit_note',
       entity_id:   note.id,
-      actor:       'admin',
       metadata:    { shift_id: shiftId },
     })
   } catch { /* non-critical */ }

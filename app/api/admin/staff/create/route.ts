@@ -1,30 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const VALID_STATUSES = ['pre_employment', 'active', 'suspended', 'inactive'] as const
 type StaffStatus = (typeof VALID_STATUSES)[number]
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: profile, error: profileError } = await adminClient
-    .from('profiles')
-    .select('id, role, company_id')
-    .eq('role', 'admin')
-    .limit(1)
-    .maybeSingle()
-
-  if (profileError || !profile) {
-    return NextResponse.json(
-      { error: 'Dev bypass: no admin profile found in database' },
-      { status: 500 }
-    )
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: Record<string, unknown>
   try {
@@ -62,7 +46,7 @@ export async function POST(request: NextRequest) {
   const { data: existing } = await adminClient
     .from('staff_profiles')
     .select('id')
-    .eq('company_id', profile.company_id)
+    .eq('company_id', companyId)
     .eq('email', normalizedEmail)
     .maybeSingle()
 
@@ -80,7 +64,7 @@ export async function POST(request: NextRequest) {
   const { data: created, error: insertError } = await adminClient
     .from('staff_profiles')
     .insert({
-      company_id:   profile.company_id,
+      company_id:   companyId,
       applicant_id: null,
       first_name:   (first_name as string).trim(),
       last_name:    (last_name as string).trim(),
@@ -99,9 +83,9 @@ export async function POST(request: NextRequest) {
   }
 
   // Audit log — fire-and-forget
-  adminClient.from('audit_logs').insert({
-    company_id:  profile.company_id,
-    actor_id:    profile.id,
+  void adminClient.from('audit_logs').insert({
+    company_id:  companyId,
+    actor_id:    auth.ctx.userId,
     action:      'staff.created_directly',
     entity_type: 'staff_profile',
     entity_id:   created.id,

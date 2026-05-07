@@ -6,13 +6,11 @@ import {
 } from '@/lib/compliance/calculateCompliance'
 import { parseAvailabilityRecord }   from '@/lib/staff/types'
 import { calculateReadiness }        from '@/lib/staff/calculateReadiness'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import {
   calculateAssignmentScore,
   type ExistingShiftInput,
 } from '@/lib/shifts/calculateAssignmentScore'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 // ── GET /api/admin/shifts/[id]/recommendations ────────────────────────────────
 
@@ -20,9 +18,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id: shiftId } = await params
 
@@ -31,6 +29,7 @@ export async function GET(
     .from('shifts')
     .select('id, company_id, shift_date, start_time, end_time, shift_type, client_id')
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (shiftErr || !shift) {
@@ -41,7 +40,7 @@ export async function GET(
   const { data: staffList, error: staffErr } = await adminClient
     .from('staff_profiles')
     .select('id, first_name, last_name, email, status, applicant_id, company_id')
-    .eq('company_id', shift.company_id as string)
+    .eq('company_id', companyId)
     .eq('status', 'active')
 
   if (staffErr) {

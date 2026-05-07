@@ -7,11 +7,9 @@ import {
 import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 // ── PATCH /api/admin/shifts/[id]/assign ───────────────────────────────────────
 
@@ -19,9 +17,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id: shiftId } = await params
 
@@ -42,6 +40,7 @@ export async function PATCH(
     .from('shifts')
     .select('id, company_id, shift_date, start_time, end_time, shift_type, client_id, status, assigned_staff_id')
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (shiftErr || !shift) {
@@ -61,6 +60,7 @@ export async function PATCH(
     .from('staff_profiles')
     .select('id, company_id, status, applicant_id')
     .eq('id', staffProfileId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (staffErr || !staffData) {
@@ -159,6 +159,7 @@ export async function PATCH(
       updated_at:        new Date().toISOString(),
     })
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -173,10 +174,11 @@ export async function PATCH(
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'shift.assigned',
       entity_type: 'shift',
       entity_id:   shiftId,
-      actor:       'admin',
       metadata:    {
         staff_profile_id: staffProfileId,
         shift_date:       shift.shift_date,

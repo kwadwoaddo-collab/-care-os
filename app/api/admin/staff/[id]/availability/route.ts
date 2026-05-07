@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { parseAvailabilityRecord, type StaffAvailability } from '@/lib/staff/types'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -13,11 +11,23 @@ export async function GET(
   _request: NextRequest,
   { params }: RouteParams
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
+
+  // Verify staff profile belongs to this company before returning availability
+  const { data: spCheck } = await adminClient
+    .from('staff_profiles')
+    .select('id')
+    .eq('id', id)
+    .eq('company_id', companyId)
+    .maybeSingle()
+
+  if (!spCheck) {
+    return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  }
 
   const { data, error } = await adminClient
     .from('staff_availability')
@@ -47,9 +57,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: RouteParams
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -60,12 +70,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  // Fetch company_id for audit log
+  // Verify ownership and fetch company_id for audit log
   const { data: sp } = await adminClient
     .from('staff_profiles')
     .select('company_id')
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
+
+  if (!sp) {
+    return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  }
 
   const upsertPayload = {
     staff_profile_id:     id,

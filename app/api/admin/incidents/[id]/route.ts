@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const
 const STATUSES   = ['open', 'investigating', 'resolved', 'closed'] as const
@@ -19,9 +17,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -35,6 +33,7 @@ export async function GET(
       visit_notes!visit_note_id    ( id, status, incident_notes, created_at )
     `)
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (error) {
@@ -53,9 +52,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -89,6 +88,7 @@ export async function PATCH(
       .from('incidents')
       .select('resolved_at')
       .eq('id', id)
+      .eq('company_id', companyId)
       .maybeSingle()
 
     if (existing && !existing.resolved_at) {
@@ -100,6 +100,7 @@ export async function PATCH(
     .from('incidents')
     .update(updates)
     .eq('id', id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -114,10 +115,11 @@ export async function PATCH(
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'incident.updated',
       entity_type: 'incident',
       entity_id:   id,
-      actor:       'admin',
       metadata:    updates,
     })
   } catch { /* non-critical */ }

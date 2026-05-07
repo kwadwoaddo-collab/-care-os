@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 import {
   getPaginationParams,
   getRange,
   buildPaginationMeta,
 } from '@/lib/pagination'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
 
 const INCIDENT_TYPES = [
   'fall', 'medication_error', 'safeguarding', 'injury',
@@ -20,9 +18,9 @@ const STATUSES   = ['open', 'investigating', 'resolved', 'closed'] as const
 // ── GET /api/admin/incidents ──────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const sp   = Object.fromEntries(request.nextUrl.searchParams.entries())
   const { page, pageSize } = getPaginationParams(sp)
@@ -44,6 +42,10 @@ export async function GET(request: NextRequest) {
       clients!client_id            ( id, first_name, last_name ),
       staff_profiles!staff_profile_id ( id, first_name, last_name )
     `)
+
+  // ── Company isolation ──────────────────────────────────────────────────────
+  countQ = countQ.eq('company_id', companyId)
+  dataQ  = dataQ.eq('company_id', companyId)
 
   // ── Filters ───────────────────────────────────────────────────────────────
   const { status: statusF, severity: severityF, incident_type, client_id, staff_profile_id, visit_note_id, search } = sp
@@ -100,9 +102,9 @@ export async function GET(request: NextRequest) {
 // ── POST /api/admin/incidents ─────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: Record<string, unknown>
   try {
@@ -128,22 +130,6 @@ export async function POST(request: NextRequest) {
     follow_up_notes,
   } = body as Record<string, string | boolean | null | undefined>
 
-  // Resolve company_id — use provided value or fall back to first company
-  let resolvedCompanyId = company_id as string | undefined
-  if (!resolvedCompanyId) {
-    const { data: company, error: companyErr } = await adminClient
-      .from('companies')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
-
-    if (companyErr || !company) {
-      console.error('[incidents] no company found:', companyErr?.message)
-      return NextResponse.json({ error: 'No company found' }, { status: 500 })
-    }
-    resolvedCompanyId = company.id as string
-  }
-
   // Validate required fields
   if (!incident_type)  return NextResponse.json({ error: 'incident_type is required' },  { status: 400 })
   if (!description)    return NextResponse.json({ error: 'description is required' },    { status: 400 })
@@ -161,6 +147,7 @@ export async function POST(request: NextRequest) {
       .from('incidents')
       .select('id')
       .eq('visit_note_id', visit_note_id as string)
+      .eq('company_id', companyId)
       .maybeSingle()
 
     if (existing) {
@@ -174,7 +161,7 @@ export async function POST(request: NextRequest) {
   const { data: incident, error } = await adminClient
     .from('incidents')
     .insert({
-      company_id:             resolvedCompanyId,
+      company_id:             companyId,
       visit_note_id:          visit_note_id ?? null,
       shift_id:               shift_id ?? null,
       client_id:              client_id ?? null,
@@ -204,10 +191,11 @@ export async function POST(request: NextRequest) {
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'incident.created',
       entity_type: 'incident',
       entity_id:   incident.id,
-      actor:       'admin',
       metadata:    { incident_type, severity: severity ?? 'medium', client_id, staff_profile_id },
     })
   } catch { /* non-critical */ }

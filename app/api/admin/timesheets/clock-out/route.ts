@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { calculateWorkedMinutes } from '@/lib/timesheets/calculateWorkedMinutes'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 interface ClockOutBody {
   shift_id:         string
@@ -11,9 +9,9 @@ interface ClockOutBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: ClockOutBody
   try {
@@ -36,6 +34,7 @@ export async function POST(request: NextRequest) {
     .select('id, clock_in, break_minutes, status')
     .eq('shift_id', shift_id)
     .eq('staff_profile_id', staff_profile_id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchErr || !timesheet) {
@@ -67,6 +66,7 @@ export async function POST(request: NextRequest) {
       updated_at:     now.toISOString(),
     })
     .eq('id', timesheet.id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -78,10 +78,11 @@ export async function POST(request: NextRequest) {
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'timesheet.clocked_out',
       entity_type: 'timesheet',
       entity_id:   timesheet.id,
-      actor:       'admin',
       metadata:    { shift_id, staff_profile_id, worked_minutes: workedMinutes },
     })
   } catch { /* non-critical */ }

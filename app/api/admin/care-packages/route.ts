@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── GET /api/admin/care-packages ──────────────────────────────────────────────
 
 export async function GET() {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { data, error } = await adminClient
     .from('care_packages')
@@ -20,6 +19,7 @@ export async function GET() {
       care_package_visits ( id, day_of_week, start_time, end_time, shift_type,
         requires_driver, requires_double_up, notes )
     `)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -60,9 +60,9 @@ interface CreateCarePackageBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: CreateCarePackageBody
   try {
@@ -143,10 +143,11 @@ export async function POST(request: NextRequest) {
 
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'care_package.created',
       entity_type: 'care_package',
       entity_id:   pkg.id,
-      actor:       'admin',
       metadata:    { title, client_id, visit_count: body.visits?.length ?? 0 },
     })
   } catch { /* non-critical */ }

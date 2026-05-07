@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const ALLOWED_STATUSES = new Set(['active', 'paused', 'ended', 'draft'])
 const RESTRICTIVE      = new Set(['paused', 'ended'])
@@ -11,9 +9,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id: packageId } = await params
 
@@ -41,6 +39,7 @@ export async function PATCH(
     .from('care_packages')
     .select('id, company_id, status, title')
     .eq('id', packageId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (pkgErr) {
@@ -51,7 +50,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'Care package not found' }, { status: 404 })
   }
 
-  const companyId = pkg.company_id as string
 
   // Warn if changing to paused/ended and there are future unassigned scheduled shifts
   if (RESTRICTIVE.has(status) && !force) {
@@ -80,6 +78,7 @@ export async function PATCH(
     .from('care_packages')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', packageId)
+    .eq('company_id', companyId)
     .select()
     .single()
 

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -11,9 +10,9 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -25,6 +24,7 @@ export async function POST(
       care_package_visits ( id, day_of_week, start_time, end_time, shift_type )
     `)
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (pkgErr || !pkg) {
@@ -130,10 +130,11 @@ export async function POST(
 
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'care_package.shifts_generated',
       entity_type: 'care_package',
       entity_id:   id,
-      actor:       'admin',
       metadata:    { created: toInsert.length },
     })
   } catch { /* non-critical */ }

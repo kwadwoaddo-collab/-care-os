@@ -3,9 +3,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import { buildComplianceSnapshot } from '@/lib/compliance/buildComplianceSnapshot'
 import type { ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import { WARNING_DAYS, NOTICE_DAYS } from '@/lib/compliance/reminderThresholds'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,9 +77,9 @@ function expirySeverity(expiryDate: string | null): 'warning' | 'notice' {
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function GET() {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   // ── Fetch all staff profiles ───────────────────────────────────────────────
   const { data: staff, error: staffError } = await adminClient

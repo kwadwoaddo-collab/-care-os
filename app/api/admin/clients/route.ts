@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
-
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── GET /api/admin/clients ────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const sp          = request.nextUrl.searchParams
   const search      = sp.get('search')       ?? ''
@@ -21,6 +20,7 @@ export async function GET(request: NextRequest) {
   let query = adminClient
     .from('clients')
     .select('*', { count: 'exact' })
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (status)      query = query.eq('status',       status)
@@ -72,9 +72,9 @@ interface CreateClientBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: CreateClientBody
   try {
@@ -92,26 +92,10 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Resolve company_id — use provided value or fall back to first company
-  let company_id = body.company_id
-  if (!company_id) {
-    const { data: company, error: companyErr } = await adminClient
-      .from('companies')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
-
-    if (companyErr || !company) {
-      console.error('[admin/clients] no company found:', companyErr?.message)
-      return NextResponse.json({ error: 'No company found' }, { status: 500 })
-    }
-    company_id = company.id as string
-  }
-
   const { data: client, error: insertErr } = await adminClient
     .from('clients')
     .insert({
-      company_id,
+      company_id: companyId,
       first_name,
       last_name,
       preferred_name:                 body.preferred_name                 ?? null,
@@ -145,10 +129,11 @@ export async function POST(request: NextRequest) {
 
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'client.created',
       entity_type: 'client',
       entity_id:   client.id,
-      actor:       'admin',
       metadata:    { first_name, last_name },
     })
   } catch { /* non-critical */ }

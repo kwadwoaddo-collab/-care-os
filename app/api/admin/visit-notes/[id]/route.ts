@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const PATCH_ALLOWED = [
   'wellbeing_notes', 'care_tasks_completed', 'medication_prompted', 'medication_notes',
@@ -18,9 +16,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -33,6 +31,7 @@ export async function GET(
       staff_profiles!staff_profile_id ( id, first_name, last_name )
     `)
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (error) {
@@ -51,9 +50,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -62,6 +61,7 @@ export async function PATCH(
     .from('visit_notes')
     .select('id, status')
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchErr || !existing) {
@@ -91,6 +91,7 @@ export async function PATCH(
     .from('visit_notes')
     .update(updates)
     .eq('id', id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -105,10 +106,11 @@ export async function PATCH(
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'visit_note.updated',
       entity_type: 'visit_note',
       entity_id:   id,
-      actor:       'admin',
       metadata:    updates,
     })
   } catch { /* non-critical */ }

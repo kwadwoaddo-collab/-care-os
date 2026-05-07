@@ -2,44 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 import { sendInviteEmail } from '@/lib/email/resend'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function POST(request: NextRequest) {
-  // -------------------------------------------------------------------------
-  // AUTH — temporarily bypassed for local development
-  // To restore: remove the DEV_BYPASS_AUTH block, uncomment the section below,
-  // and add `import { createClient } from '@/lib/supabase/server'`
-  // -------------------------------------------------------------------------
-
-  // const supabase = await createClient()
-  // const { data: { user }, error: authError } = await supabase.auth.getUser()
-  // if (authError || !user) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  // }
-
-  let profile: { role: string; company_id: string; id: string } | null = null
-
-  if (DEV_BYPASS_AUTH) {
-    const { data, error } = await adminClient
-      .from('profiles')
-      .select('id, role, company_id')
-      .eq('role', 'admin')
-      .limit(1)
-      .maybeSingle()
-
-    if (error || !data) {
-      return NextResponse.json(
-        { error: 'Dev bypass: no admin profile found in database' },
-        { status: 500 }
-      )
-    }
-
-    profile = data
-  } else {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId, userId } = auth.ctx
 
   // Parse body
   let body: Record<string, unknown>
@@ -80,7 +48,7 @@ export async function POST(request: NextRequest) {
   const { data: existing } = await adminClient
     .from('applicants')
     .select('id, status')
-    .eq('company_id', profile.company_id)
+    .eq('company_id', companyId)
     .eq('email', normalizedEmail)
     .maybeSingle()
 
@@ -109,14 +77,14 @@ export async function POST(request: NextRequest) {
     .from('applicants')
     .upsert(
       {
-        company_id:       profile.company_id,
+        company_id:       companyId,
         email:            normalizedEmail,
         first_name:       (first_name as string).trim(),
         last_name:        (last_name as string).trim(),
         phone:            phone ? (phone as string).trim() : null,
         job_role:         (job_role as string).trim(),
         status:           'applied' as const,
-        invited_by:       profile.id,
+        invited_by:       userId,
         token_hash:       tokenHash,
         token_expires_at: tokenExpiresAt,
       },
@@ -132,8 +100,8 @@ export async function POST(request: NextRequest) {
 
   // Audit log — fire-and-forget
   adminClient.from('audit_logs').insert({
-    company_id:  profile.company_id,
-    actor_id:    profile.id,
+    company_id:  companyId,
+    actor_id:    userId,
     action:      'applicant.invited',
     entity_type: 'applicant',
     entity_id:   applicant.id,
@@ -156,8 +124,8 @@ export async function POST(request: NextRequest) {
   }).then((result) => {
     if (result.success) {
       adminClient.from('audit_logs').insert({
-        company_id:  profile!.company_id,
-        actor_id:    profile!.id,
+        company_id:  companyId,
+        actor_id:    userId,
         action:      'applicant.invite_email_sent',
         entity_type: 'applicant',
         entity_id:   applicant.id,
@@ -166,8 +134,8 @@ export async function POST(request: NextRequest) {
     } else {
       console.error('[invite-applicant] email send failed:', result.error)
       adminClient.from('audit_logs').insert({
-        company_id:  profile!.company_id,
-        actor_id:    profile!.id,
+        company_id:  companyId,
+        actor_id:    userId,
         action:      'applicant.invite_email_failed',
         entity_type: 'applicant',
         entity_id:   applicant.id,

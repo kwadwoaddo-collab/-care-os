@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function PATCH(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id: shiftId } = await params
 
@@ -18,6 +16,7 @@ export async function PATCH(
     .from('shifts')
     .select('id, company_id, assigned_staff_id, status, shift_date')
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (shiftErr || !shift) {
@@ -47,6 +46,7 @@ export async function PATCH(
       updated_at:        new Date().toISOString(),
     })
     .eq('id', shiftId)
+    .eq('company_id', companyId)
     .select()
     .single()
 

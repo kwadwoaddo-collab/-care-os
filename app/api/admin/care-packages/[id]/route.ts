@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const ALLOWED_STATUSES = ['active', 'paused', 'ended', 'draft'] as const
 
@@ -11,9 +10,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -28,6 +27,7 @@ export async function GET(
       )
     `)
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (error) {
@@ -71,9 +71,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -104,6 +104,7 @@ export async function PATCH(
     .from('care_packages')
     .update(updates)
     .eq('id', id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -137,10 +138,11 @@ export async function PATCH(
 
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'care_package.updated',
       entity_type: 'care_package',
       entity_id:   id,
-      actor:       'admin',
       metadata:    updates,
     })
   } catch { /* non-critical */ }

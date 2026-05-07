@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 // ── POST /api/admin/visit-notes/[id]/submit ───────────────────────────────────
 
@@ -10,9 +8,9 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -20,6 +18,7 @@ export async function POST(
     .from('visit_notes')
     .select('id, status, company_id, shift_id, client_id, staff_profile_id, incident_reported, incident_notes')
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchErr || !existing) {
@@ -39,6 +38,7 @@ export async function POST(
     .from('visit_notes')
     .update({ status: 'submitted', submitted_at: now, updated_at: now })
     .eq('id', id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -93,10 +93,11 @@ export async function POST(
 
         if (incident) {
           await adminClient.from('audit_logs').insert({
+            company_id:  companyId,
+            actor_id:    null,
             action:      'incident.created_from_visit_note',
             entity_type: 'incident',
             entity_id:   incident.id,
-            actor:       'system',
             metadata:    { visit_note_id: id, shift_id: existing.shift_id },
           })
         }
@@ -110,10 +111,11 @@ export async function POST(
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'visit_note.submitted',
       entity_type: 'visit_note',
       entity_id:   id,
-      actor:       'admin',
       metadata:    { submitted_at: now },
     })
   } catch { /* non-critical */ }

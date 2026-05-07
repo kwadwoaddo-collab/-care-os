@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 interface ClockInBody {
   shift_id:         string
@@ -10,9 +8,9 @@ interface ClockInBody {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   let body: ClockInBody
   try {
@@ -34,6 +32,7 @@ export async function POST(request: NextRequest) {
     .from('shifts')
     .select('id, company_id, shift_date, start_time')
     .eq('id', shift_id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (shiftErr || !shift) {
@@ -105,10 +104,11 @@ export async function POST(request: NextRequest) {
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'timesheet.clocked_in',
       entity_type: 'timesheet',
       entity_id:   timesheet.id,
-      actor:       'admin',
       metadata:    { shift_id, staff_profile_id, lateness_minutes: latenessMinutes },
     })
   } catch { /* non-critical */ }

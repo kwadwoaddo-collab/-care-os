@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { searchParams } = new URL(request.url)
   const action    = searchParams.get('action')    ?? ''
@@ -16,6 +14,7 @@ export async function GET(request: NextRequest) {
   let query = adminClient
     .from('audit_logs')
     .select('id, created_at, action, actor_id, entity_type, entity_id, metadata')
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
     .limit(200)
 

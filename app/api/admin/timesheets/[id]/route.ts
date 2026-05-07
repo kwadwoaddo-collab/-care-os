@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { calculateWorkedMinutes } from '@/lib/timesheets/calculateWorkedMinutes'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const ALLOWED_STATUSES = ['pending', 'clocked_in', 'completed', 'missed', 'adjusted'] as const
 type TimesheetStatus = typeof ALLOWED_STATUSES[number]
@@ -18,9 +16,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -43,6 +41,7 @@ export async function PATCH(
     .from('timesheets')
     .select('clock_in, clock_out, break_minutes')
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchErr || !current) {
@@ -76,6 +75,7 @@ export async function PATCH(
     .from('timesheets')
     .update(updates)
     .eq('id', id)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -87,10 +87,11 @@ export async function PATCH(
   // ── Audit log ──────────────────────────────────────────────────────────────
   try {
     await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
       action:      'timesheet.adjusted',
       entity_type: 'timesheet',
       entity_id:   id,
-      actor:       'admin',
       metadata:    updates,
     })
   } catch { /* non-critical */ }

@@ -8,14 +8,12 @@ import {
 import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const sp         = request.nextUrl.searchParams
   const search     = sp.get('search')     ?? ''
@@ -28,6 +26,7 @@ export async function GET(request: NextRequest) {
   let query = adminClient
     .from('staff_profiles')
     .select('id, first_name, last_name, email, job_role, status, start_date, created_at, applicant_id, company_id')
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (status) query = query.eq('status', status)

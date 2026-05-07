@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const sp         = request.nextUrl.searchParams
   const search     = sp.get('search')      ?? ''
@@ -23,6 +21,7 @@ export async function GET(request: NextRequest) {
        form_responses ( status, submitted_at )`,
       { count: 'exact' }
     )
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (status) query = query.eq('status', status)

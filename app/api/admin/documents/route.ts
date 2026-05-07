@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const DOCUMENT_TYPES = new Set([
   'passport',
@@ -18,9 +16,9 @@ const DOCUMENT_TYPES = new Set([
 ])
 
 export async function GET(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { searchParams } = new URL(request.url)
   const applicantId = searchParams.get('applicant_id')
@@ -33,6 +31,7 @@ export async function GET(request: NextRequest) {
     .from('documents')
     .select('*')
     .eq('applicant_id', applicantId)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -44,9 +43,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   // ── Parse multipart/form-data ─────────────────────────────────────────────
   let formData: FormData
@@ -88,6 +87,7 @@ export async function POST(request: NextRequest) {
     .from('applicants')
     .select('id, company_id')
     .eq('id', applicantId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (applicantError) {
@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Applicant not found' }, { status: 404 })
   }
 
-  const companyId = applicant.company_id as string
 
   // ── Build storage path ─────────────────────────────────────────────────────
   // Pattern: company_id/applicant_id/document-type/timestamp-filename.ext

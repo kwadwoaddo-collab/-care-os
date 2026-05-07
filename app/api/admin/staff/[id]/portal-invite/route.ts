@@ -2,28 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 import { sendWorkerPortalEmail } from '@/lib/email/resend'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: profile, error: profileError } = await adminClient
-    .from('profiles')
-    .select('id, role, company_id')
-    .eq('role', 'admin')
-    .limit(1)
-    .maybeSingle()
-
-  if (profileError || !profile) {
-    return NextResponse.json({ error: 'Dev bypass: no admin profile found' }, { status: 500 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -31,7 +18,7 @@ export async function POST(
     .from('staff_profiles')
     .select('id, email, first_name, last_name, job_role, status, company_id')
     .eq('id', id)
-    .eq('company_id', profile.company_id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (spError) {
@@ -68,9 +55,9 @@ export async function POST(
   const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const magicLink = `${appUrl}/worker/login?token=${rawToken}`
 
-  adminClient.from('audit_logs').insert({
-    company_id:  profile.company_id,
-    actor_id:    profile.id,
+  void adminClient.from('audit_logs').insert({
+    company_id:  companyId,
+    actor_id:    auth.ctx.userId,
     action:      'staff.portal_invite_sent',
     entity_type: 'staff_profile',
     entity_id:   sp.id,

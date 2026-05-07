@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
-
-// TODO: RESTORE AUTH — remove DEV_BYPASS_AUTH before deploying or merging to main.
-const DEV_BYPASS_AUTH = process.env.NODE_ENV === 'development'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const ALLOWED_PROFILE_STATUSES = new Set(['pre_employment', 'active', 'suspended', 'inactive', 'terminated'])
@@ -12,9 +10,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id: staffProfileId } = await params
 
@@ -51,6 +49,7 @@ export async function PATCH(
     .from('staff_profiles')
     .select('id, company_id, email, first_name, last_name, status')
     .eq('id', staffProfileId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (fetchErr) {
@@ -94,6 +93,7 @@ export async function PATCH(
     .from('staff_profiles')
     .update(updatePayload)
     .eq('id', staffProfileId)
+    .eq('company_id', companyId)
     .select()
     .single()
 
@@ -134,9 +134,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!DEV_BYPASS_AUTH) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
 
   const { id } = await params
 
@@ -145,6 +145,7 @@ export async function GET(
     .from('staff_profiles')
     .select('*')
     .eq('id', id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (spError) {
