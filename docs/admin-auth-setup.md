@@ -75,6 +75,8 @@ Go to `/admin/login` and sign in with the email and password you set in step 1.
 
 ## Development
 
-In development (`NODE_ENV=development`), `DEV_BYPASS_AUTH=true` and all admin routes are accessible without login. The dev context uses the first company in the database.
+In development (`NODE_ENV=development`), setting `QA_BYPASS_AUTH=true` in `.env.local` makes all admin routes accessible without login. The dev context uses the `sprintscale-qa` company (or the first company found).
 
-To test the real login flow locally, set `NODE_ENV=production` in your `.env.local`, or temporarily set `DEV_BYPASS_AUTH` to `false` in `lib/auth/requireAdmin.ts`.
+To test the real login flow locally, omit `QA_BYPASS_AUTH` or set it to `false` in `.env.local`.
+
+**Never set `QA_BYPASS_AUTH` in Vercel environment variables** — Vercel runs `NODE_ENV=production` and the app will throw if the bypass is triggered in production.

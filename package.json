@@ -11,6 +11,7 @@
     "qa:reset": "tsx scripts/reset-qa-environment.ts",
     "qa:dry": "tsx scripts/seed-qa-environment.ts --dry-run",
     "qa:smoke": "playwright test tests/smoke/",
+    "qa:smoke:staging": "PLAYWRIGHT_BASE_URL=${BASE_URL:?BASE_URL must be set} playwright test tests/smoke/ --project=chromium --project=auth-tests",
     "qa:cycle": "tsx scripts/reset-qa-environment.ts --force && tsx scripts/seed-qa-environment.ts"
   },
   "dependencies": {

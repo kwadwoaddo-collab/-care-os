@@ -84,14 +84,48 @@ supabase db push --db-url "postgresql://..."
 
 ---
 
+## Staging smoke-test
+
+Run this against any Vercel Preview URL or the staging environment before merging to production:
+
+```bash
+# Set the preview/staging URL (no trailing slash)
+export BASE_URL=https://your-preview-url.vercel.app
+
+# Run smoke tests (chromium + auth-tests projects only — fast, no webServer needed)
+npm run qa:smoke:staging
+
+# Equivalent long-form if you need more control:
+BASE_URL=https://your-preview-url.vercel.app npm run qa:smoke:staging
+
+# Or using the raw playwright command:
+PLAYWRIGHT_BASE_URL=https://your-preview-url.vercel.app \
+  npx playwright test tests/smoke/ --project=chromium --project=auth-tests
+```
+
+**What `qa:smoke:staging` validates:**
+- Auth: QA admin / coordinator / worker can log in
+- Invalid credentials are rejected at the login page
+- `/admin` dashboard renders without errors
+- `/admin/clients`, `/admin/staff` list views load
+- `/admin/incidents`, `/admin/shifts` list views load
+- Document upload UI is accessible
+
+> **Prerequisites for staging auth tests to pass:**
+> 1. QA users (`qa-admin@sprintscaleit.co.uk`, etc.) must exist in the **staging** Supabase project Auth.
+> 2. The `sprintscale-qa` company and seed data must be present (run `npm run qa:seed` against staging DB).
+> 3. `QA_BYPASS_AUTH` must **not** be set in Vercel — auth tests require real Supabase login.
+
+---
+
 ## Deployment steps
 
 ```bash
 # 1. Ensure TypeScript is clean
 npx tsc --noEmit
 
-# 2. Run smoke tests against staging (if available)
-PLAYWRIGHT_BASE_URL=https://staging.care-os.example.com npm run qa:smoke
+# 2. Run smoke tests against staging (required)
+BASE_URL=https://your-preview-url.vercel.app npm run qa:smoke:staging
 
 # 3. Merge to main / push to production branch
 git push origin main
@@ -167,4 +201,5 @@ the wrong database (production) would pollute real data.
 - Apply Supabase migrations in order — never skip or reorder
 - Tag releases in Git: `git tag v1.x.x && git push origin --tags`
 - Keep `.env.local.example` up to date whenever env vars change
-- Run `npm run qa:smoke` before every production release
+- Run `BASE_URL=https://your-preview-url.vercel.app npm run qa:smoke:staging` before every production release
+- Run `npm run qa:smoke` (local) during active development to catch regressions early
