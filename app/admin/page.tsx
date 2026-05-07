@@ -22,9 +22,12 @@ interface TodayShift {
 
 interface Incident {
   id:              string
+  incident_type:   string
+  severity:        string
   status:          string
+  occurred_at:     string | null
   created_at:      string
-  shifts:          { shift_date: string; title: string } | null
+  description:     string
   clients:         { first_name: string; last_name: string } | null
   staff_profiles:  { first_name: string | null; last_name: string | null } | null
 }
@@ -88,6 +91,21 @@ const AUDIT_ACTION_CLS: Record<string, string> = {
   applicant:    'bg-yellow-50 text-yellow-700',
   document:     'bg-purple-50 text-purple-700',
   visit_note:   'bg-pink-50   text-pink-700',
+  incident:     'bg-red-50    text-red-700',
+}
+
+const INCIDENT_SEVERITY_CLS: Record<string, string> = {
+  low:      'bg-gray-50    text-gray-600',
+  medium:   'bg-yellow-50  text-yellow-700',
+  high:     'bg-orange-50  text-orange-700',
+  critical: 'bg-red-50     text-red-700',
+}
+
+const INCIDENT_STATUS_CLS: Record<string, string> = {
+  open:          'bg-red-50     text-red-700',
+  investigating: 'bg-blue-50    text-blue-700',
+  resolved:      'bg-green-50   text-green-700',
+  closed:        'bg-gray-50    text-gray-500',
 }
 
 function auditActionCls(action: string) {
@@ -213,16 +231,15 @@ export default async function AdminDashboard() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'draft'),
 
-    // Recent incidents (visit notes with incident_reported = true)
+    // Recent incidents (from incidents table)
     adminClient
-      .from('visit_notes')
+      .from('incidents')
       .select(`
-        id, status, created_at,
-        shifts!shift_id        ( shift_date, title ),
+        id, incident_type, severity, status, occurred_at, created_at, description,
         clients!client_id      ( first_name, last_name ),
         staff_profiles!staff_profile_id ( first_name, last_name )
       `)
-      .eq('incident_reported', true)
+      .in('status', ['open', 'investigating'])
       .order('created_at', { ascending: false })
       .limit(5),
 
@@ -442,36 +459,38 @@ export default async function AdminDashboard() {
           <SectionBox
             title="Recent Incidents"
             action={
-              <Link href="/admin/visit-notes" className="text-xs text-indigo-600 hover:underline">
-                View all notes →
+              <Link href="/admin/incidents" className="text-xs text-indigo-600 hover:underline">
+                View all incidents →
               </Link>
             }
           >
             {incidents.length === 0 ? (
-              <Empty msg="No incidents reported recently." />
+              <Empty msg="No open incidents." />
             ) : (
               <div className="divide-y divide-gray-50">
                 {incidents.map((inc) => (
                   <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span className="font-medium text-red-600">Incident</span>
+                        <span className={`inline-flex rounded-md px-1.5 py-0.5 text-xs font-medium ${INCIDENT_SEVERITY_CLS[inc.severity] ?? 'bg-gray-50 text-gray-600'}`}>
+                          {inc.severity}
+                        </span>
                         <span>·</span>
-                        <span>{inc.shifts ? fmt(inc.shifts.shift_date) : fmt(inc.created_at)}</span>
+                        <span>{inc.incident_type.replace(/_/g, ' ')}</span>
                         <span>·</span>
-                        <span>{inc.shifts?.title ?? '—'}</span>
+                        <span>{inc.occurred_at ? fmt(inc.occurred_at) : fmt(inc.created_at)}</span>
                       </div>
-                      <p className="text-xs text-gray-700 mt-0.5">
+                      <p className="text-xs text-gray-700 mt-0.5 truncate">
                         Client: {inc.clients ? `${inc.clients.first_name} ${inc.clients.last_name}` : '—'}
                         {' · '}
                         Staff: {staffName(inc.staff_profiles)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${inc.status === 'submitted' ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>
-                        {inc.status}
+                      <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${INCIDENT_STATUS_CLS[inc.status] ?? 'bg-gray-50 text-gray-500'}`}>
+                        {inc.status.replace(/_/g, ' ')}
                       </span>
-                      <Link href={`/admin/visit-notes/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
+                      <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
                         View →
                       </Link>
                     </div>

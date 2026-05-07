@@ -124,6 +124,16 @@ interface StaffVisitNote {
   } | null
 }
 
+interface StaffIncident {
+  id:            string
+  incident_type: string
+  severity:      string
+  status:        string
+  occurred_at:   string | null
+  created_at:    string
+  clients:       { id: string; first_name: string; last_name: string } | null
+}
+
 async function getRecentShifts(id: string): Promise<StaffShift[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const res = await fetch(`${baseUrl}/api/admin/staff/${id}/shifts`, { cache: 'no-store' })
@@ -136,6 +146,14 @@ async function getRecentVisitNotes(id: string): Promise<StaffVisitNote[]> {
   const res = await fetch(`${baseUrl}/api/admin/visit-notes?staff_profile_id=${id}`, { cache: 'no-store' })
   if (!res.ok) return []
   return res.json() as Promise<StaffVisitNote[]>
+}
+
+async function getRecentIncidents(id: string): Promise<StaffIncident[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/incidents?staff_profile_id=${id}&pageSize=10`, { cache: 'no-store' })
+  if (!res.ok) return []
+  const json = await res.json() as { data: StaffIncident[] }
+  return json.data
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -192,6 +210,20 @@ const TIMESHEET_STATUS_CLS: Record<string, string> = {
   completed:  'bg-green-50  text-green-700  ring-green-600/20',
   missed:     'bg-red-50    text-red-700    ring-red-600/20',
   adjusted:   'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+}
+
+const INCIDENT_SEVERITY_CLS: Record<string, string> = {
+  low:      'bg-gray-50    text-gray-600   ring-gray-400/20',
+  medium:   'bg-yellow-50  text-yellow-700 ring-yellow-600/20',
+  high:     'bg-orange-50  text-orange-700 ring-orange-600/20',
+  critical: 'bg-red-50     text-red-700    ring-red-600/20',
+}
+
+const INCIDENT_STATUS_CLS: Record<string, string> = {
+  open:          'bg-red-50     text-red-700    ring-red-600/20',
+  investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
+  resolved:      'bg-green-50   text-green-700  ring-green-600/20',
+  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
 }
 
 // Document expiry status badge
@@ -400,6 +432,7 @@ export default async function StaffDetailPage({
   const availabilityPromise   = getAvailability(id)
   const recentShiftsPromise   = getRecentShifts(id)
   const recentNotesPromise    = getRecentVisitNotes(id)
+  const recentIncidentsPromise = getRecentIncidents(id)
 
   let data: ApiResponse
   try {
@@ -415,6 +448,7 @@ export default async function StaffDetailPage({
   const availability   = await availabilityPromise.catch(() => null)
   const recentShifts   = await recentShiftsPromise.catch(() => [])
   const recentNotes    = await recentNotesPromise.catch(() => [])
+  const recentIncidents = await recentIncidentsPromise.catch(() => [] as StaffIncident[])
 
   const { staff_profile: sp, applicant, documents, compliance_items } = data
 
@@ -660,6 +694,65 @@ export default async function StaffDetailPage({
                         <td className="py-2">
                           <Link href={`/admin/visit-notes/${vn.id}`} className="text-xs text-indigo-600 hover:underline">
                             View →
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </SectionBox>
+
+        {/* ── Recent Incidents ──────────────────────────────────────────────── */}
+        <SectionBox title="Recent Incidents">
+          {recentIncidents.length === 0 ? (
+            <p className="text-sm text-gray-400">No incidents recorded yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100 text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                    <th className="text-left pb-2 pr-4">Date</th>
+                    <th className="text-left pb-2 pr-4">Client</th>
+                    <th className="text-left pb-2 pr-4">Type</th>
+                    <th className="text-left pb-2 pr-4">Severity</th>
+                    <th className="text-left pb-2 pr-4">Status</th>
+                    <th className="text-left pb-2">Link</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recentIncidents.map((inc) => {
+                    const clientN = inc.clients
+                      ? `${inc.clients.first_name} ${inc.clients.last_name}`
+                      : '\u2014'
+                    return (
+                      <tr key={inc.id}>
+                        <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">
+                          {formatDate(inc.occurred_at ?? inc.created_at)}
+                        </td>
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                          {inc.clients ? (
+                            <Link href={`/admin/clients/${inc.clients.id}`} className="text-indigo-700 hover:underline">
+                              {clientN}
+                            </Link>
+                          ) : (
+                            <span className="text-gray-400">\u2014</span>
+                          )}
+                        </td>
+                        <td className="py-2 pr-4 text-gray-700 whitespace-nowrap">
+                          {inc.incident_type.replace(/_/g, ' ')}
+                        </td>
+                        <td className="py-2 pr-4">
+                          <Badge status={inc.severity} map={INCIDENT_SEVERITY_CLS} />
+                        </td>
+                        <td className="py-2 pr-4">
+                          <Badge status={inc.status} map={INCIDENT_STATUS_CLS} />
+                        </td>
+                        <td className="py-2">
+                          <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
+                            View \u2192
                           </Link>
                         </td>
                       </tr>

@@ -31,6 +31,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <a href="/admin/visit-notes" className="hover:text-gray-900 transition-colors">
               Visit Notes
             </a>
+            <a href="/admin/incidents" className="hover:text-gray-900 transition-colors">
+              Incidents
+            </a>
             {ENABLE_TIMESHEETS && (
               <a href="/admin/timesheets" className="hover:text-gray-900 transition-colors">
                 Timesheets

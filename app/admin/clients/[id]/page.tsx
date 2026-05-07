@@ -64,6 +64,15 @@ interface VisitNoteSummary {
   } | null
 }
 
+interface IncidentSummary {
+  id:            string
+  incident_type: string
+  severity:      string
+  status:        string
+  occurred_at:   string | null
+  created_at:    string
+}
+
 interface CarePackageVisit {
   id:          string
   day_of_week: number
@@ -104,6 +113,20 @@ const SHIFT_STATUS_CLS: Record<string, string> = {
   completed: 'bg-gray-50   text-gray-600   ring-gray-500/20',
   cancelled: 'bg-red-50    text-red-700    ring-red-600/20',
   no_show:   'bg-orange-50 text-orange-700 ring-orange-600/20',
+}
+
+const INCIDENT_SEVERITY_CLS: Record<string, string> = {
+  low:      'bg-gray-50    text-gray-600   ring-gray-400/20',
+  medium:   'bg-yellow-50  text-yellow-700 ring-yellow-600/20',
+  high:     'bg-orange-50  text-orange-700 ring-orange-600/20',
+  critical: 'bg-red-50     text-red-700    ring-red-600/20',
+}
+
+const INCIDENT_STATUS_CLS: Record<string, string> = {
+  open:          'bg-red-50     text-red-700    ring-red-600/20',
+  investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
+  resolved:      'bg-green-50   text-green-700  ring-green-600/20',
+  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
 }
 
 function Badge({ value, map }: { value: string; map: Record<string, string> }) {
@@ -166,6 +189,14 @@ async function getClientVisitNotes(clientId: string): Promise<VisitNoteSummary[]
   return res.json() as Promise<VisitNoteSummary[]>
 }
 
+async function getClientIncidents(clientId: string): Promise<IncidentSummary[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const res = await fetch(`${baseUrl}/api/admin/incidents?client_id=${clientId}&pageSize=10`, { cache: 'no-store' })
+  if (!res.ok) return []
+  const json = await res.json() as { data: IncidentSummary[] }
+  return json.data
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ClientDetailPage({
@@ -174,11 +205,12 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [client, shifts, carePackages, visitNotes] = await Promise.all([
+  const [client, shifts, carePackages, visitNotes, incidents] = await Promise.all([
     getClient(id),
     getClientShifts(id),
     getClientCarePackages(id),
     getClientVisitNotes(id),
+    getClientIncidents(id),
   ])
 
   if (!client) notFound()
@@ -448,6 +480,59 @@ export default async function ClientDetailPage({
                     </tr>
                   )
                 })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Recent incidents */}
+      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800">Recent Incidents</h2>
+          <a href={`/admin/incidents?client_id=${id}`} className="text-xs text-indigo-600 hover:underline">
+            All incidents →
+          </a>
+        </div>
+
+        {incidents.length === 0 ? (
+          <div className="p-6 text-center text-sm text-gray-400">
+            No incidents recorded for this client.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100 text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {incidents.map((inc) => (
+                  <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      {formatDate(inc.occurred_at ?? inc.created_at)}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                      {inc.incident_type.replace(/_/g, ' ')}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge value={inc.severity} map={INCIDENT_SEVERITY_CLS} />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge value={inc.status} map={INCIDENT_STATUS_CLS} />
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <a href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
+                        View →
+                      </a>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
