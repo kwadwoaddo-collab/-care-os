@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   // ── Build DB query with search + status ────────────────────────────────────
   let query = adminClient
     .from('staff_profiles')
-    .select('id, first_name, last_name, email, job_role, status, start_date, created_at, applicant_id, company_id')
+    .select('id, first_name, last_name, email, job_role, status, start_date, created_at, applicant_id, company_id, onboarding_completed')
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 

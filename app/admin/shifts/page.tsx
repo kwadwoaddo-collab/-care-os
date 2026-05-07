@@ -173,10 +173,27 @@ export default async function ShiftsPage({
 
       {/* Table */}
       {shifts.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          {hasFilters
-            ? 'No results found. Try changing your filters.'
-            : 'No shifts yet. Create one to get started.'}
+        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+          {hasFilters ? (
+            <>
+              <p className="text-sm font-medium text-gray-900">No shifts match your filters</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
+              <a href="/admin/shifts" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-gray-900">No shifts yet</p>
+              <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+                Create a shift manually above, or generate shifts automatically from a{' '}
+                <a href="/admin/care-packages" className="text-indigo-600 hover:underline">care package</a>.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

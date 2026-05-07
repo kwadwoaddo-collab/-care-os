@@ -179,10 +179,26 @@ export default async function IncidentsPage({
 
       {/* Table */}
       {incidents.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          {hasFilters
-            ? 'No results found. Try changing your filters.'
-            : 'No incidents recorded yet.'}
+        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+          {hasFilters ? (
+            <>
+              <p className="text-sm font-medium text-gray-900">No incidents match your filters</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
+              <a href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-gray-900">No incidents recorded yet</p>
+              <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+                Incidents are created automatically when a carer flags an issue on a visit note, or log one manually using the button above.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

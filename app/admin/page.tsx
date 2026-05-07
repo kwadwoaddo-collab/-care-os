@@ -182,6 +182,7 @@ export default async function AdminDashboard() {
     clientCountResult,
     pkgCountResult,
     draftNotesCountResult,
+    hrIncompleteResult,
     incidentsResult,
     complianceRes,
     auditRes,
@@ -231,6 +232,13 @@ export default async function AdminDashboard() {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'draft'),
 
+    // HR incomplete: staff who have not finished onboarding
+    adminClient
+      .from('staff_profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('onboarding_completed', false)
+      .not('status', 'eq', 'terminated'),
+
     // Recent incidents (from incidents table)
     adminClient
       .from('incidents')
@@ -266,6 +274,7 @@ export default async function AdminDashboard() {
   const activeClients = clientCountResult.count     ?? 0
   const activePkgs    = pkgCountResult.count         ?? 0
   const draftNotes    = draftNotesCountResult.count  ?? 0
+  const hrIncomplete  = hrIncompleteResult.count     ?? 0
 
   const nonCompliant    = compliance?.summary.nonCompliantCount ?? 0
   const expiredCount    = compliance?.summary.expiredCount      ?? 0
@@ -350,6 +359,13 @@ export default async function AdminDashboard() {
           sub="Awaiting submission"
           href="/admin/visit-notes"
           urgent={draftNotes > 0}
+        />
+        <SummaryCard
+          label="HR incomplete"
+          count={hrIncomplete}
+          sub="Missing payroll or personal info"
+          href="/admin/staff"
+          urgent={hrIncomplete > 0}
         />
       </div>
 

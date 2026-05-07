@@ -153,10 +153,27 @@ export default async function ClientsPage({
 
       {/* Table */}
       {clients.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          {hasFilters
-            ? 'No results found. Try changing your filters.'
-            : 'No clients yet. Create one to get started.'}
+        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+          {hasFilters ? (
+            <>
+              <p className="text-sm font-medium text-gray-900">No clients match your filters</p>
+              <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
+              <a href="/admin/clients" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+            </>
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-gray-900">No clients yet</p>
+              <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+                Add your first client using the{' '}
+                <span className="font-medium text-gray-600">+ New Client</span> button above.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

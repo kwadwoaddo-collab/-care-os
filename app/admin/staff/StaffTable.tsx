@@ -15,6 +15,7 @@ export interface StaffProfileWithCompliance {
   start_date:   string | null
   created_at:   string
   applicant_id: string | null
+  onboarding_completed?: boolean | null
   compliance: {
     percentage:   number
     tier:         'green' | 'amber' | 'red'
@@ -38,6 +39,7 @@ type FilterType =
   | 'active'
   | 'ready'
   | 'not_ready'
+  | 'hr_incomplete'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -99,6 +101,7 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
     if (filter === 'active')        return s.status === 'active'
     if (filter === 'ready')         return s.readiness.ready
     if (filter === 'not_ready')     return !s.readiness.ready
+    if (filter === 'hr_incomplete') return !s.onboarding_completed
     return true
   })
 
@@ -112,6 +115,7 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
     active:        staff.filter((s) => s.status === 'active').length,
     ready:         staff.filter((s) => s.readiness.ready).length,
     not_ready:     staff.filter((s) => !s.readiness.ready).length,
+    hr_incomplete: staff.filter((s) => !s.onboarding_completed).length,
   }
 
   const FILTERS: { key: FilterType; label: string }[] = [
@@ -119,6 +123,7 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
     { key: 'active',        label: `Active (${counts.active})` },
     { key: 'ready',         label: `Ready to work (${counts.ready})` },
     { key: 'not_ready',     label: `Not ready (${counts.not_ready})` },
+    { key: 'hr_incomplete', label: `HR incomplete (${counts.hr_incomplete})` },
     { key: 'compliant',     label: `Compliant (${counts.compliant})` },
     { key: 'expiring_soon', label: `Expiring soon (${counts.expiring_soon})` },
     { key: 'expired',       label: `Expired (${counts.expired})` },
@@ -165,6 +170,7 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HR</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Readiness</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compliance</th>
               </tr>
@@ -197,6 +203,15 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                       status={riskLevel(s.compliance)}
                       map={RISK_CLS}
                     />
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      s.onboarding_completed
+                        ? 'bg-green-50 text-green-700 ring-green-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                    }`}>
+                      {s.onboarding_completed ? 'ready' : 'incomplete'}
+                    </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">

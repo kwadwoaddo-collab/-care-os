@@ -11,6 +11,8 @@ import ComplianceReviewSection   from './ComplianceReviewSection'
 import StaffAvailabilitySection  from './StaffAvailabilitySection'
 import PortalInviteButton        from './PortalInviteButton'
 import EditStaffProfileForm      from './EditStaffProfileForm'
+import EditHrDetailsForm         from './EditHrDetailsForm'
+import { calculateHrReadiness }  from '@/lib/staff/calculateHrReadiness'
 import {
   parseAvailabilityRecord,
   type StaffAvailability,
@@ -36,6 +38,42 @@ interface StaffProfile {
   last_reviewed_at?:  string | null
   last_reviewed_by?:  string | null
   last_review_notes?: string | null
+  // HR / personal
+  middle_name?:  string | null
+  date_of_birth?: string | null
+  gender?:        string | null
+  nationality?:   string | null
+  // Address
+  address_line_1?: string | null
+  address_line_2?: string | null
+  city?:           string | null
+  postcode?:       string | null
+  // Emergency
+  emergency_contact_name?:         string | null
+  emergency_contact_phone?:        string | null
+  emergency_contact_relationship?: string | null
+  // Employment
+  employment_type?:     string | null
+  contracted_hours?:    number | null
+  start_date_confirmed?: boolean | null
+  // Payroll
+  ni_number?:           string | null
+  tax_code?:            string | null
+  payroll_number?:      string | null
+  utr_number?:          string | null
+  starter_declaration?: string | null
+  // Bank
+  bank_name?:           string | null
+  bank_account_name?:   string | null
+  bank_account_number?: string | null
+  bank_sort_code?:      string | null
+  // Compliance metadata
+  right_to_work_checked?: boolean | null
+  dbs_checked?:           boolean | null
+  dbs_number?:            string | null
+  dbs_expiry_date?:       string | null
+  // Onboarding
+  onboarding_completed?: boolean | null
 }
 
 interface Applicant {
@@ -68,11 +106,18 @@ interface ComplianceItem {
   notes:        string | null
 }
 
+interface HrReadiness {
+  ready:   boolean
+  score:   number
+  missing: string[]
+}
+
 interface ApiResponse {
   staff_profile:    StaffProfile
   applicant:        Applicant | null
   documents:        Document[]
   compliance_items: ComplianceItem[]
+  hr_readiness:     HrReadiness
 }
 
 // ── Data Fetching ─────────────────────────────────────────────────────────────
@@ -450,7 +495,18 @@ export default async function StaffDetailPage({
   const recentNotes    = await recentNotesPromise.catch(() => [])
   const recentIncidents = await recentIncidentsPromise.catch(() => [] as StaffIncident[])
 
-  const { staff_profile: sp, applicant, documents, compliance_items } = data
+  const { staff_profile: sp, applicant, documents, compliance_items, hr_readiness } = data
+
+  // If the API didn't return hr_readiness (shouldn't happen post-migration), compute client-side
+  const hrReadiness = hr_readiness ?? calculateHrReadiness({
+    date_of_birth:          sp.date_of_birth,
+    address_line_1:         sp.address_line_1,
+    ni_number:              sp.ni_number,
+    bank_account_number:    sp.bank_account_number,
+    emergency_contact_name: sp.emergency_contact_name,
+    employment_type:        sp.employment_type,
+    starter_declaration:    sp.starter_declaration,
+  })
 
   const displayName =
     [sp.first_name, sp.last_name].filter(Boolean).join(' ') ||
@@ -517,6 +573,136 @@ export default async function StaffDetailPage({
             <Field label="Created"    value={formatDate(sp.created_at)} />
           </dl>
         </SectionBox>
+
+        {/* ── HR & Payroll ────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-semibold text-gray-700">HR &amp; Payroll</h2>
+              <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                hrReadiness.ready
+                  ? 'bg-green-50 text-green-700 ring-green-600/20'
+                  : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+              }`}>
+                {hrReadiness.ready ? 'HR Ready' : `${hrReadiness.score}% complete`}
+              </span>
+            </div>
+            <EditHrDetailsForm staff={sp} />
+          </div>
+          <div className="p-4 space-y-4">
+
+            {/* HR readiness summary */}
+            {!hrReadiness.ready && hrReadiness.missing.length > 0 && (
+              <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2.5">
+                <p className="text-xs font-medium text-amber-800 mb-1.5">Missing required fields</p>
+                <ul className="flex flex-wrap gap-1.5">
+                  {hrReadiness.missing.map((m) => (
+                    <li key={m} className="text-xs bg-amber-100 text-amber-800 rounded px-1.5 py-0.5">{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Personal */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Personal</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <Field label="Date of birth" value={sp.date_of_birth ? formatDate(sp.date_of_birth) : null} />
+                <Field label="Gender"        value={sp.gender?.replace(/_/g, ' ')} />
+                <Field label="Nationality"   value={sp.nationality} />
+                <Field label="Middle name"   value={sp.middle_name} />
+              </dl>
+            </div>
+
+            {/* Address */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Address</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <Field label="Address line 1" value={sp.address_line_1} />
+                <Field label="Address line 2" value={sp.address_line_2} />
+                <Field label="City / Town"    value={sp.city} />
+                <Field label="Postcode"       value={sp.postcode} />
+              </dl>
+            </div>
+
+            {/* Emergency contact */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Emergency Contact</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+                <Field label="Name"         value={sp.emergency_contact_name} />
+                <Field label="Phone"        value={sp.emergency_contact_phone} />
+                <Field label="Relationship" value={sp.emergency_contact_relationship} />
+              </dl>
+            </div>
+
+            {/* Employment */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Employment</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <Field label="Employment type"    value={sp.employment_type?.replace(/_/g, ' ')} />
+                <Field label="Contracted hours"   value={sp.contracted_hours != null ? `${sp.contracted_hours} hrs/wk` : null} />
+                <Field label="Start date confirmed" value={sp.start_date_confirmed ? 'Yes' : 'No'} />
+              </dl>
+            </div>
+
+            {/* Payroll / HMRC */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Payroll / HMRC</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <Field label="NI number"          value={sp.ni_number} />
+                <Field label="Tax code"           value={sp.tax_code} />
+                <Field label="Payroll number"     value={sp.payroll_number} />
+                <Field label="Starter declaration" value={sp.starter_declaration} />
+                <Field label="UTR number"         value={sp.utr_number} />
+              </dl>
+            </div>
+
+            {/* Bank details */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Bank Details</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <Field label="Bank name"         value={sp.bank_name} />
+                <Field label="Account holder"    value={sp.bank_account_name} />
+                <Field label="Account number"    value={sp.bank_account_number ? '••••' + sp.bank_account_number.slice(-4) : null} />
+                <Field label="Sort code"         value={sp.bank_sort_code} />
+              </dl>
+            </div>
+
+            {/* Compliance metadata */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Compliance Checks</p>
+              <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Right to work</dt>
+                  <dd className="mt-0.5">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      sp.right_to_work_checked
+                        ? 'bg-green-50 text-green-700 ring-green-600/20'
+                        : 'bg-red-50 text-red-700 ring-red-600/20'
+                    }`}>
+                      {sp.right_to_work_checked ? 'Checked' : 'Not checked'}
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">DBS check</dt>
+                  <dd className="mt-0.5">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      sp.dbs_checked
+                        ? 'bg-green-50 text-green-700 ring-green-600/20'
+                        : 'bg-red-50 text-red-700 ring-red-600/20'
+                    }`}>
+                      {sp.dbs_checked ? 'Complete' : 'Pending'}
+                    </span>
+                  </dd>
+                </div>
+                <Field label="DBS number"      value={sp.dbs_number} />
+                <Field label="DBS expiry"      value={formatDate(sp.dbs_expiry_date ?? null)} />
+              </dl>
+            </div>
+
+          </div>
+        </div>
 
         {/* ── Linked Applicant ───────────────────────────────────────────── */}
         <SectionBox title="Linked Applicant">
