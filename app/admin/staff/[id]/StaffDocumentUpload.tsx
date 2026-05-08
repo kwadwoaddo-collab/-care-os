@@ -81,8 +81,16 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
           setError(json.error ?? 'Upload failed.')
           return
         }
+        // Clear the form inputs but keep the success message visible.
+        // Calling reset() here would set success=false in the same React
+        // batch, meaning the success banner would never render.
+        setDocumentType(DOCUMENT_TYPES[0].value)
+        setExpiryDate('')
+        setTrainingName('')
+        setFile(null)
+        setError(null)
+        if (fileRef.current) fileRef.current.value = ''
         setSuccess(true)
-        reset()
         router.refresh()
       } catch {
         setError('Network error — please try again.')
