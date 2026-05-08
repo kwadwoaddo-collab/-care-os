@@ -14,67 +14,78 @@ import { expectAdminPage } from './helpers/auth'
 
 const FIXTURE_PNG = path.join(__dirname, '../fixtures/qa-test-document.png')
 
+// ── Helper: navigate to QA staff profile ────────────────────────────────────
+
+async function goToQaStaffProfile(page: Parameters<typeof expectAdminPage>[0]) {
+  await expectAdminPage(page, '/admin/staff')
+
+  const qaStaffLink = page.locator('a:has-text("[QA]"), tr:has-text("[QA]") a').first()
+  if (await qaStaffLink.count() === 0) {
+    test.fail(true, 'No QA staff found — run npx tsx scripts/seed-qa-environment.ts first')
+    return false
+  }
+
+  const href = await qaStaffLink.getAttribute('href')
+  if (!href) { test.fail(true, 'QA staff link has no href'); return false }
+  await page.goto(href)
+  await expect(page).toHaveURL(/\/admin\/staff\//, { timeout: 10_000 })
+  await expect(page).not.toHaveURL(/\/admin\/login/)
+  return true
+}
+
+// ── Helper: open the upload section ─────────────────────────────────────────
+
+async function openUploadSection(page: Parameters<typeof expectAdminPage>[0]) {
+  const toggleBtn = page.locator('[data-testid="doc-upload-toggle"]')
+  await expect(toggleBtn).toBeVisible()
+  await toggleBtn.evaluate((el) => (el as HTMLButtonElement).click())
+  const fileInput = page.locator('[data-testid="doc-upload-file"]')
+  await expect(fileInput).toBeVisible({ timeout: 5_000 })
+  return fileInput
+}
+
+// ── Tests ────────────────────────────────────────────────────────────────────
+
 test('Staff list loads and shows QA staff', async ({ page }) => {
   await expectAdminPage(page, '/admin/staff')
   await expect(page.locator('h1, h2').first()).toBeVisible()
 })
 
 test('Staff profile page loads (document upload context)', async ({ page }) => {
-  await expectAdminPage(page, '/admin/staff')
-
-  const qaStaffLink = page.locator('a:has-text("[QA]"), tr:has-text("[QA]") a').first()
-  if (await qaStaffLink.count() === 0) {
-    test.fail(true, 'No QA staff found — run npx tsx scripts/seed-qa-environment.ts first')
-    return
-  }
-
-  // Navigate via href — avoids click-intercept issues on mobile viewports
-  const href = await qaStaffLink.getAttribute('href')
-  if (!href) { test.fail(true, 'QA staff link has no href'); return }
-  await page.goto(href)
-
-  await expect(page).toHaveURL(/\/admin\/staff\//, { timeout: 10_000 })
-  await expect(page).not.toHaveURL(/\/admin\/login/)
+  await goToQaStaffProfile(page)
 })
 
 test('Document upload UI is accessible on staff profile', async ({ page }) => {
-  await expectAdminPage(page, '/admin/staff')
+  const ok = await goToQaStaffProfile(page)
+  if (!ok) return
 
-  const qaStaffLink = page.locator('a:has-text("[QA]"), tr:has-text("[QA]") a').first()
-  if (await qaStaffLink.count() === 0) {
-    test.fail(true, 'No QA staff found — run npx tsx scripts/seed-qa-environment.ts first')
-    return
-  }
+  await openUploadSection(page)
+})
 
-  const href = await qaStaffLink.getAttribute('href')
-  if (!href) { test.fail(true, 'QA staff link has no href'); return }
-  await page.goto(href)
-  await expect(page).not.toHaveURL(/\/admin\/login/)
+test('Document upload — submit disabled when no file selected', async ({ page }) => {
+  const ok = await goToQaStaffProfile(page)
+  if (!ok) return
 
-  // Expand the upload section (collapsed by default).
-  // Use evaluate to fire native DOM click — Playwright's pointer-event synthesis
-  // can be intercepted by sticky nav headers at the top of the staff profile page.
-  const toggleBtn = page.locator('[data-testid="doc-upload-toggle"]')
-  await expect(toggleBtn).toBeVisible()
-  await toggleBtn.evaluate((el) => (el as HTMLButtonElement).click())
+  await openUploadSection(page)
 
-  // File input should now be visible
-  const fileInput = page.locator('[data-testid="doc-upload-file"]')
-  await expect(fileInput).toBeVisible({ timeout: 5_000 })
+  const submitBtn = page.locator('[data-testid="doc-upload-submit"]')
+  await expect(submitBtn).toBeDisabled()
+})
 
-  // Upload the fixture PNG
+test('Document upload — valid file succeeds or returns expected server error', async ({ page }) => {
+  const ok = await goToQaStaffProfile(page)
+  if (!ok) return
+
+  const fileInput = await openUploadSection(page)
   await fileInput.setInputFiles(FIXTURE_PNG)
 
-  // Same native-click approach for the submit button
-  await page.locator('[data-testid="doc-upload-submit"]').evaluate(
-    (el) => (el as HTMLButtonElement).click()
-  )
+  // Submit button should become enabled once a file is selected
+  const submitBtn = page.locator('[data-testid="doc-upload-submit"]')
+  await expect(submitBtn).toBeEnabled({ timeout: 3_000 })
 
-  // Wait for either success or an error response from the server.
-  // Success: storage is configured and upload completed.
-  // Error: storage bucket not created — infrastructure issue, not a code bug.
-  // Auth errors ("Unauthorized", profile not found) are not expected and would
-  // indicate a real problem — the test will fail in that case via the assertion below.
+  // Use native DOM click to avoid intercept by sticky headers
+  await submitBtn.evaluate((el) => (el as HTMLButtonElement).click())
+
   const successEl = page.locator('[data-testid="doc-upload-success"]')
   const errorEl   = page.locator('[data-testid="doc-upload-error"]')
   await Promise.race([
@@ -84,15 +95,41 @@ test('Document upload UI is accessible on staff profile', async ({ page }) => {
 
   const errText = await errorEl.count() > 0 ? await errorEl.textContent() : null
   if (errText) {
-    // Auth/permission errors are real failures
-    const isAuthError = /unauthorized|forbidden|not found/i.test(errText)
+    // Auth / permission errors are real failures
+    const isAuthError = /unauthorized|forbidden|staff profile not found/i.test(errText)
     if (isAuthError) {
       throw new Error(`Document upload failed with auth/permission error: ${errText}`)
     }
-    // Storage errors are infrastructure issues — log and continue
-    console.warn(`[doc upload] server error (storage may not be configured): ${errText}`)
+    // DB constraint violations are real failures (the bug this migration fixes)
+    const isConstraintError = /constraint|documents_check/i.test(errText)
+    if (isConstraintError) {
+      throw new Error(`Document upload hit a DB constraint — migration may not have run: ${errText}`)
+    }
+    // Storage / bucket errors are infrastructure issues — log and pass
+    console.warn(`[doc upload] server error (likely storage not configured): ${errText}`)
   }
 })
+
+test('Document upload — invalid file type is rejected client-side', async ({ page }) => {
+  const ok = await goToQaStaffProfile(page)
+  if (!ok) return
+
+  await openUploadSection(page)
+
+  // Simulate a .txt file which is not allowed
+  const fileInput = page.locator('[data-testid="doc-upload-file"]')
+  await fileInput.setInputFiles({
+    name: 'not-allowed.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('hello'),
+  })
+
+  const errorEl = page.locator('[data-testid="doc-upload-error"]')
+  await expect(errorEl).toBeVisible({ timeout: 3_000 })
+  await expect(errorEl).toContainText(/not allowed/i)
+})
+
+// ── Visit note tests ─────────────────────────────────────────────────────────
 
 test('Visit notes list loads correctly', async ({ page }) => {
   await expectAdminPage(page, '/admin/visit-notes')

@@ -2,17 +2,10 @@
 
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { DOCUMENT_TYPES, MAX_FILE_BYTES, ALLOWED_EXTENSIONS } from '@/lib/documents/constants'
 
-const DOCUMENT_TYPES = [
-  { value: 'passport',           label: 'Passport' },
-  { value: 'right_to_work',      label: 'Right to Work' },
-  { value: 'dbs',                label: 'DBS Certificate' },
-  { value: 'training_certificate', label: 'Training Certificate' },
-  { value: 'qualification',      label: 'Qualification' },
-  { value: 'proof_of_address',   label: 'Proof of Address' },
-  { value: 'national_insurance', label: 'National Insurance' },
-  { value: 'other',              label: 'Other' },
-]
+const ALLOWED_EXT_LIST = [...ALLOWED_EXTENSIONS].join(', ').toUpperCase()
+const MAX_MB = MAX_FILE_BYTES / (1024 * 1024)
 
 interface StaffDocumentUploadProps {
   staffProfileId: string
@@ -23,7 +16,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [open,         setOpen]         = useState(false)
-  const [documentType, setDocumentType] = useState('passport')
+  const [documentType, setDocumentType] = useState<string>(DOCUMENT_TYPES[0].value)
   const [expiryDate,   setExpiryDate]   = useState('')
   const [trainingName, setTrainingName] = useState('')
   const [file,         setFile]         = useState<File | null>(null)
@@ -32,13 +25,32 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
   const [isPending,    startTransition] = useTransition()
 
   function reset() {
-    setDocumentType('passport')
+    setDocumentType(DOCUMENT_TYPES[0].value)
     setExpiryDate('')
     setTrainingName('')
     setFile(null)
     setError(null)
     setSuccess(false)
     if (fileRef.current) fileRef.current.value = ''
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const picked = e.target.files?.[0] ?? null
+    if (!picked) { setFile(null); return }
+
+    if (picked.size > MAX_FILE_BYTES) {
+      setError(`File exceeds the ${MAX_MB} MB limit`)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    const ext = picked.name.split('.').pop()?.toLowerCase() ?? ''
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      setError(`File type .${ext} is not allowed. Allowed: ${ALLOWED_EXT_LIST}`)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    setError(null)
+    setFile(picked)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -97,7 +109,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
         <div className="p-4">
           {success && (
             <div data-testid="doc-upload-success" className="mb-4 rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
-              ✓ Document uploaded successfully.
+              Document uploaded successfully.
             </div>
           )}
           {error && (
@@ -145,15 +157,17 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
             <div>
               <label htmlFor="doc-file" className="block text-xs font-medium text-gray-700 mb-1">
                 File <span className="text-red-500">*</span>
-                <span className="ml-1 font-normal text-gray-400">(PDF, JPG, PNG, DOC, DOCX — max 10 MB)</span>
+                <span className="ml-1 font-normal text-gray-400">
+                  ({ALLOWED_EXT_LIST} — max {MAX_MB} MB)
+                </span>
               </label>
               <input
                 id="doc-file"
                 data-testid="doc-upload-file"
                 ref={fileRef}
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileChange}
                 className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
               />
             </div>
@@ -176,7 +190,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
               <button
                 type="submit"
                 data-testid="doc-upload-submit"
-                disabled={isPending}
+                disabled={isPending || !file}
                 className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
               >
                 {isPending ? 'Uploading…' : 'Upload'}
@@ -184,7 +198,8 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
               <button
                 type="button"
                 onClick={reset}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                disabled={isPending}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
               >
                 Clear
               </button>

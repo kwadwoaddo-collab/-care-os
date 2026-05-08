@@ -2,17 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
 import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
-
-const DOCUMENT_TYPES = new Set([
-  'passport',
-  'right_to_work',
-  'dbs',
-  'training_certificate',
-  'qualification',
-  'proof_of_address',
-  'national_insurance',
-  'other',
-])
+import { DOCUMENT_TYPE_SET, DOCUMENT_TYPE_VALUES } from '@/lib/documents/constants'
 
 export async function POST(request: NextRequest) {
   let formData: FormData
@@ -41,9 +31,9 @@ export async function POST(request: NextRequest) {
   if (!(file instanceof File)) {
     return NextResponse.json({ error: 'file is required' }, { status: 422 })
   }
-  if (typeof documentType !== 'string' || !DOCUMENT_TYPES.has(documentType)) {
+  if (typeof documentType !== 'string' || !DOCUMENT_TYPE_SET.has(documentType)) {
     return NextResponse.json(
-      { error: `document_type must be one of: ${[...DOCUMENT_TYPES].join(', ')}` },
+      { error: `document_type must be one of: ${DOCUMENT_TYPE_VALUES.join(', ')}` },
       { status: 422 }
     )
   }
@@ -64,7 +54,9 @@ export async function POST(request: NextRequest) {
     })
 
   if (uploadError) {
-    console.error('[worker/documents/upload] storage error:', uploadError)
+    console.error('[worker/documents/upload] storage failed:', {
+      staffProfileId, documentType, message: uploadError.message,
+    })
     return NextResponse.json({ error: uploadError.message ?? 'Upload failed' }, { status: 500 })
   }
 
@@ -85,7 +77,14 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (insertError || !document) {
-    console.error('[worker/documents/upload] db insert error:', insertError)
+    console.error('[worker/documents/upload] db insert failed:', {
+      staffProfileId,
+      documentType,
+      code:    insertError?.code,
+      message: insertError?.message,
+      details: insertError?.details,
+      hint:    insertError?.hint,
+    })
     await adminClient.storage.from('care-os-documents').remove([storagePath])
     return NextResponse.json({ error: 'Failed to save document record' }, { status: 500 })
   }

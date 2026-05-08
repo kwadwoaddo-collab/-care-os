@@ -23,7 +23,8 @@
     "react-signature-canvas": "^1.1.0-alpha.2",
     "resend": "^6.12.2",
     "server-only": "^0.0.1",
-    "ws": "^8.20.0"
+    "ws": "^8.20.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
