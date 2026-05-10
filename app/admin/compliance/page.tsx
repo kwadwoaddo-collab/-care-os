@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { AlertItem, AlertsResponse, AlertsSummary } from '@/app/api/admin/compliance/alerts/route'
+import type { ComplianceSummaryResponse } from '@/app/api/admin/compliance/summary/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { STATUS_BADGE_CLS, STATUS_LABEL } from '@/lib/compliance/status'
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -9,6 +11,17 @@ async function getAlerts(): Promise<AlertsResponse> {
   const res = await adminFetch(`${baseUrl}/api/admin/compliance/alerts`, { cache: 'no-store' })
   if (!res.ok) throw new Error('Failed to fetch compliance alerts')
   return res.json() as Promise<AlertsResponse>
+}
+
+async function getItemSummary(): Promise<ComplianceSummaryResponse | null> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const res = await adminFetch(`${baseUrl}/api/admin/compliance/summary`, { cache: 'no-store' })
+    if (!res.ok) return null
+    return res.json() as Promise<ComplianceSummaryResponse>
+  } catch {
+    return null
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -146,40 +159,79 @@ export default async function CompliancePage() {
     )
   }
 
+  // Non-blocking — if summary fails the rest of the page still renders
+  const itemSummary = await getItemSummary()
+
   return (
     <div className="space-y-6">
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Compliance Alerts</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Compliance</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           {summary.totalStaff} staff · {summary.activeStaff} active · avg {summary.averageCompliance}% compliance
         </p>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <SummaryCard
-          label="Expired documents"
-          count={summary.expiredCount}
-          cls={summary.expiredCount > 0
-            ? 'bg-red-50 border-red-200 text-red-900'
-            : 'bg-white border-gray-200 text-gray-900'}
-        />
-        <SummaryCard
-          label="Expiring within 30 days"
-          count={summary.expiringWithin30}
-          cls={summary.expiringWithin30 > 0
-            ? 'bg-yellow-50 border-yellow-200 text-yellow-900'
-            : 'bg-white border-gray-200 text-gray-900'}
-        />
-        <SummaryCard
-          label="Non-compliant staff"
-          count={summary.nonCompliantCount}
-          cls={summary.nonCompliantCount > 0
-            ? 'bg-orange-50 border-orange-200 text-orange-900'
-            : 'bg-white border-gray-200 text-gray-900'}
-        />
+      {/* ── Compliance item status (from compliance_items table) ───────────── */}
+      {itemSummary && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+            Compliance item status
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {(
+              [
+                ['compliant',     itemSummary.compliant,     'bg-green-50  border-green-200  text-green-900'],
+                ['expiring_soon', itemSummary.expiring_soon, 'bg-yellow-50 border-yellow-200 text-yellow-900'],
+                ['expired',       itemSummary.expired,       'bg-red-50    border-red-200    text-red-900'],
+                ['missing',       itemSummary.missing,       itemSummary.missing > 0 ? 'bg-gray-100 border-gray-300 text-gray-900' : 'bg-white border-gray-200 text-gray-900'],
+                ['rejected',      itemSummary.rejected,      itemSummary.rejected > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-gray-200 text-gray-900'],
+                ['in_review',     itemSummary.in_review,     'bg-blue-50   border-blue-200   text-blue-900'],
+              ] as [string, number, string][]
+            ).map(([key, count, cls]) => (
+              <SummaryCard
+                key={key}
+                label={STATUS_LABEL[key as keyof typeof STATUS_LABEL] ?? key}
+                count={count}
+                cls={cls}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-gray-400">
+            {itemSummary.total} total compliance items · based on compliance item records
+          </p>
+        </div>
+      )}
+
+      {/* ── Document alert summary (from uploaded documents) ──────────────── */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+          Document alerts
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <SummaryCard
+            label="Expired documents"
+            count={summary.expiredCount}
+            cls={summary.expiredCount > 0
+              ? 'bg-red-50 border-red-200 text-red-900'
+              : 'bg-white border-gray-200 text-gray-900'}
+          />
+          <SummaryCard
+            label="Expiring within 30 days"
+            count={summary.expiringWithin30}
+            cls={summary.expiringWithin30 > 0
+              ? 'bg-yellow-50 border-yellow-200 text-yellow-900'
+              : 'bg-white border-gray-200 text-gray-900'}
+          />
+          <SummaryCard
+            label="Non-compliant staff"
+            count={summary.nonCompliantCount}
+            cls={summary.nonCompliantCount > 0
+              ? 'bg-orange-50 border-orange-200 text-orange-900'
+              : 'bg-white border-gray-200 text-gray-900'}
+          />
+        </div>
       </div>
 
       {/* All-clear message */}

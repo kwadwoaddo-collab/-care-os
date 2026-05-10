@@ -4,6 +4,8 @@ import { buildComplianceSnapshot } from '@/lib/compliance/buildComplianceSnapsho
 import type { ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import { WARNING_DAYS, NOTICE_DAYS } from '@/lib/compliance/reminderThresholds'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
+import { forbidden } from '@/lib/auth/responses'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,12 +81,14 @@ function expirySeverity(expiryDate: string | null): 'warning' | 'notice' {
 export async function GET() {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'compliance:read')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
-  // ── Fetch all staff profiles ───────────────────────────────────────────────
+  // ── Fetch staff profiles for this company ──────────────────────────────────
   const { data: staff, error: staffError } = await adminClient
     .from('staff_profiles')
     .select('id, first_name, last_name, email, status, applicant_id')
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
   if (staffError) {
