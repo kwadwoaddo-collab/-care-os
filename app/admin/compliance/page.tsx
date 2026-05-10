@@ -3,6 +3,7 @@ import type { AlertItem, AlertsResponse, AlertsSummary } from '@/app/api/admin/c
 import type { ComplianceSummaryResponse } from '@/app/api/admin/compliance/summary/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
 import { STATUS_BADGE_CLS, STATUS_LABEL } from '@/lib/compliance/status'
+import ComplianceActions from './ComplianceActions'
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -166,11 +167,14 @@ export default async function CompliancePage() {
     <div className="space-y-6">
 
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Compliance</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {summary.totalStaff} staff · {summary.activeStaff} active · avg {summary.averageCompliance}% compliance
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Compliance</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {summary.totalStaff} staff · {summary.activeStaff} active · avg {summary.averageCompliance}% compliance
+          </p>
+        </div>
+        <ComplianceActions />
       </div>
 
       {/* ── Compliance item status (from compliance_items table) ───────────── */}

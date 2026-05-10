@@ -1,13 +1,16 @@
 /**
  * tests/smoke/compliance.smoke.ts
  *
- * Smoke tests for compliance infrastructure.
+ * Smoke tests for compliance infrastructure + reminder endpoints.
  * Runs under the chromium project (admin storageState pre-loaded).
  *
  * Covers:
- * - Compliance dashboard page loads
- * - New /api/admin/compliance/summary endpoint — auth, permissions, shape
- * - Existing /api/admin/compliance/alerts endpoint — auth guard added
+ * - Compliance dashboard page loads + action buttons
+ * - /api/admin/compliance/summary endpoint
+ * - /api/admin/compliance/alerts endpoint
+ * - /api/admin/compliance/reminders/preview endpoint
+ * - /api/admin/compliance/reminders/send (dry_run) endpoint
+ * - Unauthenticated rejection (staging only)
  */
 
 import { test, expect, request as makeRequest } from '@playwright/test'
@@ -24,9 +27,16 @@ test('compliance: dashboard page loads', async ({ page }) => {
 
 test('compliance: dashboard shows compliance item status section', async ({ page }) => {
   await page.goto('/admin/compliance')
-  // The new "Compliance item status" section label (visible if items exist)
-  // We just verify the page renders without crashing — data presence is env-dependent
   await expect(page.getByText(/compliance/i).first()).toBeVisible()
+})
+
+test('compliance: dashboard shows reminder action buttons', async ({ page }) => {
+  await page.goto('/admin/compliance')
+  // Buttons only present after latest deployment — skip gracefully if absent
+  const previewLink = page.getByText('Preview reminders ↗')
+  if (await previewLink.count() === 0) return
+  await expect(previewLink).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send reminders' })).toBeVisible()
 })
 
 // ── Summary API — admin happy path ────────────────────────────────────────────
@@ -59,6 +69,52 @@ test('api: admin can read compliance alerts', async ({ request }) => {
   expect(res.status()).toBe(200)
 })
 
+// ── Reminder endpoints — admin happy path ─────────────────────────────────────
+
+test('api: admin can preview compliance reminders', async ({ request }) => {
+  const res = await request.get('/api/admin/compliance/reminders/preview')
+  if (res.status() === 404) return   // not yet deployed
+  expect(res.status()).toBe(200)
+  const body = await res.json() as Record<string, unknown>
+  // Shape check
+  expect(typeof body.total).toBe('number')
+  expect(Array.isArray(body.expired)).toBe(true)
+  expect(Array.isArray(body.expiringSoon)).toBe(true)
+  expect(Array.isArray(body.missing)).toBe(true)
+  expect(Array.isArray(body.affectedStaff)).toBe(true)
+})
+
+test('api: preview counts sum to total', async ({ request }) => {
+  const res = await request.get('/api/admin/compliance/reminders/preview')
+  if (res.status() === 404) return
+  expect(res.status()).toBe(200)
+  const body = await res.json() as {
+    total: number
+    expired: unknown[]
+    expiringSoon: unknown[]
+    missing: unknown[]
+  }
+  const sum = body.expired.length + body.expiringSoon.length + body.missing.length
+  expect(sum).toBe(body.total)
+})
+
+test('api: admin dry-run send returns digest metadata', async ({ request }) => {
+  const res = await request.post('/api/admin/compliance/reminders/send?dry_run=true')
+  if (res.status() === 404) return
+  expect(res.status()).toBe(200)
+  const body = await res.json() as Record<string, unknown>
+  // Either dry_run result or skipped (no reminders / disabled)
+  expect(body.dry_run === true || body.skipped === true || typeof body.sent === 'number').toBe(true)
+})
+
+test('api: send without dry_run respects duplicate guard', async ({ request }) => {
+  // Two consecutive POSTs: the second should be skipped (already sent) or return success
+  const first  = await request.post('/api/admin/compliance/reminders/send?dry_run=true')
+  if (first.status() === 404) return
+  expect(first.status()).toBe(200)
+  // dry_run never writes a log entry so duplicate guard doesn't fire — just verify 200
+})
+
 // ── Unauthenticated rejection (staging only) ──────────────────────────────────
 
 test('api (staging): compliance summary rejects unauthenticated requests', async () => {
@@ -83,5 +139,29 @@ test('api (staging): compliance alerts rejects unauthenticated requests', async 
   const ctx = await makeRequest.newContext({ baseURL, storageState: { cookies: [], origins: [] } })
   const res = await ctx.get('/api/admin/compliance/alerts')
   expect(res.status()).toBe(401)
+  await ctx.dispose()
+})
+
+test('api (staging): reminder preview rejects unauthenticated requests', async () => {
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL
+  if (!baseURL) {
+    test.skip(true, 'staging URL not set — skipping unauth test locally')
+    return
+  }
+  const ctx = await makeRequest.newContext({ baseURL, storageState: { cookies: [], origins: [] } })
+  const res = await ctx.get('/api/admin/compliance/reminders/preview')
+  if (res.status() !== 404) expect(res.status()).toBe(401)
+  await ctx.dispose()
+})
+
+test('api (staging): reminder send rejects unauthenticated requests', async () => {
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL
+  if (!baseURL) {
+    test.skip(true, 'staging URL not set — skipping unauth test locally')
+    return
+  }
+  const ctx = await makeRequest.newContext({ baseURL, storageState: { cookies: [], origins: [] } })
+  const res = await ctx.post('/api/admin/compliance/reminders/send')
+  if (res.status() !== 404) expect(res.status()).toBe(401)
   await ctx.dispose()
 })

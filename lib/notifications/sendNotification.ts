@@ -17,6 +17,9 @@ export type NotificationEventType =
   | 'shift.declined'
   | 'shift.running_late'
   | 'compliance.expiring'
+  | 'compliance.expired'   // items past their expiry date
+  | 'compliance.missing'   // items never started
+  | 'compliance.digest'    // combined compliance reminder digest
   | 'onboarding.incomplete'
   | 'incident.escalated'
   | 'shift.reminder'
@@ -55,6 +58,18 @@ async function getCoordinatorEmails(companyId: string): Promise<string[]> {
     .select('email')
     .eq('company_id', companyId)
     .in('role', ['admin', 'company_admin', 'coordinator', 'super_admin'])
+    .limit(10)
+  if (!data || data.length === 0) return []
+  return (data as { email: string }[]).map((p) => p.email).filter(Boolean)
+}
+
+/** Compliance reminders go to owners/admins only — not coordinators. */
+async function getAdminOnlyEmails(companyId: string): Promise<string[]> {
+  const { data } = await adminClient
+    .from('profiles')
+    .select('email')
+    .eq('company_id', companyId)
+    .in('role', ['admin', 'company_admin', 'super_admin'])
     .limit(10)
   if (!data || data.length === 0) return []
   return (data as { email: string }[]).map((p) => p.email).filter(Boolean)
@@ -203,4 +218,4 @@ export async function sendNotification(payload: NotificationPayload): Promise<No
 }
 
 // ── Re-export helpers for use in digest/reminder routes ───────────────────────
-export { getCompanyName, getCoordinatorEmails, writeLog, sendEmail, APP_URL }
+export { getCompanyName, getCoordinatorEmails, getAdminOnlyEmails, writeLog, sendEmail, APP_URL }
