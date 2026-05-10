@@ -13,18 +13,18 @@ interface WorkerDocument {
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'passport',            label: 'Passport' },
-  { value: 'right_to_work',       label: 'Right to Work' },
-  { value: 'dbs',                 label: 'DBS Certificate' },
+  { value: 'passport',             label: 'Passport' },
+  { value: 'right_to_work',        label: 'Right to Work' },
+  { value: 'dbs',                  label: 'DBS Certificate' },
   { value: 'training_certificate', label: 'Training Certificate' },
-  { value: 'qualification',       label: 'Qualification' },
-  { value: 'proof_of_address',    label: 'Proof of Address' },
-  { value: 'national_insurance',  label: 'National Insurance' },
-  { value: 'other',               label: 'Other' },
+  { value: 'qualification',        label: 'Qualification' },
+  { value: 'proof_of_address',     label: 'Proof of Address' },
+  { value: 'national_insurance',   label: 'National Insurance' },
+  { value: 'other',                label: 'Other' },
 ]
 
 function formatDate(iso: string | null) {
-  if (!iso) return '—'
+  if (!iso) return null
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -32,11 +32,87 @@ function isExpired(iso: string | null) {
   return iso ? new Date(iso) < new Date() : false
 }
 
+function isExpiringSoon(iso: string | null) {
+  if (!iso) return false
+  const days = (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  return days >= 0 && days <= 30
+}
+
 function formatBytes(bytes: number | null) {
-  if (!bytes) return '—'
+  if (!bytes) return null
   if (bytes < 1024)         return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function DocCard({ d }: { d: WorkerDocument }) {
+  const expired = isExpired(d.expiry_date)
+  const soon    = !expired && isExpiringSoon(d.expiry_date)
+  const expiryLabel = formatDate(d.expiry_date)
+
+  const cardCls = expired
+    ? 'bg-red-50 border-red-200'
+    : soon
+    ? 'bg-amber-50 border-amber-200'
+    : 'bg-white border-gray-200'
+
+  const expiryBadgeCls = expired
+    ? 'text-red-600 font-semibold'
+    : soon
+    ? 'text-amber-600 font-medium'
+    : 'text-gray-500'
+
+  return (
+    <div className={`rounded-xl border p-4 ${cardCls}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900">
+            {d.document_type.replace(/_/g, ' ')}
+          </p>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">{d.file_name}</p>
+          <p className="text-xs text-gray-400 mt-0.5">
+            {[formatBytes(d.file_size), formatDate(d.created_at) ? `Uploaded ${formatDate(d.created_at)}` : null]
+              .filter(Boolean).join(' · ')}
+          </p>
+        </div>
+
+        <div className="flex-shrink-0 flex flex-col items-end gap-2 text-right">
+          {expiryLabel ? (
+            <span className={`text-xs ${expiryBadgeCls}`}>
+              {expired ? 'Expired ' : soon ? 'Expiring ' : 'Expires '}
+              {expiryLabel}
+            </span>
+          ) : (
+            <span className="text-xs text-gray-400">No expiry</span>
+          )}
+          {d.file_path ? (
+            <a
+              href={`/api/admin/documents/download?path=${encodeURIComponent(d.file_path)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-indigo-600 font-semibold hover:underline"
+            >
+              Download →
+            </a>
+          ) : (
+            <span className="text-xs text-gray-400">—</span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Skeleton() {
+  return (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-48 bg-gray-100 rounded-2xl" />
+      <div className="h-6 bg-gray-100 rounded w-32" />
+      <div className="space-y-2">
+        {[1, 2].map((i) => <div key={i} className="h-20 bg-gray-100 rounded-xl" />)}
+      </div>
+    </div>
+  )
 }
 
 export default function WorkerDocumentsPage() {
@@ -47,12 +123,12 @@ export default function WorkerDocumentsPage() {
   const [error,   setError]   = useState<string | null>(null)
   const [token,   setToken]   = useState('')
 
-  const [docType,     setDocType]     = useState('passport')
-  const [expiryDate,  setExpiryDate]  = useState('')
-  const [file,        setFile]        = useState<File | null>(null)
-  const [uploading,   setUploading]   = useState(false)
-  const [uploadErr,   setUploadErr]   = useState<string | null>(null)
-  const [uploadOk,    setUploadOk]    = useState(false)
+  const [docType,    setDocType]    = useState('passport')
+  const [expiryDate, setExpiryDate] = useState('')
+  const [file,       setFile]       = useState<File | null>(null)
+  const [uploading,  setUploading]  = useState(false)
+  const [uploadErr,  setUploadErr]  = useState<string | null>(null)
+  const [uploadOk,   setUploadOk]   = useState(false)
 
   function loadDocs(t: string) {
     fetch(`/api/worker/documents?token=${encodeURIComponent(t)}`)
@@ -108,116 +184,149 @@ export default function WorkerDocumentsPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-gray-500">Loading…</p>
-  if (error)   return <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>
+  if (loading) return <Skeleton />
+
+  if (error) {
+    return (
+      <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>
+    )
+  }
+
+  const expiredDocs = docs.filter((d) => isExpired(d.expiry_date))
+  const soonDocs    = docs.filter((d) => isExpiringSoon(d.expiry_date))
+  const okDocs      = docs.filter((d) => !isExpired(d.expiry_date) && !isExpiringSoon(d.expiry_date))
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-gray-900">My Documents</h1>
+    <div className="space-y-6 pb-4">
+      <h1 className="text-xl font-bold text-gray-900">My Documents</h1>
+
+      {/* Status summary */}
+      {(expiredDocs.length > 0 || soonDocs.length > 0) && (
+        <div className="space-y-2">
+          {expiredDocs.length > 0 && (
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <span className="text-base">⚠</span>
+              <span>
+                <strong>{expiredDocs.length}</strong> document{expiredDocs.length > 1 ? 's have' : ' has'} expired — please upload a replacement.
+              </span>
+            </div>
+          )}
+          {soonDocs.length > 0 && (
+            <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
+              <span className="text-base">🗓</span>
+              <span>
+                <strong>{soonDocs.length}</strong> document{soonDocs.length > 1 ? 's expire' : ' expires'} within 30 days.
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Upload form */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Upload a document</h2>
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700">Upload a document</h2>
 
         {uploadOk && (
-          <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">Document uploaded successfully.</div>
+          <div data-testid="upload-document-ok" className="rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-700 font-medium">
+            ✓ Document uploaded successfully.
+          </div>
         )}
         {uploadErr && (
-          <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{uploadErr}</div>
+          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">{uploadErr}</div>
         )}
 
         <form onSubmit={handleUpload} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Document type</label>
-              <select value={docType} onChange={(e) => setDocType(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                {DOCUMENT_TYPES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Expiry date <span className="font-normal text-gray-400">(optional)</span>
-              </label>
-              <input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
-            </div>
+          <div>
+            <label htmlFor="doc-type" className="block text-sm font-medium text-gray-700 mb-1.5">
+              Document type
+            </label>
+            <select
+              id="doc-type"
+              value={docType}
+              onChange={(e) => setDocType(e.target.value)}
+              className="block w-full rounded-xl border border-gray-300 px-3 py-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            >
+              {DOCUMENT_TYPES.map((d) => (
+                <option key={d.value} value={d.value}>{d.label}</option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              File <span className="font-normal text-gray-400">(PDF, JPG, PNG, DOC, DOCX — max 10 MB)</span>
+            <label htmlFor="expiry-date" className="block text-sm font-medium text-gray-700 mb-1.5">
+              Expiry date <span className="font-normal text-gray-400">(optional)</span>
             </label>
-            <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
+            <input
+              id="expiry-date"
+              type="date"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+              className="block w-full rounded-xl border border-gray-300 px-3 py-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
 
-          <button type="submit" disabled={uploading}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              File <span className="font-normal text-gray-400">(PDF, JPG, PNG, DOC — max 10 MB)</span>
+            </label>
+            {/* Custom file button */}
+            <label className="flex flex-col items-center gap-2 w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-5 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors">
+              <span className="text-2xl">📎</span>
+              <span className="text-sm font-medium text-indigo-600">
+                {file ? 'Change file' : 'Tap to select a file'}
+              </span>
+              {file ? (
+                <span className="text-xs text-gray-600 text-center truncate max-w-full px-2">
+                  {file.name} ({formatBytes(file.size)})
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400">PDF, JPG, PNG, DOC, DOCX</span>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={(e) => {
+                  setFile(e.target.files?.[0] ?? null)
+                  setUploadOk(false)
+                }}
+                className="sr-only"
+                aria-label="Select document file"
+              />
+            </label>
+          </div>
+
+          <button
+            data-testid="upload-document-btn"
+            type="submit"
+            disabled={uploading || !file}
+            className="w-full rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
           >
-            {uploading ? 'Uploading…' : 'Upload'}
+            {uploading ? 'Uploading…' : 'Upload Document'}
           </button>
         </form>
       </div>
 
-      {/* Documents list */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+      {/* Document list */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-700">
-            Documents <span className="ml-1 text-gray-400 font-normal">({docs.length})</span>
+            My Documents
+            <span className="ml-1.5 text-gray-400 font-normal">({docs.length})</span>
           </h2>
         </div>
 
         {docs.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-gray-400">No documents uploaded yet.</p>
+          <div className="bg-white rounded-xl border border-gray-200 px-4 py-8 text-center text-sm text-gray-400">
+            No documents uploaded yet.
+          </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-100 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {docs.map((d) => {
-                const expired = isExpired(d.expiry_date)
-                return (
-                  <tr key={d.id} className={expired ? 'bg-red-50' : ''}>
-                    <td className="px-4 py-3 text-gray-900 truncate max-w-[180px]">{d.file_name}</td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{d.document_type.replace(/_/g, ' ')}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap text-sm ${expired ? 'text-red-600 font-medium' : 'text-gray-600'}`}>
-                      {formatDate(d.expiry_date)}
-                      {expired && <span className="ml-1 text-xs">(expired)</span>}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatBytes(d.file_size)}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(d.created_at)}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {d.file_path ? (
-                        <a
-                          href={`/api/admin/documents/download?path=${encodeURIComponent(d.file_path)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-indigo-600 hover:underline font-medium"
-                        >
-                          Download
-                        </a>
-                      ) : (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <div className="space-y-2">
+            {/* Expired first */}
+            {expiredDocs.map((d) => <DocCard key={d.id} d={d} />)}
+            {soonDocs.map((d)    => <DocCard key={d.id} d={d} />)}
+            {okDocs.map((d)      => <DocCard key={d.id} d={d} />)}
+          </div>
         )}
       </div>
     </div>

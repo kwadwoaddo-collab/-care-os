@@ -12,8 +12,8 @@ interface WorkerInfo {
 }
 
 export default function LoginClient({ token }: { token: string }) {
-  const [state, setState] = useState<'loading' | 'success' | 'error'>('loading')
-  const [worker, setWorker] = useState<WorkerInfo | null>(null)
+  const [state,    setState]    = useState<'loading' | 'success' | 'error'>('loading')
+  const [worker,   setWorker]   = useState<WorkerInfo | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
@@ -31,7 +31,6 @@ export default function LoginClient({ token }: { token: string }) {
           setErrorMsg(data.error ?? 'Invalid or expired link.')
           return
         }
-        // Store token for this session
         sessionStorage.setItem('worker_token', token)
         setWorker(data)
         setState('success')
@@ -44,7 +43,8 @@ export default function LoginClient({ token }: { token: string }) {
 
   if (state === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-[200px]">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4">
+        <div className="w-10 h-10 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin" />
         <p className="text-sm text-gray-500">Verifying your access link…</p>
       </div>
     )
@@ -52,9 +52,15 @@ export default function LoginClient({ token }: { token: string }) {
 
   if (state === 'error') {
     return (
-      <div className="max-w-md mx-auto mt-16 rounded-lg bg-red-50 border border-red-200 p-6 text-center">
-        <p className="text-sm font-semibold text-red-700 mb-1">Access link invalid</p>
-        <p className="text-sm text-red-600">{errorMsg}</p>
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
+        <div className="w-full max-w-sm rounded-2xl bg-red-50 border border-red-200 p-6 text-center space-y-3">
+          <span className="text-3xl">🔒</span>
+          <p className="text-base font-semibold text-red-700">Access link invalid</p>
+          <p className="text-sm text-red-600">{errorMsg}</p>
+          <p className="text-xs text-red-500 pt-1">
+            Ask your manager to resend your worker portal invite.
+          </p>
+        </div>
       </div>
     )
   }
@@ -62,16 +68,18 @@ export default function LoginClient({ token }: { token: string }) {
   const displayName = [worker?.first_name, worker?.last_name].filter(Boolean).join(' ') || 'Worker'
 
   return (
-    <div className="max-w-md mx-auto mt-16 rounded-lg bg-white border border-gray-200 p-8 text-center space-y-4">
-      <div className="text-3xl">👋</div>
-      <h1 className="text-lg font-semibold text-gray-900">Welcome, {displayName}</h1>
-      {worker?.job_role && (
-        <p className="text-sm text-gray-500">{worker.job_role}</p>
-      )}
-      <div className="pt-2">
+    <div className="flex items-center justify-center min-h-[60vh] px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white border border-gray-200 p-8 text-center space-y-5">
+        <div className="text-4xl">👋</div>
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Welcome, {displayName}</h1>
+          {worker?.job_role && (
+            <p className="text-sm text-gray-500 mt-1">{worker.job_role}</p>
+          )}
+        </div>
         <Link
           href="/worker/dashboard"
-          className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors"
+          className="block w-full rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all"
         >
           Go to my dashboard →
         </Link>

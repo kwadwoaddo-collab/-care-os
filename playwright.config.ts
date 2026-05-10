@@ -99,7 +99,7 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts', '**/worker.writes.smoke.ts'],
     },
     {
       name: 'firefox',
@@ -108,7 +108,7 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts', '**/worker.writes.smoke.ts'],
     },
     {
       name: 'mobile-chrome',
@@ -117,7 +117,7 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts', '**/worker.writes.smoke.ts'],
     },
 
     // ── Step 3: auth flow tests — explicit login, no storageState ────────────
@@ -141,6 +141,17 @@ export default defineConfig({
       use: { ...devices['Pixel 5'] },
       dependencies: ['worker-setup'],
       testMatch: ['**/worker.smoke.ts'],
+    },
+
+    // ── Step 5: worker write-action API tests ─────────────────────────────────
+    // Tests call worker APIs directly via Playwright's request fixture.
+    // The worker token is sent in the request body — no browser session needed.
+    // "worker-setup" validates the token is in the DB before tests run.
+    {
+      name: 'worker-writes',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['worker-setup'],
+      testMatch: ['**/worker.writes.smoke.ts'],
     },
   ],
 

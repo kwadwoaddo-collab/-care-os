@@ -226,7 +226,7 @@ export default function WorkerVisitNotePage() {
           )}
         </FormSection>
 
-        <FormSection label="Food &amp; Fluid Intake">
+        <FormSection label="Food & Fluid Intake">
           <Textarea value={foodFluid} onChange={setFoodFluid}
             placeholder="What did the client eat and drink?"
             disabled={isLocked} />
@@ -269,7 +269,7 @@ export default function WorkerVisitNotePage() {
             <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">{saveError}</div>
           )}
           {saveOk && (
-            <div className="rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-700">✓ Draft saved.</div>
+            <div data-testid="save-draft-ok" className="rounded-xl bg-green-50 border border-green-200 p-3 text-sm text-green-700">✓ Draft saved.</div>
           )}
 
           {/* Inline submit confirmation */}
@@ -297,6 +297,7 @@ export default function WorkerVisitNotePage() {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               <button
+                data-testid="save-draft-btn"
                 onClick={handleSave}
                 disabled={saving || submitting}
                 className="rounded-xl bg-gray-100 py-3.5 text-sm font-semibold text-gray-800 hover:bg-gray-200 active:scale-95 transition-all disabled:opacity-50"
@@ -304,6 +305,7 @@ export default function WorkerVisitNotePage() {
                 {saving ? 'Saving…' : 'Save Draft'}
               </button>
               <button
+                data-testid="submit-note-btn"
                 onClick={() => { setSaveError(null); setConfirmSubmit(true) }}
                 disabled={saving || submitting}
                 className="rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-50"
@@ -324,7 +326,7 @@ export default function WorkerVisitNotePage() {
 function FormSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
-      <p className="text-sm font-semibold text-gray-700" dangerouslySetInnerHTML={{ __html: label }} />
+      <p className="text-sm font-semibold text-gray-700">{label}</p>
       {children}
     </div>
   )
@@ -343,7 +345,7 @@ function Textarea({
       placeholder={placeholder}
       disabled={disabled}
       rows={rows}
-      className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
+      className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:bg-gray-50 disabled:text-gray-500 placeholder:text-gray-400"
     />
   )
 }
