@@ -1,15 +1,14 @@
 import 'server-only'
 
-import { Resend } from 'resend'
 import { adminClient } from '@/lib/supabase/admin'
+import { sendEmail as centralSendEmail } from '@/lib/email/sendEmail'
+import { emailConfig } from '@/lib/email/config'
 import { shiftAssignedTemplate,   type ShiftAssignedData   } from './templates/shiftAssigned'
 import { shiftDeclinedTemplate,   type ShiftDeclinedData   } from './templates/shiftDeclined'
 import { runningLateTemplate,     type RunningLateData     } from './templates/runningLate'
 import { incidentEscalatedTemplate, type IncidentEscalatedData } from './templates/incidentEscalated'
 
-const resend      = new Resend(process.env.RESEND_API_KEY)
-const FROM_EMAIL  = process.env.INVITE_FROM_EMAIL ?? 'noreply@caresupreme.com'
-const APP_URL     = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const APP_URL = emailConfig.appUrl
 
 // ── Event types ───────────────────────────────────────────────────────────────
 
@@ -107,19 +106,9 @@ async function sendEmail(params: {
   html:     string
   text:     string
 }): Promise<{ success: boolean; error?: string }> {
-  try {
-    const { error } = await resend.emails.send({
-      from:    FROM_EMAIL,
-      to:      params.to,
-      subject: params.subject,
-      html:    params.html,
-      text:    params.text,
-    })
-    if (error) return { success: false, error: String(error) }
-    return { success: true }
-  } catch (err) {
-    return { success: false, error: String(err) }
-  }
+  const result = await centralSendEmail(params)
+  if (!result.success) return { success: false, error: result.error }
+  return { success: true }
 }
 
 // ── Main function ─────────────────────────────────────────────────────────────

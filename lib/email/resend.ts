@@ -2,12 +2,10 @@
  * lib/email/resend.ts
  *
  * Server-side only — never import this from a client component.
- * The RESEND_API_KEY must stay on the server; it is never exposed to the browser.
  */
 
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { sendEmail }   from './sendEmail'
+import { emailConfig } from './config'
 
 export interface SendInviteEmailOptions {
   to: string
@@ -18,18 +16,11 @@ export interface SendInviteEmailOptions {
   expiresAt: string
 }
 
-/**
- * Sends the applicant invite email.
- *
- * Returns `{ success: true }` on success or `{ success: false, error }` on failure.
- * The caller is responsible for deciding whether to surface the error.
- */
 export async function sendInviteEmail(
   opts: SendInviteEmailOptions,
 ): Promise<{ success: true } | { success: false; error: unknown }> {
   const { to, firstName, jobRole, magicLink, expiresAt } = opts
 
-  const fromEmail = process.env.INVITE_FROM_EMAIL ?? 'noreply@caresupreme.com'
   const companyName = 'Care Supreme'
 
   const expiryDate = new Date(expiresAt).toLocaleDateString('en-GB', {
@@ -137,23 +128,12 @@ export async function sendInviteEmail(
     `© ${new Date().getFullYear()} ${companyName}`,
   ].join('\n')
 
-  try {
-    const { error } = await resend.emails.send({
-      from: fromEmail,
-      to,
-      subject: `Your ${companyName} application link`,
-      html,
-      text,
-    })
-
-    if (error) {
-      return { success: false, error }
-    }
-
-    return { success: true }
-  } catch (err) {
-    return { success: false, error: err }
-  }
+  return sendEmail({
+    to,
+    subject: `Your ${companyName} application link`,
+    html,
+    text,
+  })
 }
 
 // ── Worker portal email ───────────────────────────────────────────────────────
@@ -171,7 +151,6 @@ export async function sendWorkerPortalEmail(
 ): Promise<{ success: true } | { success: false; error: unknown }> {
   const { to, firstName, jobRole, magicLink, expiresAt } = opts
 
-  const fromEmail   = process.env.INVITE_FROM_EMAIL ?? 'noreply@caresupreme.com'
   const companyName = 'Care Supreme'
 
   const expiryDate = new Date(expiresAt).toLocaleDateString('en-GB', {
@@ -261,17 +240,13 @@ export async function sendWorkerPortalEmail(
     `© ${new Date().getFullYear()} ${companyName}`,
   ].join('\n')
 
-  try {
-    const { error } = await resend.emails.send({
-      from: fromEmail,
-      to,
-      subject: `Your ${companyName} worker portal access`,
-      html,
-      text,
-    })
-    if (error) return { success: false, error }
-    return { success: true }
-  } catch (err) {
-    return { success: false, error: err }
-  }
+  return sendEmail({
+    to,
+    subject: `Your ${companyName} worker portal access`,
+    html,
+    text,
+  })
 }
+
+// Re-export appUrl for any callers that need it
+export const appUrl = emailConfig.appUrl
