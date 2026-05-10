@@ -16,7 +16,21 @@ test('Incidents list loads correctly', async ({ page }) => {
 
 test('Incidents list shows QA-seeded incidents', async ({ page }) => {
   await expectAdminPage(page, '/admin/incidents')
-  await page.waitForTimeout(1_500)
+
+  // Create a deterministic [QA] incident via the UI so this test is self-contained
+  // and does not depend on pre-seeded staging data (absent after qa:reset).
+  const ts = Date.now()
+  await page.locator('[data-testid="create-incident-btn"]').click()
+  const descField = page.locator('[data-testid="create-incident-description"]')
+  await expect(descField).toBeVisible()
+  await descField.fill(`[QA] Smoke assertion incident. Safe to delete. ts=${ts}`)
+  await page.locator('[data-testid="create-incident-submit"]').evaluate(
+    (el) => (el as HTMLButtonElement).click()
+  )
+  await expect(page.locator('[data-testid="create-incident-success"]')).toBeVisible({ timeout: 10_000 })
+
+  // Navigate back to the list — the newly created incident must now appear
+  await page.goto('/admin/incidents')
   const qaCount = await page.locator('text=[QA]').count()
   expect(qaCount).toBeGreaterThan(0)
 })
