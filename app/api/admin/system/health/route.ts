@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
+import { forbidden } from '@/lib/auth/responses'
 
-// Public-ish — no auth guard intentionally (health checks run before session).
-// In production, restrict to internal network or add a secret header check.
-
+// Previously public — now requires an authenticated admin session with system:read.
+// External health monitors should use a dedicated /api/health route (future work).
 export async function GET() {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'system:read')) return forbidden('Insufficient permissions')
   const timestamp = new Date().toISOString()
 
   // ── Database ────────────────────────────────────────────────────────────────
@@ -28,6 +33,9 @@ export async function GET() {
   const resendConfigured = Boolean(
     process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.length > 10
   )
+  const emailFromConfigured = Boolean(
+    process.env.EMAIL_FROM ?? process.env.INVITE_FROM_EMAIL
+  )
   const appUrlConfigured = Boolean(
     process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.startsWith('http')
   )
@@ -42,6 +50,7 @@ export async function GET() {
     database,
     storage,
     resendConfigured,
+    emailFromConfigured,
     appUrlConfigured,
     authSession,
     timestamp,

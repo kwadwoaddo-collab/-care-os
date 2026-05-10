@@ -1,5 +1,3 @@
-import 'server-only'
-
 // ── Roles ─────────────────────────────────────────────────────────────────────
 
 export const ROLES = ['super_admin', 'company_admin', 'coordinator', 'care_worker'] as const

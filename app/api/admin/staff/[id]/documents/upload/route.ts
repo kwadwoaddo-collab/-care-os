@@ -3,6 +3,8 @@ import { adminClient } from '@/lib/supabase/admin'
 import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { ipRateLimit } from '@/lib/rateLimit'
+import { can } from '@/lib/auth/permissions'
+import { forbidden } from '@/lib/auth/responses'
 import {
   DOCUMENT_TYPE_SET,
   DOCUMENT_TYPE_VALUES,
@@ -24,6 +26,7 @@ export async function POST(
 
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'documents:upload')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   const { id: staffProfileId } = await params

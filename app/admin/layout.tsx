@@ -1,24 +1,37 @@
 import { ENABLE_TIMESHEETS } from '@/lib/features'
 import { createClient } from '@/lib/supabase/server'
+import { normaliseRole } from '@/lib/auth/roles'
+import { can, type Permission } from '@/lib/auth/permissions'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // QA banner: show when the current company name contains "QA"
+  // Fetch user profile once for: QA banner + nav permission filtering.
+  // Non-blocking — layout never crashes on auth errors.
   let isQaEnvironment = false
+  let userRole = ''
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('company_id, companies(name)')
+        .select('company_id, role, companies(name)')
         .eq('id', user.id)
         .maybeSingle()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const companyName: string = (profile?.companies as any)?.name ?? ''
       isQaEnvironment = companyName.includes('QA')
+      userRole = normaliseRole((profile?.role as string | null) ?? '')
     }
   } catch {
     // Non-blocking — don't crash the layout
+  }
+
+  // If role is unknown (unauthenticated or error), default to showing all links.
+  // Individual API routes and page guards enforce the real restrictions.
+  const showAll = userRole === ''
+  function navCan(permission: Permission): boolean {
+    return showAll || can(userRole, permission)
   }
 
   return (
@@ -50,46 +63,72 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-6">
           <span className="font-semibold text-gray-900 text-sm tracking-tight">Care OS — Admin</span>
           <nav className="flex items-center gap-4 text-sm text-gray-600">
-            <a href="/admin/applicants" className="hover:text-gray-900 transition-colors">
-              Applicants
-            </a>
-            <a href="/admin/staff" className="hover:text-gray-900 transition-colors">
-              Staff
-            </a>
-            <a href="/admin/onboarding" className="hover:text-gray-900 transition-colors">
-              Onboarding
-            </a>
-            <a href="/admin/compliance" className="hover:text-gray-900 transition-colors">
-              Compliance
-            </a>
-            <a href="/admin/audit-log" className="hover:text-gray-900 transition-colors">
-              Audit Log
-            </a>
-            <a href="/admin/notifications" className="hover:text-gray-900 transition-colors">
-              Notifications
-            </a>
-            <a href="/admin/clients" className="hover:text-gray-900 transition-colors">
-              Clients
-            </a>
-            <a href="/admin/care-packages" className="hover:text-gray-900 transition-colors">
-              Care Packages
-            </a>
-            <a href="/admin/shifts" className="hover:text-gray-900 transition-colors">
-              Shifts
-            </a>
-            <a href="/admin/shifts/operations" className="hover:text-gray-900 transition-colors">
-              Shift Ops
-            </a>
-            <a href="/admin/visit-notes" className="hover:text-gray-900 transition-colors">
-              Visit Notes
-            </a>
-            <a href="/admin/incidents" className="hover:text-gray-900 transition-colors">
-              Incidents
-            </a>
-            <a href="/admin/system" className="hover:text-gray-900 transition-colors">
-              System
-            </a>
-            {ENABLE_TIMESHEETS && (
+            {navCan('applicants:read') && (
+              <a href="/admin/applicants" className="hover:text-gray-900 transition-colors">
+                Applicants
+              </a>
+            )}
+            {navCan('staff:read') && (
+              <a href="/admin/staff" className="hover:text-gray-900 transition-colors">
+                Staff
+              </a>
+            )}
+            {navCan('staff:read') && (
+              <a href="/admin/onboarding" className="hover:text-gray-900 transition-colors">
+                Onboarding
+              </a>
+            )}
+            {navCan('compliance:read') && (
+              <a href="/admin/compliance" className="hover:text-gray-900 transition-colors">
+                Compliance
+              </a>
+            )}
+            {navCan('audit_log:read') && (
+              <a href="/admin/audit-log" className="hover:text-gray-900 transition-colors">
+                Audit Log
+              </a>
+            )}
+            {navCan('notifications:read') && (
+              <a href="/admin/notifications" className="hover:text-gray-900 transition-colors">
+                Notifications
+              </a>
+            )}
+            {navCan('clients:read') && (
+              <a href="/admin/clients" className="hover:text-gray-900 transition-colors">
+                Clients
+              </a>
+            )}
+            {navCan('care_packages:read') && (
+              <a href="/admin/care-packages" className="hover:text-gray-900 transition-colors">
+                Care Packages
+              </a>
+            )}
+            {navCan('shifts:read') && (
+              <a href="/admin/shifts" className="hover:text-gray-900 transition-colors">
+                Shifts
+              </a>
+            )}
+            {navCan('shifts:read') && (
+              <a href="/admin/shifts/operations" className="hover:text-gray-900 transition-colors">
+                Shift Ops
+              </a>
+            )}
+            {navCan('visit_notes:read') && (
+              <a href="/admin/visit-notes" className="hover:text-gray-900 transition-colors">
+                Visit Notes
+              </a>
+            )}
+            {navCan('incidents:read') && (
+              <a href="/admin/incidents" className="hover:text-gray-900 transition-colors">
+                Incidents
+              </a>
+            )}
+            {navCan('system:read') && (
+              <a href="/admin/system" className="hover:text-gray-900 transition-colors">
+                System
+              </a>
+            )}
+            {ENABLE_TIMESHEETS && navCan('timesheets:read') && (
               <a href="/admin/timesheets" className="hover:text-gray-900 transition-colors">
                 Timesheets
               </a>

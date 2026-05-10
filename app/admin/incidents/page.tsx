@@ -5,6 +5,9 @@ import CreateIncidentButton from './CreateIncidentButton'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
+import AccessDenied from '@/components/admin/AccessDenied'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -83,6 +86,9 @@ export default async function IncidentsPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  const auth = await requireAdmin()
+  if (!auth.ok || !can(auth.ctx.role, 'incidents:read')) return <AccessDenied />
+
   const raw = await searchParams
 
   const params = new URLSearchParams()

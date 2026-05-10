@@ -1,14 +1,18 @@
 // app/admin/system/page.tsx
 // System health dashboard for pre-launch operational visibility.
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
+import AccessDenied from '@/components/admin/AccessDenied'
 
 interface HealthData {
-  database:         boolean
-  storage:          boolean
-  resendConfigured: boolean
-  appUrlConfigured: boolean
-  authSession:      boolean
-  timestamp:        string
+  database:             boolean
+  storage:              boolean
+  resendConfigured:     boolean
+  emailFromConfigured:  boolean
+  appUrlConfigured:     boolean
+  authSession:          boolean
+  timestamp:            string
 }
 
 async function getHealth(): Promise<HealthData | null> {
@@ -105,6 +109,9 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function SystemPage() {
+  const auth = await requireAdmin()
+  if (!auth.ok || !can(auth.ctx.role, 'system:read')) return <AccessDenied />
+
   const health = await getHealth()
 
   const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'Not set'
@@ -124,7 +131,7 @@ export default async function SystemPage() {
 
   // Overall status
   const allOk = health
-    ? health.database && health.storage && health.resendConfigured && health.appUrlConfigured
+    ? health.database && health.storage && health.resendConfigured && health.emailFromConfigured && health.appUrlConfigured
     : false
   const hasWarnings = health
     ? !health.database || !health.storage
@@ -200,9 +207,20 @@ export default async function SystemPage() {
             detail={appUrl}
           />
           <StatusCard
-            label="Resend (Email)"
+            label="Resend API Key"
             ok={health?.resendConfigured ?? hasResend}
-            detail={hasResend ? 'RESEND_API_KEY configured' : 'Not configured — invite emails will fail'}
+            detail={hasResend ? 'RESEND_API_KEY configured' : 'Not configured — all emails will fail'}
+          />
+          <StatusCard
+            label="Email From Address"
+            ok={health?.emailFromConfigured ?? Boolean(process.env.EMAIL_FROM ?? process.env.INVITE_FROM_EMAIL)}
+            detail={
+              process.env.EMAIL_FROM
+                ? process.env.EMAIL_FROM
+                : process.env.INVITE_FROM_EMAIL
+                ? process.env.INVITE_FROM_EMAIL
+                : 'EMAIL_FROM not set — using fallback sender'
+            }
           />
           <StatusCard
             label="Auth Supabase client"
