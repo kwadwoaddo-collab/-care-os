@@ -10,17 +10,22 @@ export interface DigestShift {
 }
 
 export interface DailyDigestData {
-  companyName:        string
-  date:               string
-  totalShifts:        number
-  unassignedShifts:   number
-  declinedShifts:     number
-  runningLate:        number
-  draftNotes:         number
-  openIncidents:      number
-  hrIncomplete:       number
-  shifts:             DigestShift[]
-  adminLink:          string
+  companyName:             string
+  date:                    string
+  totalShifts:             number
+  unassignedShifts:        number
+  declinedShifts:          number
+  runningLate:             number
+  draftNotes:              number
+  openIncidents:           number
+  hrIncomplete:            number
+  shifts:                  DigestShift[]
+  adminLink:               string
+  // Compliance counts from compliance_items table
+  complianceExpired:       number
+  complianceExpiringSoon:  number
+  complianceMissing:       number
+  complianceAffectedStaff: number
 }
 
 function statCell(count: number, label: string, urgent: boolean): string {
@@ -94,8 +99,24 @@ export function dailyDigestTemplate(d: DailyDigestData): { subject: string; html
     </table>
     ` : '<p style="font-size:13px;color:#9ca3af;">No shifts scheduled today.</p>'}
 
+    <!-- Compliance summary -->
+    <p style="margin:20px 0 8px;font-size:13px;font-weight:600;color:#374151;">Compliance</p>
+    <table cellpadding="0" cellspacing="0" style="width:100%;background:#f9fafb;border-radius:8px;margin:0 0 24px;">
+      <tr>
+        ${statCell(d.complianceExpired,       'Expired',       true)}
+        ${statCell(d.complianceExpiringSoon,  'Expiring soon', d.complianceExpiringSoon > 0)}
+        ${statCell(d.complianceMissing,       'Missing',       false)}
+        ${statCell(d.complianceAffectedStaff, 'Staff affected',false)}
+      </tr>
+    </table>
+
     ${ctaButton('Open Care OS Dashboard', d.adminLink)}
   `
+
+  const complianceAllClear =
+    d.complianceExpired === 0 &&
+    d.complianceExpiringSoon === 0 &&
+    d.complianceMissing === 0
 
   const text = [
     `CARE OS DAILY DIGEST — ${d.date}`,
@@ -109,12 +130,19 @@ export function dailyDigestTemplate(d: DailyDigestData): { subject: string; html
     `Open incidents:   ${d.openIncidents}`,
     `HR incomplete:    ${d.hrIncomplete}`,
     '',
+    `COMPLIANCE`,
+    `Expired:          ${d.complianceExpired}`,
+    `Expiring soon:    ${d.complianceExpiringSoon}`,
+    `Missing:          ${d.complianceMissing}`,
+    `Staff affected:   ${d.complianceAffectedStaff}`,
+    complianceAllClear ? '(All compliance items are current)' : '',
+    '',
     urgentItems.length > 0 ? `ACTION REQUIRED: ${urgentItems.join(' · ')}` : 'No urgent actions.',
     '',
     `View dashboard: ${d.adminLink}`,
     '',
     `${d.companyName}`,
-  ].join('\n')
+  ].filter((line) => line !== undefined).join('\n')
 
   return { subject, html: emailShell(d.companyName, subject, body), text }
 }

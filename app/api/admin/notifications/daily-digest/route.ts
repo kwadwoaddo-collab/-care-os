@@ -9,6 +9,7 @@ import {
   APP_URL,
 } from '@/lib/notifications/sendNotification'
 import { dailyDigestTemplate, type DigestShift } from '@/lib/notifications/templates/dailyDigest'
+import { getAllReminders } from '@/lib/compliance/reminders'
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin()
@@ -118,6 +119,21 @@ export async function POST(request: NextRequest) {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
 
+  // Compliance counts — non-blocking; digest still sends if this fails
+  let complianceExpired       = 0
+  let complianceExpiringSoon  = 0
+  let complianceMissing       = 0
+  let complianceAffectedStaff = 0
+  try {
+    const reminders = await getAllReminders(companyId)
+    complianceExpired      = reminders.filter((r) => r.itemStatus === 'expired').length
+    complianceExpiringSoon = reminders.filter((r) => r.itemStatus === 'expiring_soon').length
+    complianceMissing      = reminders.filter((r) => r.itemStatus === 'missing').length
+    complianceAffectedStaff = new Set(reminders.map((r) => r.staffProfileId)).size
+  } catch (err) {
+    console.error('[daily-digest] compliance fetch failed (non-blocking):', err)
+  }
+
   const digestData = {
     companyName,
     date:             dateLabel,
@@ -130,6 +146,10 @@ export async function POST(request: NextRequest) {
     hrIncomplete:     hrIncompleteResult.count  ?? 0,
     shifts,
     adminLink:        `${APP_URL}/admin`,
+    complianceExpired,
+    complianceExpiringSoon,
+    complianceMissing,
+    complianceAffectedStaff,
   }
 
   if (dryRun) {

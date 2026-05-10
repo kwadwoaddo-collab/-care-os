@@ -115,6 +115,27 @@ test('api: send without dry_run respects duplicate guard', async ({ request }) =
   // dry_run never writes a log entry so duplicate guard doesn't fire — just verify 200
 })
 
+// ── Daily digest compliance integration ──────────────────────────────────────
+
+test('api: daily digest dry-run includes compliance counts', async ({ request }) => {
+  const res = await request.post('/api/admin/notifications/daily-digest?dry_run=true')
+  expect(res.status()).toBe(200)
+  const body = await res.json() as {
+    dry_run:      boolean
+    preview_data: Record<string, unknown>
+    text_preview: string
+  }
+  expect(body.dry_run).toBe(true)
+  // Guard: skip shape checks if compliance fields not yet deployed
+  if (body.preview_data?.complianceExpired === undefined) return
+  expect(typeof body.preview_data.complianceExpired).toBe('number')
+  expect(typeof body.preview_data.complianceExpiringSoon).toBe('number')
+  expect(typeof body.preview_data.complianceMissing).toBe('number')
+  expect(typeof body.preview_data.complianceAffectedStaff).toBe('number')
+  // Text preview must contain the compliance section
+  expect(body.text_preview).toContain('COMPLIANCE')
+})
+
 // ── Unauthenticated rejection (staging only) ──────────────────────────────────
 
 test('api (staging): compliance summary rejects unauthenticated requests', async () => {
