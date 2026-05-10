@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function Home() {
-  redirect('/portal/apply')
+  redirect('/admin/login')
 }

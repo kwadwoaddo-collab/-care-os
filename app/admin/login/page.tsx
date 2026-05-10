@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import LoginForm from './LoginForm'
 
 export const metadata = { title: 'Admin Login — Care OS' }
@@ -14,7 +15,9 @@ export default function AdminLoginPage() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 px-6 py-8 shadow-sm">
-          <LoginForm />
+          <Suspense fallback={<div className="h-48" />}>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>

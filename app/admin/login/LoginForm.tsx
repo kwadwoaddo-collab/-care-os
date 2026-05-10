@@ -1,14 +1,17 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/browser'
 
 export default function LoginForm() {
-  const router  = useRouter()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const callbackError = searchParams.get('error') ?? ''
+
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
+  const [error, setError]       = useState(callbackError)
   const [loading, setLoading]   = useState(false)
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
