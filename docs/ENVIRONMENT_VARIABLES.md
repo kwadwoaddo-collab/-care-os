@@ -17,6 +17,7 @@ Copy `.env.local.example` → `.env.local` and fill in real values before runnin
 | `EMAIL_FROM` | ✅ Yes (for email) | — | Verified sender address for all outgoing emails |
 | `EMAIL_REPLY_TO` | ❌ No | — | Optional reply-to address included in all emails |
 | `INVITE_FROM_EMAIL` | ⚠️ Deprecated | — | Legacy sender var — superseded by `EMAIL_FROM`. Still read as fallback. |
+| `CRON_SECRET` | ✅ Yes (for cron) | — | Bearer token authenticating Vercel Cron requests to `/api/cron/*`. Fail-closed: no secret = all cron requests denied. |
 
 ---
 
@@ -96,6 +97,50 @@ Care OS <notifications@care.sprintscaleit.co.uk>
 ```
 Retained as a fallback while migrating. Prefer `EMAIL_FROM`. Will be removed in a future release.
 
+### `CRON_SECRET`
+```
+a-long-random-string-32-chars-minimum
+```
+A shared secret that Vercel Cron injects as `Authorization: Bearer <secret>` when calling scheduled endpoints.
+
+**How it works:**
+- Set `CRON_SECRET` in Vercel → Project Settings → Environment Variables (all environments, but only used in deployed environments).
+- Vercel automatically attaches `Authorization: Bearer <CRON_SECRET>` to all cron invocations defined in `vercel.json`.
+- If `CRON_SECRET` is not set, the endpoint denies **all** requests (fail-closed, not fail-open).
+
+**Scheduled endpoints protected by this secret:**
+- `GET /api/cron/compliance-reminders` — runs daily at 07:00 UTC
+
+**Generate a suitable secret:**
+```bash
+openssl rand -base64 32
+```
+
+**Test locally:**
+```bash
+# Start the dev server in one terminal
+npm run dev
+
+# In another terminal — trigger the cron manually
+curl -X GET http://localhost:3000/api/cron/compliance-reminders \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+**Test in production:**
+```bash
+curl -X GET https://care-os-flame.vercel.app/api/cron/compliance-reminders \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+Expected response: `{ "processed": N, "sent": N, "skipped": N, ... }`
+
+**Verify unauthorized requests are rejected:**
+```bash
+curl -X GET https://care-os-flame.vercel.app/api/cron/compliance-reminders
+# Expected: 401 Unauthorized
+```
+
+⚠️ **Never** commit this value to source control or include it in `NEXT_PUBLIC_*` variables.
+
 ### `QA_BYPASS_AUTH`
 ```
 true   # only in .env.local for local QA testing
@@ -172,6 +217,7 @@ NEXT_PUBLIC_APP_URL=https://care-os.sprintscaleit.co.uk
 RESEND_API_KEY=re_xxxxxxxxxxxx
 EMAIL_FROM=Care OS <notifications@care.sprintscaleit.co.uk>
 EMAIL_REPLY_TO=support@sprintscaleit.co.uk
+CRON_SECRET=your-generated-secret-here
 ```
 
 ---
@@ -182,6 +228,7 @@ EMAIL_REPLY_TO=support@sprintscaleit.co.uk
 |---|---|
 | `SUPABASE_SERVICE_ROLE_KEY` never in browser bundle | ✅ server-only (`import 'server-only'`) |
 | `RESEND_API_KEY` never in browser bundle | ✅ server-only (`lib/email/sendEmail.ts`) |
+| `CRON_SECRET` never in browser bundle | ✅ server-only (`app/api/cron/*/route.ts`) |
 | `QA_BYPASS_AUTH` never in Vercel env vars | ✅ throw guard if reached in production |
 | `.env.local` gitignored | ✅ |
 | No secrets in `NEXT_PUBLIC_*` vars | ✅ anon key only |
