@@ -19,6 +19,25 @@ const QA_ADMIN       = { email: 'qa-admin@sprintscaleit.co.uk',       password: 
 const QA_COORDINATOR = { email: 'qa-coordinator@sprintscaleit.co.uk', password: 'ChangeMe123!' }
 const QA_WORKER      = { email: 'qa-worker@sprintscaleit.co.uk',      password: 'ChangeMe123!' }
 
+// ── Worker portal token (magic-link auth) ─────────────────────────────────────
+//
+// Worker pages use sessionStorage (not cookies), so storageState cannot persist
+// their session. Instead we inject this known QA token via page.addInitScript
+// before each page load. The qa:seed script registers the token's SHA-256 hash
+// in staff_profiles.portal_token_hash with a 2030 expiry.
+
+export const QA_WORKER_PORTAL_TOKEN = 'qa-worker-portal-token-v1'
+
+/**
+ * Inject the QA worker session token into sessionStorage before the next
+ * page load. Call this before page.goto() in worker-portal tests.
+ */
+export async function injectWorkerSession(page: Page): Promise<void> {
+  await page.addInitScript((token: string) => {
+    sessionStorage.setItem('worker_token', token)
+  }, QA_WORKER_PORTAL_TOKEN)
+}
+
 // ── Core login implementation ─────────────────────────────────────────────────
 
 async function performLogin(page: Page, email: string, password: string): Promise<void> {

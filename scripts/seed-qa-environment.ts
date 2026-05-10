@@ -26,6 +26,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('dotenv').config({ path: '.env.local' })
 
+import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import ws from 'ws'
 import {
@@ -42,6 +43,7 @@ import {
   createQaDocument,
   createQaComplianceItems,
   isoNow,
+  daysFromNow,
   type Row,
 } from './qa-helpers'
 
@@ -68,7 +70,7 @@ const DRY_RUN = args.includes('--dry-run')
 
 // ── Logging helpers ───────────────────────────────────────────────────────────
 
-const COUNTS = { clients: 0, staff: 0, care_packages: 0, shifts: 0, visit_notes: 0, incidents: 0, timesheets: 0, documents: 0, compliance_items: 0 }
+const COUNTS = { clients: 0, staff: 0, care_packages: 0, shifts: 0, visit_notes: 0, incidents: 0, timesheets: 0, documents: 0, compliance_items: 0, qa_worker_shifts: 0 }
 
 function log(msg: string)  { console.log(msg) }
 function ok(msg: string)   { console.log(`  ✓ ${msg}`) }
@@ -239,6 +241,180 @@ async function logFakeNotification(companyId: string, recipientEmail: string, su
   else ok(`Logged fake notification for ${recipientEmail}`)
 }
 
+// ── QA worker portal token ────────────────────────────────────────────────────
+//
+// The worker portal uses sessionStorage token auth (magic-link), not cookies.
+// Playwright cannot persist sessionStorage via storageState, so tests inject a
+// known token via page.addInitScript. This function ensures that token's SHA-256
+// hash exists in staff_profiles.portal_token_hash with a far-future expiry.
+//
+// Token: 'qa-worker-portal-token-v1'  (never changes — tests depend on it)
+// Expiry: 2030-01-01 (effectively permanent for QA purposes)
+
+const QA_WORKER_PORTAL_TOKEN    = 'qa-worker-portal-token-v1'
+const QA_WORKER_TOKEN_EXPIRY    = '2030-01-01T00:00:00.000Z'
+const QA_WORKER_EMAIL           = 'qa-worker@sprintscaleit.co.uk'
+
+async function seedWorkerPortalToken(companyId: string): Promise<string> {
+  log('\n🔑 Seeding QA worker portal token…')
+
+  const tokenHash = crypto.createHash('sha256').update(QA_WORKER_PORTAL_TOKEN).digest('hex')
+
+  if (DRY_RUN) {
+    info(`Would upsert staff_profile for ${QA_WORKER_EMAIL} with portal_token_hash`)
+    return 'dry-run-qa-worker-profile-id'
+  }
+
+  // Check if the token hash is already registered
+  const { data: byHash } = await db
+    .from('staff_profiles')
+    .select('id, email')
+    .eq('company_id', companyId)
+    .eq('portal_token_hash', tokenHash)
+    .maybeSingle()
+
+  if (byHash) {
+    ok(`QA worker portal token already seeded → staff profile ${byHash.id}`)
+    return byHash.id as string
+  }
+
+  // Check if a staff profile for this email already exists (update it)
+  const { data: byEmail } = await db
+    .from('staff_profiles')
+    .select('id')
+    .eq('company_id', companyId)
+    .eq('email', QA_WORKER_EMAIL)
+    .maybeSingle()
+
+  if (byEmail) {
+    const { error } = await db
+      .from('staff_profiles')
+      .update({
+        portal_token_hash:       tokenHash,
+        portal_token_expires_at: QA_WORKER_TOKEN_EXPIRY,
+        status:                  'active',
+        onboarding_completed:    true,
+      })
+      .eq('id', byEmail.id)
+
+    if (error) { fail(`Could not update portal token: ${error.message}`); return '' }
+    ok(`Updated existing QA worker staff profile with portal token (${byEmail.id})`)
+    return byEmail.id as string
+  }
+
+  // Create a new staff profile for the QA worker
+  const { data, error } = await db
+    .from('staff_profiles')
+    .insert({
+      company_id:               companyId,
+      first_name:               '[QA]',
+      last_name:                'Worker Portal',
+      email:                    QA_WORKER_EMAIL,
+      job_role:                 'Care Worker',
+      status:                   'active',
+      employment_type:          'full_time',
+      contracted_hours:         37.5,
+      start_date:               daysFromNow(-30),
+      onboarding_completed:     true,
+      dbs_checked:              true,
+      right_to_work_checked:    true,
+      portal_token_hash:        tokenHash,
+      portal_token_expires_at:  QA_WORKER_TOKEN_EXPIRY,
+    })
+    .select('id')
+    .single()
+
+  if (error || !data) {
+    fail(`Could not create QA worker staff profile: ${error?.message}`)
+    return ''
+  }
+
+  ok(`Created QA worker staff profile with portal token (${data.id})`)
+  return data.id as string
+}
+
+async function seedWorkerShifts(companyId: string, staffProfileId: string, clientId?: string): Promise<void> {
+  if (!staffProfileId) return
+  log('\n📅 Ensuring QA worker has upcoming shifts…')
+
+  if (DRY_RUN) {
+    info('Would create 3 upcoming shifts for QA worker staff profile')
+    COUNTS.qa_worker_shifts = 3
+    return
+  }
+
+  // Check if any upcoming shifts already exist for this worker
+  const { data: existing } = await db
+    .from('shifts')
+    .select('id')
+    .eq('company_id', companyId)
+    .eq('assigned_staff_id', staffProfileId)
+    .gte('shift_date', daysFromNow(0))
+    .limit(1)
+
+  if (existing && existing.length > 0) {
+    ok(`QA worker already has upcoming shifts — skipping shift seed`)
+    return
+  }
+
+  const shiftRows = [
+    {
+      company_id:        companyId,
+      assigned_staff_id: staffProfileId,
+      client_id:         clientId ?? null,
+      title:             `${QA_TAG} Morning Visit`,
+      shift_date:        daysFromNow(1),
+      start_time:        '09:00',
+      end_time:          '13:00',
+      shift_type:        'day',
+      status:            'scheduled',
+      location:          '42 QA Test Street, London, SW1A 1AA',
+      notes:             `${QA_TAG} Upcoming shift for worker portal testing.`,
+      created_by:        'qa-seeder',
+    },
+    {
+      company_id:        companyId,
+      assigned_staff_id: staffProfileId,
+      client_id:         clientId ?? null,
+      title:             `${QA_TAG} Afternoon Visit`,
+      shift_date:        daysFromNow(3),
+      start_time:        '13:00',
+      end_time:          '17:00',
+      shift_type:        'day',
+      status:            'confirmed',
+      worker_ack_status: 'accepted',
+      worker_ack_at:     isoNow(-1),
+      location:          '7 QA Lane, London, E1 6RF',
+      notes:             `${QA_TAG} Confirmed upcoming shift for worker portal testing.`,
+      created_by:        'qa-seeder',
+    },
+    {
+      company_id:        companyId,
+      assigned_staff_id: staffProfileId,
+      client_id:         clientId ?? null,
+      title:             `${QA_TAG} Past Morning Visit`,
+      shift_date:        daysFromNow(-2),
+      start_time:        '08:00',
+      end_time:          '12:00',
+      shift_type:        'day',
+      status:            'completed',
+      worker_ack_status: 'accepted',
+      worker_ack_at:     isoNow(-3),
+      location:          '15 QA Close, London, M1 1AE',
+      notes:             `${QA_TAG} Past shift for visit note testing.`,
+      created_by:        'qa-seeder',
+    },
+  ]
+
+  const { data, error } = await db.from('shifts').insert(shiftRows).select('id')
+  if (error) {
+    fail(`Could not seed QA worker shifts: ${error.message}`)
+    return
+  }
+  COUNTS.qa_worker_shifts = (data as Row[]).length
+  ok(`Created ${COUNTS.qa_worker_shifts} shifts for QA worker`)
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -254,6 +430,11 @@ async function main() {
 
   // ── 2. Auth users ──────────────────────────────────────────────────────────
   const profileIds = await seedAuthUsers(companyId)
+
+  // ── 2b. QA worker portal token ────────────────────────────────────────────
+  // Seeds a staff_profile with a known portal_token_hash so authenticated
+  // Playwright worker tests can inject the token via page.addInitScript.
+  const qaWorkerProfileId = await seedWorkerPortalToken(companyId)
 
   // ── 3. Clients ─────────────────────────────────────────────────────────────
   log('\n👥 Creating 10 QA clients…')
@@ -289,6 +470,11 @@ async function main() {
   })
   const shifts    = await dbInsert('shifts', shiftRows, 'Shifts')
   COUNTS.shifts   = shifts.length
+
+  // ── 6b. QA worker upcoming shifts ─────────────────────────────────────────
+  // Ensures the QA worker portal token account has upcoming shifts for tests.
+  const firstClientId = clients.length > 0 ? rowId(clients[0]) : undefined
+  await seedWorkerShifts(companyId, qaWorkerProfileId, firstClientId)
 
   // ── 7. Visit notes (15) ────────────────────────────────────────────────────
   log('\n📝 Creating 15 QA visit notes…')
@@ -380,12 +566,14 @@ async function main() {
   log(`   Timesheets:       ${COUNTS.timesheets}`)
   log(`   Documents:        ${COUNTS.documents}`)
   log(`   Compliance items: ${COUNTS.compliance_items}`)
+  log(`   Worker shifts:    ${COUNTS.qa_worker_shifts}  (for portal token account)`)
 
   log('\n🔑 Test credentials:')
   for (const u of QA_AUTH_USERS) {
     log(`   ${u.role.padEnd(16)} → ${u.email}`)
   }
   log(`   Password: ${QA_DEFAULT_PASSWORD}`)
+  log(`   Worker portal token: ${QA_WORKER_PORTAL_TOKEN}`)
 
   log('\n🔧 Useful commands:')
   log('   Seed:   npx tsx scripts/seed-qa-environment.ts')

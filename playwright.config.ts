@@ -74,15 +74,24 @@ export default defineConfig({
   },
 
   projects: [
-    // ── Step 1: login once, save auth state ──────────────────────────────────
+    // ── Step 1a: admin login — saves .auth/admin.json ────────────────────────
     {
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
     },
 
-    // ── Step 2: browser projects — load pre-saved auth state ─────────────────
-    // Each test gets an isolated browser context initialised from the saved
-    // storageState. Tests never share live sessions; no per-test Supabase login.
+    // ── Step 1b: worker token validation ─────────────────────────────────────
+    // Verifies that the QA worker portal token is seeded in the DB.
+    // Runs before "worker" and "worker-mobile" projects.
+    // If this fails, run: npm run qa:seed
+    {
+      name: 'worker-setup',
+      testMatch: /worker\.setup\.ts/,
+    },
+
+    // ── Step 2: admin-authed browser tests ───────────────────────────────────
+    // worker.smoke.ts is excluded here — it runs under the dedicated "worker"
+    // and "worker-mobile" projects which inject the worker portal token.
     {
       name: 'chromium',
       use: {
@@ -90,7 +99,7 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
     },
     {
       name: 'firefox',
@@ -99,7 +108,7 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
     },
     {
       name: 'mobile-chrome',
@@ -108,15 +117,30 @@ export default defineConfig({
         storageState: adminAuthFile,
       },
       dependencies: ['setup'],
-      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts'],
+      testIgnore: ['**/auth.smoke.ts', '**/auth.setup.ts', '**/worker.setup.ts', '**/worker.smoke.ts'],
     },
 
-    // ── Step 3: auth tests — NO storageState, explicit login per test ─────────
-    // auth.smoke.ts tests the login flow itself; it must start unauthenticated.
+    // ── Step 3: auth flow tests — explicit login, no storageState ────────────
     {
       name: 'auth-tests',
       use: { ...devices['Desktop Chrome'] },
       testMatch: ['**/auth.smoke.ts'],
+    },
+
+    // ── Step 4: authenticated worker portal tests ─────────────────────────────
+    // Token injected via page.addInitScript (sessionStorage, not cookies).
+    // "worker-setup" validates the token is in the DB before tests run.
+    {
+      name: 'worker',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['worker-setup'],
+      testMatch: ['**/worker.smoke.ts'],
+    },
+    {
+      name: 'worker-mobile',
+      use: { ...devices['Pixel 5'] },
+      dependencies: ['worker-setup'],
+      testMatch: ['**/worker.smoke.ts'],
     },
   ],
 

@@ -12,7 +12,7 @@
     "qa:dry": "tsx scripts/seed-qa-environment.ts --dry-run",
     "test:unit": "tsx tests/unit/permissions.test.ts && tsx tests/unit/compliance.test.ts",
     "qa:smoke": "playwright test tests/smoke/",
-    "qa:smoke:staging": "PLAYWRIGHT_BASE_URL=${BASE_URL:?BASE_URL must be set} playwright test tests/smoke/ --project=chromium --project=auth-tests",
+    "qa:smoke:staging": "PLAYWRIGHT_BASE_URL=${BASE_URL:?BASE_URL must be set} playwright test tests/smoke/ --project=chromium --project=auth-tests --project=worker --project=worker-mobile",
     "qa:cycle": "tsx scripts/reset-qa-environment.ts --force && tsx scripts/seed-qa-environment.ts",
     "email:test": "tsx scripts/send-test-email.ts"
   },
