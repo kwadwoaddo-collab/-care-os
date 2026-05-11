@@ -72,13 +72,36 @@ export interface OnboardingStatus {
 }
 
 // ── Mandatory document types for a standard care worker ──────────────────────
-
+//
+// A passport is dual-purpose: it satisfies both 'id' (photo ID) and
+// 'right_to_work' (right-to-work evidence for British nationals / settled status).
+// Uploading a passport therefore counts for both slots in the checklist.
+// The admin must still explicitly set right_to_work_checked = true on the profile.
+//
 const MANDATORY_DOC_TYPES = [
   'dbs',
   'right_to_work',
   'id',
   'proof_of_address',
 ] as const
+
+// Document types that serve as photo ID
+const ID_EQUIVALENT_TYPES = new Set(['id', 'passport'])
+// Document types that serve as right-to-work evidence
+const RTW_EQUIVALENT_TYPES = new Set(['right_to_work', 'passport'])
+
+/**
+ * Expand uploaded document types so that a passport counts as both
+ * 'id' and 'right_to_work'. Returns the normalised set.
+ */
+export function expandDocumentTypes(uploadedTypes: string[]): Set<string> {
+  const expanded = new Set(uploadedTypes)
+  for (const t of uploadedTypes) {
+    if (ID_EQUIVALENT_TYPES.has(t))  expanded.add('id')
+    if (RTW_EQUIVALENT_TYPES.has(t)) expanded.add('right_to_work')
+  }
+  return expanded
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -175,7 +198,7 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
   const compliance = checks.right_to_work_checked && checks.dbs_checked && checks.dbs_not_expired
 
   // ── Documents ────────────────────────────────────────────────────────────
-  const uploaded = new Set(staff.uploadedDocumentTypes ?? [])
+  const uploaded = expandDocumentTypes(staff.uploadedDocumentTypes ?? [])
   for (const docType of MANDATORY_DOC_TYPES) {
     const key     = `doc_${docType}`
     checks[key]   = uploaded.has(docType)

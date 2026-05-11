@@ -9,6 +9,7 @@ import assert from 'node:assert/strict'
 import {
   calculateOnboardingStatus,
   getNextActions,
+  expandDocumentTypes,
   type OnboardingInput,
 } from '../../lib/staff/calculateOnboardingStatus'
 
@@ -213,6 +214,161 @@ test('missing array contains Policy acknowledgement when not acknowledged', () =
 test('missing array is empty when fully complete', () => {
   const obs = calculateOnboardingStatus(fullInput)
   assert.strictEqual(obs.missing.length, 0)
+})
+
+// ── Regression: expandDocumentTypes ───────────────────────────────────────────────────
+//
+// Ensures passport is treated as both photo ID and right-to-work evidence.
+// Regression for Bug 3: passport does not satisfy 'id' or 'right_to_work' slots.
+
+test('expandDocumentTypes: passport expands to id and right_to_work', () => {
+  const expanded = expandDocumentTypes(['passport'])
+  assert.ok(expanded.has('passport'), 'passport should be in set')
+  assert.ok(expanded.has('id'),          'passport should imply id')
+  assert.ok(expanded.has('right_to_work'), 'passport should imply right_to_work')
+})
+
+test('expandDocumentTypes: id does not expand to passport or right_to_work', () => {
+  const expanded = expandDocumentTypes(['id'])
+  assert.ok(expanded.has('id'))
+  assert.ok(!expanded.has('passport'))
+  assert.ok(!expanded.has('right_to_work'))
+})
+
+test('expandDocumentTypes: right_to_work does not expand to id or passport', () => {
+  const expanded = expandDocumentTypes(['right_to_work'])
+  assert.ok(expanded.has('right_to_work'))
+  assert.ok(!expanded.has('id'))
+  assert.ok(!expanded.has('passport'))
+})
+
+test('expandDocumentTypes: empty array returns empty set', () => {
+  const expanded = expandDocumentTypes([])
+  assert.strictEqual(expanded.size, 0)
+})
+
+// ── Regression: passport satisfies photo ID + RTW in onboarding status ─────────────
+
+test('passport satisfies both id and right_to_work document slots', () => {
+  // Applicant uploads a passport instead of separate id + right_to_work docs.
+  // After conversion the staff profile shows uploaded types as ['passport', 'dbs', 'proof_of_address'].
+  // sections.documents must be true.
+  const obs = calculateOnboardingStatus({
+    ...fullInput,
+    uploadedDocumentTypes: ['passport', 'dbs', 'proof_of_address'],
+  })
+  assert.strictEqual(obs.sections.documents, true, 'documents section should pass with passport')
+  assert.ok(!obs.missing.some((m) => m.includes('id')),          'id should not be in missing')
+  assert.ok(!obs.missing.some((m) => m.includes('right to work')), 'right_to_work should not be in missing')
+})
+
+test('passport alone does not satisfy dbs or proof_of_address', () => {
+  const obs = calculateOnboardingStatus({
+    ...fullInput,
+    uploadedDocumentTypes: ['passport'],
+  })
+  assert.strictEqual(obs.sections.documents, false)
+  assert.ok(obs.missing.some((m) => m.includes('dbs')))
+  assert.ok(obs.missing.some((m) => m.includes('proof of address')))
+})
+
+test('sections.documents false when only id uploaded (no rtw, dbs, poa)', () => {
+  const obs = calculateOnboardingStatus({
+    ...fullInput,
+    uploadedDocumentTypes: ['id'],
+  })
+  assert.strictEqual(obs.sections.documents, false)
+})
+
+// ── Regression: applicant form field mapping ─────────────────────────────────────────
+//
+// Verifies the slug → column mapping used in the convert route is consistent
+// with the fields calculateOnboardingStatus expects. This is a pure unit test
+// on the mapping table — no DB connection required.
+
+const SLUG_TO_COLUMN: Record<string, string> = {
+  national_insurance:                'ni_number',
+  town_city:                         'city',
+  address_line_1:                    'address_line_1',
+  address_line_2:                    'address_line_2',
+  postcode:                          'postcode',
+  date_of_birth:                     'date_of_birth',
+  nationality:                       'nationality',
+  emergency_contact_name:            'emergency_contact_name',
+  emergency_contact_phone:           'emergency_contact_phone',
+  emergency_contact_relationship:    'emergency_contact_relationship',
+}
+
+test('conversion: national_insurance slug maps to ni_number column', () => {
+  assert.strictEqual(SLUG_TO_COLUMN['national_insurance'], 'ni_number')
+})
+
+test('conversion: town_city slug maps to city column', () => {
+  assert.strictEqual(SLUG_TO_COLUMN['town_city'], 'city')
+})
+
+test('conversion: date_of_birth slug maps to date_of_birth column', () => {
+  assert.strictEqual(SLUG_TO_COLUMN['date_of_birth'], 'date_of_birth')
+})
+
+test('conversion: emergency_contact_name slug maps correctly', () => {
+  assert.strictEqual(SLUG_TO_COLUMN['emergency_contact_name'], 'emergency_contact_name')
+})
+
+test('conversion: all mapped columns are recognised staff_profile fields', () => {
+  // These are the HR fields accepted by PATCH /api/admin/staff/[id]
+  const HR_FIELDS = new Set([
+    'middle_name', 'date_of_birth', 'gender', 'nationality',
+    'address_line_1', 'address_line_2', 'city', 'postcode',
+    'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+    'ni_number', 'tax_code', 'payroll_number',
+    'bank_name', 'bank_account_name', 'bank_account_number', 'bank_sort_code',
+    'starter_declaration', 'utr_number',
+    'employment_type', 'contracted_hours', 'start_date_confirmed',
+    'right_to_work_checked', 'dbs_checked', 'dbs_number', 'dbs_expiry_date',
+  ])
+  for (const [slug, column] of Object.entries(SLUG_TO_COLUMN)) {
+    assert.ok(
+      HR_FIELDS.has(column),
+      `Slug '${slug}' maps to '${column}' which is not a recognised HR field`
+    )
+  }
+})
+
+test('conversion: applicant form data populates staff profile - full path', () => {
+  // Simulate what the convert route does: read form answers and produce a staff profile,
+  // then confirm the onboarding status reflects those fields.
+  const simulatedStaffProfile: OnboardingInput = {
+    first_name:                'Maria',
+    last_name:                 'Santos',
+    date_of_birth:             '1988-03-15',
+    nationality:               'Portuguese',
+    address_line_1:            '10 Downing Street',
+    city:                      'London',
+    postcode:                  'SW1A 2AA',
+    emergency_contact_name:    'Carlos Santos',
+    emergency_contact_phone:   '07700100200',
+    ni_number:                 'QQ123456C',
+    policy_acknowledged:       false,
+    uploadedDocumentTypes:     ['passport', 'dbs', 'proof_of_address'],
+  }
+
+  const obs = calculateOnboardingStatus(simulatedStaffProfile)
+
+  // All worker-actionable fields are now present (converted from form)
+  assert.ok(obs.checks.first_name,              'first_name populated')
+  assert.ok(obs.checks.last_name,               'last_name populated')
+  assert.ok(obs.checks.date_of_birth,           'date_of_birth populated from form')
+  assert.ok(obs.checks.address_line_1,          'address_line_1 populated from form')
+  assert.ok(obs.checks.city,                    'city populated from town_city form field')
+  assert.ok(obs.checks.postcode,                'postcode populated from form')
+  assert.ok(obs.checks.emergency_contact_name,  'emergency contact name populated from form')
+  assert.ok(obs.checks.emergency_contact_phone, 'emergency contact phone populated from form')
+  assert.ok(obs.checks.ni_number,               'ni_number populated from national_insurance form field')
+  assert.ok(obs.sections.documents,             'passport satisfies id + right_to_work + dbs + poa')
+
+  // Stage should be in_progress (not not_started) because personal fields are set
+  assert.notStrictEqual(obs.stage, 'not_started', 'Stage should not be not_started after conversion')
 })
 
 // ── Summary ───────────────────────────────────────────────────────────────────

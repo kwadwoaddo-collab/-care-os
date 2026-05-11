@@ -1,4 +1,5 @@
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { expandDocumentTypes } from './calculateOnboardingStatus'
+
 
 export interface RequiredDocument {
   /** Normalised document_type value (matches `documents.document_type` column) */
@@ -163,12 +164,13 @@ export function getRequiredDocuments(input: DocumentRequirementsInput): Required
 
 /**
  * Returns the subset of required documents that are missing from the uploaded list.
+ * A passport satisfies both 'id' and 'right_to_work' slots.
  */
 export function getMissingDocuments(
   input:    DocumentRequirementsInput,
   uploaded: string[],
 ): RequiredDocument[] {
-  const required = getRequiredDocuments(input)
-  const uploadedSet = new Set(uploaded)
+  const required    = getRequiredDocuments(input)
+  const uploadedSet = expandDocumentTypes(uploaded)
   return required.filter((d) => d.mandatory && !uploadedSet.has(d.type))
 }

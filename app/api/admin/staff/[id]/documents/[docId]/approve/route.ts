@@ -6,6 +6,20 @@ import { requireAdmin } from '@/lib/auth/requireAdmin'
 //
 // Approves or rejects an individual uploaded document.
 // Body: { action: 'approve' | 'reject', notes?: string }
+//
+// Ownership model after the applicant → staff conversion:
+//
+//   Before conversion: documents have applicant_id set, staff_profile_id = NULL
+//   After  conversion: the convert route sets staff_profile_id on all applicant
+//                      docs (see applicants/[id]/convert/route.ts).
+//
+// However, for documents uploaded before migration (or if the document migration
+// step failed non-fatally), staff_profile_id may still be NULL. We therefore
+// accept a document as belonging to this staff member if EITHER:
+//   a) doc.staff_profile_id matches the URL param, OR
+//   b) the staff profile's applicant_id matches doc.applicant_id
+//
+// Either path requires the staff profile to belong to the admin's company.
 
 export async function PATCH(
   request: Request,
@@ -33,10 +47,22 @@ export async function PATCH(
     )
   }
 
-  // Verify the document belongs to this company's staff
+  // ── Verify the staff profile belongs to this company ──────────────────────
+  const { data: staff, error: staffErr } = await adminClient
+    .from('staff_profiles')
+    .select('id, company_id, applicant_id')
+    .eq('id', staffProfileId)
+    .eq('company_id', companyId)
+    .maybeSingle()
+
+  if (staffErr || !staff) {
+    return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  }
+
+  // ── Fetch the document ─────────────────────────────────────────────────────
   const { data: doc, error: fetchErr } = await adminClient
     .from('documents')
-    .select('id, staff_profile_id, document_type')
+    .select('id, staff_profile_id, applicant_id, document_type')
     .eq('id', docId)
     .maybeSingle()
 
@@ -44,21 +70,29 @@ export async function PATCH(
     return NextResponse.json({ error: 'Document not found' }, { status: 404 })
   }
 
-  // Ensure the document is scoped to the staff profile in the URL
-  if (doc.staff_profile_id !== staffProfileId) {
+  // ── Ownership check ────────────────────────────────────────────────────────
+  //
+  // Accept the document if it is linked to this staff profile directly, OR
+  // if it is linked to the applicant that was converted into this staff profile.
+  //
+  const ownedByStaff     = doc.staff_profile_id === staffProfileId
+  const ownedByApplicant =
+    doc.applicant_id !== null &&
+    staff.applicant_id !== null &&
+    doc.applicant_id === staff.applicant_id
+
+  if (!ownedByStaff && !ownedByApplicant) {
     return NextResponse.json({ error: 'Document not found' }, { status: 404 })
   }
 
-  // Verify the staff profile belongs to this company
-  const { data: staff, error: staffErr } = await adminClient
-    .from('staff_profiles')
-    .select('id, company_id')
-    .eq('id', staffProfileId)
-    .eq('company_id', companyId)
-    .maybeSingle()
-
-  if (staffErr || !staff) {
-    return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  // ── If the doc is still applicant-only, backfill staff_profile_id ──────────
+  // This handles the case where the migration step in the convert route failed
+  // non-fatally. We fix it lazily here so subsequent approvals work immediately.
+  if (!ownedByStaff && ownedByApplicant) {
+    await adminClient
+      .from('documents')
+      .update({ staff_profile_id: staffProfileId })
+      .eq('id', docId)
   }
 
   const reviewed_status = action === 'approve' ? 'approved' : 'rejected'

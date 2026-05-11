@@ -8,23 +8,44 @@
 
 ## 1. Environment Variables
 
+> **Important:** `.env.local` is for local development only. It is never deployed.
+> The variables that matter for the real pilot are set in **Vercel → Project → Settings → Environment Variables** (Production environment).
+> Running `npm run pilot:verify:production` against production-safe values is the definitive check.
+
 Verify in **Vercel → Project → Settings → Environment Variables** (Production environment).
 
-| Variable | Required | Check |
+| Variable | Required | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | 🔴 | [ ] Set to production Supabase URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 🔴 | [ ] Set to production anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | 🔴 | [ ] Set and marked **sensitive** |
-| `NEXT_PUBLIC_APP_URL` | 🔴 | [ ] Exact production URL — no trailing slash |
-| `RESEND_API_KEY` | 🔴 | [ ] Production Resend key |
-| `INVITE_FROM_EMAIL` | 🔴 | [ ] Verified sending address |
+| `NEXT_PUBLIC_SUPABASE_URL` | 🔴 | Must point to the **production** Supabase project, not localhost or staging |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 🔴 | Public anon key from the production project |
+| `SUPABASE_SERVICE_ROLE_KEY` | 🔴 | Must be marked **sensitive** in Vercel — never exposed to the browser |
+| `NEXT_PUBLIC_APP_URL` | 🔴 | Exact production URL (e.g. `https://care-os-flame.vercel.app`) — no trailing slash |
+| `RESEND_API_KEY` | 🔴 | Production Resend key — do not use a test key |
+| `INVITE_FROM_EMAIL` | 🔴 | Verified sending address (e.g. `noreply@yourcompany.co.uk`) |
 
-**Variables that must NOT exist in production:**
+**Variables that must NOT exist in Vercel production:**
 
-- [ ] 🔴 `QA_BYPASS_AUTH` — must be absent (its presence disables auth)
-- [ ] 🔴 `QA_EMAIL_MODE` — scripts-only; must not be set in Vercel
+| Variable | Risk if set |
+|---|---|
+| `QA_BYPASS_AUTH` | 🔴 Disables all authentication — any user can access any admin page |
+| `QA_EMAIL_MODE` | 🟡 Suppresses all outgoing emails — staff will not receive invites |
 
 > **Tip:** After verifying, trigger a fresh Vercel deployment to ensure all env vars are picked up.
+
+### Automated check
+
+The pilot verification script checks these values automatically.
+Run it with your **production** env vars loaded:
+
+```bash
+# Against .env.local (local dev sanity check — warns on localhost, does not fail):
+npm run pilot:verify
+
+# Against production-safe values (hard fails on localhost/QA_BYPASS/resend.dev):
+npm run pilot:verify:production
+```
+
+The second command must pass cleanly before onboarding any real staff member.
 
 ---
 

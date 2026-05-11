@@ -15,7 +15,8 @@
     "qa:smoke:staging": "PLAYWRIGHT_BASE_URL=${BASE_URL:?BASE_URL must be set} playwright test tests/smoke/ --project=chromium --project=auth-tests --project=worker --project=worker-mobile --project=worker-writes",
     "qa:cycle": "tsx scripts/reset-qa-environment.ts --force && tsx scripts/seed-qa-environment.ts",
     "email:test": "tsx scripts/send-test-email.ts",
-    "pilot:verify": "tsx scripts/pilot-verify.ts"
+    "pilot:verify": "tsx scripts/pilot-verify.ts",
+    "pilot:verify:production": "tsx scripts/pilot-verify.ts --production"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
