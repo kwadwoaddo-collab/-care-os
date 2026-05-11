@@ -10,6 +10,36 @@ The goal is to replace paper/PDF onboarding with structured digital workflows an
 
 ---
 
+## IMPORTANT PRODUCT DIRECTION CHANGE
+Care OS is now splitting into two priorities:
+1. Immediate operational MVP (PRIMARY priority)
+2. Long-term operational intelligence platform
+
+The business currently relies heavily on BrightHR for sign-in, attendance, and operational workforce tracking. We are NOT replacing BrightHR yet.
+
+Instead, Care OS should first become:
+- onboarding platform
+- compliance platform
+- recruitment pipeline
+- staff document management portal
+
+This means:
+- onboarding flow quality is now more important than scheduling intelligence
+- operational usability matters more than feature breadth
+- we should expose only limited worker functionality initially
+- the system should be simple enough for HR/admin teams to start using immediately for new hires
+
+Existing advanced scheduling/intelligence work remains valuable and should stay intact, but it is now secondary for rollout.
+
+### Operational Rollout Plan:
+- **PHASE 1**: Use Care OS only for applicants, onboarding, compliance, document collection, policy acknowledgement, and admin review workflow.
+- **PHASE 2**: Gradually expose shifts, visit notes, and scheduling.
+- **PHASE 3**: Potentially replace more operational tooling later.
+
+**THEREFORE: ALL NEW WORK SHOULD OPTIMIZE THE ONBOARDING + COMPLIANCE EXPERIENCE FIRST.**
+
+---
+
 ## Core Objective
 Ensure every staff member has a complete compliance file.
 

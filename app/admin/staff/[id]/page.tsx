@@ -13,6 +13,7 @@ import PortalInviteButton        from './PortalInviteButton'
 import EditStaffProfileForm      from './EditStaffProfileForm'
 import EditHrDetailsForm         from './EditHrDetailsForm'
 import OnboardingChecklist       from './OnboardingChecklist'
+import DocumentApprovalButton    from './DocumentApprovalButton'
 import { calculateHrReadiness }  from '@/lib/staff/calculateHrReadiness'
 import { calculateOnboardingStatus } from '@/lib/staff/calculateOnboardingStatus'
 import {
@@ -76,7 +77,9 @@ interface StaffProfile {
   dbs_number?:            string | null
   dbs_expiry_date?:       string | null
   // Onboarding
-  onboarding_completed?: boolean | null
+  onboarding_completed?:       boolean | null
+  policy_acknowledged?:        boolean | null
+  policy_acknowledged_at?:     string | null
 }
 
 interface Applicant {
@@ -91,13 +94,17 @@ interface Applicant {
 }
 
 interface Document {
-  id:            string
-  document_type: string
-  file_name:     string
-  file_path:     string | null
-  file_size:     number | null
-  expiry_date:   string | null
-  created_at:    string
+  id:              string
+  document_type:   string
+  file_name:       string
+  file_path:       string | null
+  file_size:       number | null
+  expiry_date:     string | null
+  created_at:      string
+  reviewed_status: string | null
+  review_notes:    string | null
+  reviewed_by:     string | null
+  reviewed_at:     string | null
 }
 
 interface ComplianceItem {
@@ -824,13 +831,14 @@ export default async function StaffDetailPage({
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
                   <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
-                    <th className="text-left pb-2 pr-4">File name</th>
-                    <th className="text-left pb-2 pr-4">Type</th>
-                    <th className="text-left pb-2 pr-4">Expiry</th>
-                    <th className="text-left pb-2 pr-4">Status</th>
-                    <th className="text-left pb-2 pr-4">Uploaded</th>
-                    <th className="text-left pb-2">Download</th>
-                  </tr>
+                      <th className="text-left pb-2 pr-4">File name</th>
+                      <th className="text-left pb-2 pr-4">Type</th>
+                      <th className="text-left pb-2 pr-4">Expiry</th>
+                      <th className="text-left pb-2 pr-4">Validity</th>
+                      <th className="text-left pb-2 pr-4">Review</th>
+                      <th className="text-left pb-2 pr-4">Uploaded</th>
+                      <th className="text-left pb-2">Download</th>
+                    </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {documents.map((doc) => {
@@ -844,8 +852,18 @@ export default async function StaffDetailPage({
                         </td>
                         <td className="py-2 pr-4">
                           <Badge status={expStatus} map={DOC_STATUS_CLS} />
-                          {/* Override label via span trick */}
                           <span className="sr-only">{docExpiryLabel(expStatus)}</span>
+                        </td>
+                        <td className="py-2 pr-4 min-w-[180px]">
+                          <DocumentApprovalButton
+                            staffProfileId={sp.id}
+                            docId={doc.id}
+                            docType={doc.document_type}
+                            initialStatus={doc.reviewed_status ?? 'pending'}
+                            reviewedBy={doc.reviewed_by}
+                            reviewedAt={doc.reviewed_at}
+                            reviewNotes={doc.review_notes}
+                          />
                         </td>
                         <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">{formatDate(doc.created_at)}</td>
                         <td className="py-2">

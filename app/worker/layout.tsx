@@ -6,9 +6,10 @@ import type { ReactNode } from 'react'
 
 const NAV = [
   { href: '/worker/dashboard',    label: 'Home',         icon: '🏠' },
+  { href: '/worker/onboarding',   label: 'Onboarding',   icon: '✅' },
+  { href: '/worker/documents',    label: 'Documents',    icon: '📄' },
   { href: '/worker/shifts',       label: 'Shifts',       icon: '📅' },
   { href: '/worker/availability', label: 'Availability', icon: '🗓' },
-  { href: '/worker/documents',    label: 'Documents',    icon: '📄' },
 ]
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {

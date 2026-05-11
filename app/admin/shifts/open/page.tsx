@@ -2,6 +2,7 @@ import Link           from 'next/link'
 import OpenShiftsTable, { type OpenShiftRow, type Urgency } from './OpenShiftsTable'
 import { type Shift } from '../ShiftsTable'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { type SchedulingMetrics } from '@/app/api/admin/shifts/metrics/route'
 
 // ── Urgency ────────────────────────────────────────────────────────────────────
 
@@ -19,8 +20,17 @@ function getUrgency(shiftDate: string, startTime: string): Urgency {
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
-async function getOpenShifts(): Promise<OpenShiftRow[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+async function getSchedulingMetrics(baseUrl: string): Promise<SchedulingMetrics | null> {
+  try {
+    const res = await adminFetch(`${baseUrl}/api/admin/shifts/metrics`, { cache: 'no-store' })
+    if (!res.ok) return null
+    return res.json() as Promise<SchedulingMetrics>
+  } catch {
+    return null
+  }
+}
+
+async function getOpenShifts(baseUrl: string): Promise<OpenShiftRow[]> {
   const res = await adminFetch(`${baseUrl}/api/admin/shifts?pageSize=100`, { cache: 'no-store' })
   if (!res.ok) return []
   const json = await res.json() as { data: Shift[] }
@@ -66,7 +76,11 @@ function weekStr() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function OpenShiftsPage() {
-  const shifts = await getOpenShifts()
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const [shifts, metrics] = await Promise.all([
+    getOpenShifts(baseUrl),
+    getSchedulingMetrics(baseUrl),
+  ])
 
   const today    = todayStr()
   const tomorrow = tomorrowStr()
@@ -76,6 +90,10 @@ export default async function OpenShiftsPage() {
   const openThisWeek = shifts.filter((s) => s.shift_date >= today && s.shift_date <= nextWeek).length
   const overnight    = shifts.filter((s) => s.end_time <= s.start_time).length
   const urgent       = shifts.filter((s) => s.shift_date <= tomorrow && s.urgency !== 'normal').length
+
+  const availableToday = metrics?.workers_available_today ?? null
+  const bookedToday    = metrics?.workers_booked_today    ?? null
+  const conflictCount  = metrics?.conflict_count          ?? null
 
   return (
     <div className="space-y-6">
@@ -122,6 +140,32 @@ export default async function OpenShiftsPage() {
           </p>
         </div>
       </div>
+
+      {/* Scheduling intelligence */}
+      {metrics && (
+        <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+          <span className="text-indigo-700">
+            <strong className="font-semibold">{availableToday ?? '—'}</strong>
+            <span className="text-indigo-500 ml-1">workers available today</span>
+          </span>
+          <span className="text-indigo-700">
+            <strong className="font-semibold">{bookedToday ?? '—'}</strong>
+            <span className="text-indigo-500 ml-1">already booked</span>
+          </span>
+          {conflictCount !== null && conflictCount > 0 && (
+            <span className="text-red-700">
+              <strong className="font-semibold">{conflictCount}</strong>
+              <span className="text-red-500 ml-1">active conflicts</span>
+              <Link href="/admin/shifts/operations" className="ml-2 underline text-xs">
+                View →
+              </Link>
+            </span>
+          )}
+          <span className="ml-auto text-xs text-indigo-400">
+            Click Assign on any shift for ranked worker suggestions
+          </span>
+        </div>
+      )}
 
       {/* Table */}
       <OpenShiftsTable shifts={shifts} />

@@ -14,6 +14,7 @@ interface WorkerInfo {
   job_role:             string | null
   start_date:           string | null
   onboarding_completed: boolean
+  onboarding_progress?: number
 }
 
 interface Shift {
@@ -210,13 +211,8 @@ export default function WorkerDashboard() {
 
   const alerts: Array<{ icon: string; text: string; variant: 'red' | 'amber' | 'blue' }> = []
 
-  if (!worker.onboarding_completed) {
-    alerts.push({
-      icon: '📋',
-      text: 'Your HR profile is incomplete. Contact your manager to update your payroll details.',
-      variant: 'amber',
-    })
-  }
+  // Onboarding incomplete — show prominent CTA, NOT a vague alert
+  // (handled separately below the header)
   if (pendingAck.length > 0) {
     alerts.push({
       icon: '📣',
@@ -263,6 +259,32 @@ export default function WorkerDashboard() {
         </span>
       </div>
 
+      {/* Onboarding CTA — shown prominently above stats when incomplete */}
+      {!worker.onboarding_completed && (
+        <Link
+          href="/worker/onboarding"
+          className="block rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 p-4 text-white shadow-md hover:shadow-lg active:scale-[0.98] transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl flex-shrink-0">✅</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold">Complete your onboarding</p>
+              <p className="text-xs text-indigo-200 mt-0.5">
+                Tap here to see what steps are left and finish setting up your profile.
+              </p>
+            </div>
+            <span className="text-xl text-indigo-300 flex-shrink-0">→</span>
+          </div>
+          <div className="mt-3 h-1.5 w-full rounded-full bg-indigo-800/40 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-white/70 transition-all"
+              style={{ width: `${worker.onboarding_progress ?? 0}%` }}
+            />
+          </div>
+          <p className="text-right text-xs text-indigo-200 mt-1">{worker.onboarding_progress ?? 0}% complete</p>
+        </Link>
+      )}
+
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 px-4 py-3">
@@ -276,12 +298,13 @@ export default function WorkerDashboard() {
             ? 'bg-green-50 border-green-200'
             : 'bg-amber-50 border-amber-200'
         }`}>
-          <p className="text-xs font-medium text-gray-500 mb-0.5">Profile</p>
+          <p className="text-xs font-medium text-gray-500 mb-0.5">Onboarding</p>
           <p className={`text-sm font-semibold ${worker.onboarding_completed ? 'text-green-700' : 'text-amber-700'}`}>
-            {worker.onboarding_completed ? '✓ Complete' : 'Incomplete'}
+            {worker.onboarding_completed ? '✓ Complete' : `${worker.onboarding_progress ?? 0}% done`}
           </p>
         </div>
       </div>
+
 
       {/* Alerts */}
       {alerts.length > 0 && (

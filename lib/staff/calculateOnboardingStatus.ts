@@ -1,5 +1,11 @@
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export type OnboardingStage =
+  | 'not_started'
+  | 'in_progress'
+  | 'awaiting_review'
+  | 'complete'
+
 export interface OnboardingInput {
   // Personal
   first_name?:   string | null
@@ -26,6 +32,8 @@ export interface OnboardingInput {
   right_to_work_checked?: boolean | null
   dbs_checked?:           boolean | null
   dbs_expiry_date?:       string | null
+  // Policy acknowledgement (lightweight — no versioning)
+  policy_acknowledged?: boolean | null
   // Staff
   status?: string
   // Documents (pass in the types already uploaded)
@@ -41,6 +49,7 @@ export interface OnboardingSections {
   employment:  boolean
   compliance:  boolean
   documents:   boolean
+  policy:      boolean
 }
 
 export interface OnboardingStatus {
@@ -50,6 +59,8 @@ export interface OnboardingStatus {
   progress: number
   /** Payroll-ready: stricter gate */
   payroll_ready: boolean
+  /** Computed onboarding stage for admin queue display */
+  stage: OnboardingStage
   /** Human-readable list of missing items */
   missing: string[]
   /** Non-blocking warnings */
@@ -150,12 +161,15 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
   // ── Compliance ────────────────────────────────────────────────────────────
   checks.right_to_work_checked = staff.right_to_work_checked === true
   checks.dbs_checked           = staff.dbs_checked === true
-  checks.dbs_not_expired       = !isExpired(staff.dbs_expiry_date)
+  // dbs_not_expired only passes when a date is set AND it hasn't expired
+  checks.dbs_not_expired       = Boolean(staff.dbs_expiry_date) && !isExpired(staff.dbs_expiry_date)
 
   if (!checks.right_to_work_checked) missing.push('Right to work check')
   if (!checks.dbs_checked)           missing.push('DBS check')
-  if (staff.dbs_checked && !checks.dbs_not_expired) {
+  if (staff.dbs_expiry_date && !checks.dbs_not_expired) {
     warnings.push('DBS certificate has expired')
+  } else if (!staff.dbs_expiry_date && staff.dbs_checked) {
+    warnings.push('DBS expiry date not recorded')
   }
 
   const compliance = checks.right_to_work_checked && checks.dbs_checked && checks.dbs_not_expired
@@ -170,6 +184,11 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
 
   const documents = MANDATORY_DOC_TYPES.every((t) => uploaded.has(t))
 
+  // ── Policy acknowledgement ────────────────────────────────────────────────
+  checks.policy_acknowledged = staff.policy_acknowledged === true
+  if (!checks.policy_acknowledged) missing.push('Policy acknowledgement')
+  const policy = checks.policy_acknowledged
+
   // ── Aggregate ─────────────────────────────────────────────────────────────
   const sections: OnboardingSections = {
     personal,
@@ -180,6 +199,7 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
     employment,
     compliance,
     documents,
+    policy,
   }
 
   const totalChecks  = Object.keys(checks).length
@@ -196,10 +216,33 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
     sections.compliance &&
     sections.personal
 
+  // ── Onboarding stage ──────────────────────────────────────────────────────
+  // Derived from progress without touching DB status column.
+  // awaiting_review = all worker-actionable tasks done, docs uploaded,
+  //                   policy acknowledged — but admin hasn't marked complete.
+  const workerDone =
+    sections.personal &&
+    sections.address &&
+    sections.emergency &&
+    sections.documents &&
+    sections.policy
+
+  let stage: OnboardingStage
+  if (ready) {
+    stage = 'complete'
+  } else if (workerDone) {
+    stage = 'awaiting_review'
+  } else if (progress === 0) {
+    stage = 'not_started'
+  } else {
+    stage = 'in_progress'
+  }
+
   return {
     ready,
     progress,
     payroll_ready,
+    stage,
     missing,
     warnings,
     sections,
@@ -213,7 +256,7 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
 export interface NextAction {
   id:      string
   label:   string
-  section: 'personal' | 'address' | 'emergency' | 'hmrc' | 'banking' | 'employment' | 'compliance' | 'documents'
+  section: 'personal' | 'address' | 'emergency' | 'hmrc' | 'banking' | 'employment' | 'compliance' | 'documents' | 'policy'
   urgent:  boolean
 }
 
@@ -245,6 +288,9 @@ export function getNextActions(status: OnboardingStatus): NextAction[] {
   }
   if (!status.sections.documents) {
     actions.push({ id: 'upload_docs', label: 'Upload mandatory documents (DBS, RTW, ID, proof of address)', section: 'documents', urgent: true })
+  }
+  if (!status.sections.policy) {
+    actions.push({ id: 'acknowledge_policy', label: 'Acknowledge company policies', section: 'policy', urgent: false })
   }
 
   return actions
