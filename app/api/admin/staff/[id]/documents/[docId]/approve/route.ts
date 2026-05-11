@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
 import { adminClient }  from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
+import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
 
 // ── PATCH /api/admin/staff/[id]/documents/[docId]/approve ─────────────────────
 //
 // Approves or rejects an individual uploaded document.
 // Body: { action: 'approve' | 'reject', notes?: string }
+//
+// Returns: { document, complianceSummary } — the summary is recalculated
+// immediately after approval so the UI can update without a second fetch.
 //
 // Ownership model after the applicant → staff conversion:
 //
@@ -107,7 +112,7 @@ export async function PATCH(
       reviewed_at,
     })
     .eq('id', docId)
-    .select('id, reviewed_status, review_notes, reviewed_by, reviewed_at')
+    .select('id, document_type, training_category, expiry_date, issue_date, reviewed_status, review_notes, reviewed_by, reviewed_at')
     .maybeSingle()
 
   if (updateErr || !updated) {
@@ -115,5 +120,18 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update document' }, { status: 500 })
   }
 
-  return NextResponse.json({ document: updated })
+  // ── Recalculate compliance immediately after approval ──────────────────────
+  // Fetch all documents for this staff member and recompute compliance so the
+  // UI can update without a separate GET /compliance call.
+  let complianceSummary = null
+  try {
+    const allDocs = await getStaffDocuments(staffProfileId, staff.applicant_id as string | null)
+    complianceSummary = calculateCompliance(allDocs)
+  } catch (err) {
+    // Non-fatal: the document was still approved successfully
+    console.error('[document-approve] compliance recalculation failed:', err)
+  }
+
+  return NextResponse.json({ document: updated, complianceSummary })
 }
+

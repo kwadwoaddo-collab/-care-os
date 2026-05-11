@@ -3,6 +3,8 @@ import {
   getNextActions,
   type OnboardingInput,
 } from '@/lib/staff/calculateOnboardingStatus'
+import { getRequiredTraining } from '@/lib/training/matrix'
+import { TRAINING_CATEGORY_LABELS } from '@/lib/documents/constants'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -169,6 +171,20 @@ export default function OnboardingChecklist({ staffProfileId, staff }: Props) {
         <CheckRow label="Photo ID uploaded"         done={status.checks.doc_id}                 description="Upload passport or driving licence." />
         <CheckRow label="Proof of address uploaded" done={status.checks.doc_proof_of_address}   description="Upload a bank statement or utility bill." />
 
+        <SectionHeading title="Mandatory Training (approved certificates required)" />
+        {getRequiredTraining(staff.job_role).length === 0 ? (
+          <p className="text-xs text-gray-400 py-2">No mandatory training required for this role.</p>
+        ) : (
+          getRequiredTraining(staff.job_role).map((cat) => (
+            <CheckRow
+              key={cat}
+              label={(TRAINING_CATEGORY_LABELS as Record<string, string>)[cat] ?? cat.replace(/_/g, ' ')}
+              done={!!status.checks[`training_${cat}`]}
+              description={`Upload an approved ${(TRAINING_CATEGORY_LABELS as Record<string, string>)[cat] ?? cat.replace(/_/g, ' ')} certificate. Pending review does not satisfy this requirement.`}
+            />
+          ))
+        )}
+
       </div>
 
       {/* ── Next Actions ──────────────────────────────────────────────────── */}
@@ -209,7 +225,7 @@ export default function OnboardingChecklist({ staffProfileId, staff }: Props) {
                     Edit →
                   </a>
                 )}
-                {action.section === 'documents' && (
+                {(action.section === 'documents' || action.section === 'training') && (
                   <a
                     href={`/admin/staff/${staffProfileId}#documents-section`}
                     className="flex-shrink-0 text-xs text-indigo-600 hover:text-indigo-800 font-medium"

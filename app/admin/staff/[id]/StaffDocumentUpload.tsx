@@ -2,7 +2,12 @@
 
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { DOCUMENT_TYPES, MAX_FILE_BYTES, ALLOWED_EXTENSIONS } from '@/lib/documents/constants'
+import {
+  DOCUMENT_TYPES,
+  MAX_FILE_BYTES,
+  ALLOWED_EXTENSIONS,
+  TRAINING_CATEGORIES,
+} from '@/lib/documents/constants'
 
 const ALLOWED_EXT_LIST = [...ALLOWED_EXTENSIONS].join(', ').toUpperCase()
 const MAX_MB = MAX_FILE_BYTES / (1024 * 1024)
@@ -15,18 +20,22 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [open,         setOpen]         = useState(false)
-  const [documentType, setDocumentType] = useState<string>(DOCUMENT_TYPES[0].value)
-  const [expiryDate,   setExpiryDate]   = useState('')
-  const [trainingName, setTrainingName] = useState('')
-  const [file,         setFile]         = useState<File | null>(null)
-  const [error,        setError]        = useState<string | null>(null)
-  const [success,      setSuccess]      = useState(false)
-  const [isPending,    startTransition] = useTransition()
+  const [open,             setOpen]             = useState(false)
+  const [documentType,     setDocumentType]     = useState<string>(DOCUMENT_TYPES[0].value)
+  const [trainingCategory, setTrainingCategory] = useState<string>('')
+  const [expiryDate,       setExpiryDate]       = useState('')
+  const [issueDate,        setIssueDate]        = useState('')
+  const [trainingName,     setTrainingName]     = useState('')
+  const [file,             setFile]             = useState<File | null>(null)
+  const [error,            setError]            = useState<string | null>(null)
+  const [success,          setSuccess]          = useState(false)
+  const [isPending,        startTransition]     = useTransition()
 
   function reset() {
     setDocumentType(DOCUMENT_TYPES[0].value)
+    setTrainingCategory('')
     setExpiryDate('')
+    setIssueDate('')
     setTrainingName('')
     setFile(null)
     setError(null)
@@ -67,8 +76,11 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
     fd.append('file', file)
     fd.append('document_type', documentType)
     if (expiryDate) fd.append('expiry_date', expiryDate)
-    if (documentType === 'training_certificate' && trainingName)
-      fd.append('training_name', trainingName)
+    if (issueDate)  fd.append('issue_date',  issueDate)
+    if (documentType === 'training_certificate') {
+      if (trainingCategory) fd.append('training_category', trainingCategory)
+      if (trainingName)     fd.append('training_name',     trainingName)
+    }
 
     startTransition(async () => {
       try {
@@ -85,7 +97,9 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
         // Calling reset() here would set success=false in the same React
         // batch, meaning the success banner would never render.
         setDocumentType(DOCUMENT_TYPES[0].value)
+        setTrainingCategory('')
         setExpiryDate('')
+        setIssueDate('')
         setTrainingName('')
         setFile(null)
         setError(null)
@@ -144,21 +158,52 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
               </select>
             </div>
 
-            {/* Training name (only for training_certificate) */}
+            {/* Training fields (only for training_certificate) */}
             {documentType === 'training_certificate' && (
-              <div>
-                <label htmlFor="training-name" className="block text-xs font-medium text-gray-700 mb-1">
-                  Training name
-                </label>
-                <input
-                  id="training-name"
-                  type="text"
-                  value={trainingName}
-                  onChange={(e) => setTrainingName(e.target.value)}
-                  placeholder="e.g. Moving & Handling, First Aid…"
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="training-category" className="block text-xs font-medium text-gray-700 mb-1">
+                    Training category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="training-category"
+                    value={trainingCategory}
+                    onChange={(e) => setTrainingCategory(e.target.value)}
+                    className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="">— Select category —</option>
+                    {TRAINING_CATEGORIES.map((tc) => (
+                      <option key={tc.value} value={tc.value}>{tc.label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-0.5 text-xs text-gray-400">Required so this certificate maps to the correct compliance requirement.</p>
+                </div>
+                <div>
+                  <label htmlFor="issue-date" className="block text-xs font-medium text-gray-700 mb-1">
+                    Issue date <span className="font-normal text-gray-400">(optional)</span>
+                  </label>
+                  <input
+                    id="issue-date"
+                    type="date"
+                    value={issueDate}
+                    onChange={(e) => setIssueDate(e.target.value)}
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="training-name" className="block text-xs font-medium text-gray-700 mb-1">
+                    Training name <span className="font-normal text-gray-400">(optional – for reference)</span>
+                  </label>
+                  <input
+                    id="training-name"
+                    type="text"
+                    value={trainingName}
+                    onChange={(e) => setTrainingName(e.target.value)}
+                    placeholder="e.g. City &amp; Guilds Manual Handling"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+              </>
             )}
 
             {/* File */}

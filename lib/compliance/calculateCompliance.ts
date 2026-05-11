@@ -1,7 +1,6 @@
 import {
   REQUIRED_DOCUMENTS,
   REQUIRED_TRAINING,
-  TRAINING_KEYWORDS,
   EXPIRY_WARN_DAYS,
   type RequiredTraining,
 } from './requirements'
@@ -9,22 +8,31 @@ import {
 // ── Input types ───────────────────────────────────────────────────────────────
 
 export interface ComplianceDocument {
-  id:            string
-  document_type: string
-  file_name:     string
-  expiry_date:   string | null
+  id:                string
+  document_type:     string
+  file_name:         string
+  expiry_date:       string | null
+  /** Populated from migration 029 — structured training classification */
+  training_category: string | null
+  /** Admin review status: 'pending' | 'approved' | 'rejected' | null */
+  reviewed_status:   string | null
+  /** Optional certificate issue date */
+  issue_date:        string | null
 }
 
 // ── Output type ───────────────────────────────────────────────────────────────
 
 export interface ComplianceSummary {
-  percentage:        number
-  missingDocuments:  string[]
-  expiredDocuments:  string[]
-  expiringSoon:      string[]  // document types expiring within EXPIRY_WARN_DAYS
-  missingTraining:   string[]
-  inferredTraining:  string[]  // training detected from file names
-  compliant:         boolean
+  percentage:          number
+  missingDocuments:    string[]
+  expiredDocuments:    string[]
+  expiringSoon:        string[]   // document types expiring within EXPIRY_WARN_DAYS
+  missingTraining:     string[]   // required training not yet satisfied
+  satisfiedTraining:   string[]   // approved + valid training categories
+  expiredTraining:     string[]   // approved but expired training categories
+  /** @deprecated Use satisfiedTraining. Kept for backwards compat. */
+  inferredTraining:    string[]
+  compliant:           boolean
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -43,24 +51,73 @@ function isExpiringSoon(expiryDate: string | null): boolean {
   return expiry > now && expiry <= warnAt
 }
 
-// ── Training inference (Task 7) ───────────────────────────────────────────────
-// Looks at documents whose type is 'training_certificate' and matches the
-// file_name (lower-cased) against each training's keyword list.
+// ── Training resolution (category-based + approval-aware) ─────────────────────
+//
+// Replaces the old inferTraining() which matched file_name against keyword lists.
+//
+// Rules:
+//   1. Document must be of type 'training_certificate'
+//   2. Document must have reviewed_status = 'approved'
+//   3. Document must have a matching training_category
+//   4. If expiry_date is set, it must not be expired
+//
+// For each required training category we look at ALL matching approved certs
+// and pick the most recent (latest expiry_date, or latest created_at when no
+// expiry is set). An approved cert with NO expiry_date is treated as perpetually
+// valid (the admin chose not to set one).
 
-function inferTraining(documents: ComplianceDocument[]): RequiredTraining[] {
-  const trainingDocs = documents.filter(
-    (d) => d.document_type === 'training_certificate'
+interface TrainingResolution {
+  satisfied: RequiredTraining[]
+  expired:   RequiredTraining[]
+  missing:   RequiredTraining[]
+}
+
+function resolveTraining(documents: ComplianceDocument[]): TrainingResolution {
+  const approvedCerts = documents.filter(
+    (d) =>
+      d.document_type   === 'training_certificate' &&
+      d.reviewed_status === 'approved' &&
+      d.training_category !== null
   )
-  const found: RequiredTraining[] = []
-  for (const training of REQUIRED_TRAINING) {
-    const keywords = TRAINING_KEYWORDS[training]
-    const matched  = trainingDocs.some((doc) => {
-      const name = doc.file_name.toLowerCase()
-      return keywords.some((kw) => name.includes(kw))
-    })
-    if (matched) found.push(training)
+
+  const satisfied: RequiredTraining[] = []
+  const expired:   RequiredTraining[] = []
+  const missing:   RequiredTraining[] = []
+
+  for (const category of REQUIRED_TRAINING) {
+    // All approved certs for this category
+    const matching = approvedCerts
+      .filter((d) => d.training_category === category)
+      // Sort: most-recently-expiring first, then nulls last
+      .sort((a, b) => {
+        if (!a.expiry_date && !b.expiry_date) return 0
+        if (!a.expiry_date) return -1  // no expiry = perpetually valid → comes first
+        if (!b.expiry_date) return 1
+        return b.expiry_date.localeCompare(a.expiry_date)
+      })
+
+    if (matching.length === 0) {
+      missing.push(category)
+      continue
+    }
+
+    // Use the best available cert (most-recently-expiring / no expiry)
+    const best = matching[0]
+
+    if (isExpired(best.expiry_date)) {
+      // Check if there's a non-expired cert further down the list
+      const valid = matching.find((d) => !isExpired(d.expiry_date))
+      if (valid) {
+        satisfied.push(category)
+      } else {
+        expired.push(category)
+      }
+    } else {
+      satisfied.push(category)
+    }
   }
-  return found
+
+  return { satisfied, expired, missing }
 }
 
 // ── Main calculator ───────────────────────────────────────────────────────────
@@ -91,19 +148,16 @@ export function calculateCompliance(
     }
   }
 
-  // ── Training checks ────────────────────────────────────────────────────────
-  const inferredTraining = inferTraining(documents)
-  const missingTraining  = REQUIRED_TRAINING.filter(
-    (t) => !inferredTraining.includes(t)
-  )
+  // ── Training checks (category-based, approval-aware) ───────────────────────
+  const { satisfied, expired: expiredT, missing: missingT } = resolveTraining(documents)
 
   // ── Compliance percentage ──────────────────────────────────────────────────
   // Each required item is either compliant or not.
   // Missing + expired documents count as non-compliant.
   // Expiring-soon documents are still compliant (just warned).
-  // Missing training counts as non-compliant.
+  // Missing + expired training counts as non-compliant.
   const totalRequired  = REQUIRED_DOCUMENTS.length + REQUIRED_TRAINING.length
-  const totalIssues    = missingDocuments.length + expiredDocuments.length + missingTraining.length
+  const totalIssues    = missingDocuments.length + expiredDocuments.length + missingT.length + expiredT.length
   const compliantItems = Math.max(0, totalRequired - totalIssues)
   const percentage     = totalRequired === 0
     ? 100
@@ -112,15 +166,18 @@ export function calculateCompliance(
   const compliant =
     missingDocuments.length  === 0 &&
     expiredDocuments.length  === 0 &&
-    missingTraining.length   === 0
+    missingT.length          === 0 &&
+    expiredT.length          === 0
 
   return {
     percentage,
     missingDocuments,
     expiredDocuments,
     expiringSoon,
-    missingTraining,
-    inferredTraining,
+    missingTraining:   [...missingT, ...expiredT],  // both need attention
+    satisfiedTraining: satisfied,
+    expiredTraining:   expiredT,
+    inferredTraining:  satisfied,                   // backwards compat alias
     compliant,
   }
 }
@@ -140,3 +197,4 @@ export const TIER_CLS: Record<ComplianceTier, string> = {
   amber: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
   red:   'bg-red-50    text-red-700    ring-red-600/20',
 }
+

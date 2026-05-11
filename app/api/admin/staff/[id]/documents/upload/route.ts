@@ -57,10 +57,12 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid multipart/form-data body' }, { status: 400 })
   }
 
-  const file         = formData.get('file')
-  const documentType = formData.get('document_type')
-  const expiryDate   = formData.get('expiry_date')
-  const trainingName = formData.get('training_name')
+  const file             = formData.get('file')
+  const documentType     = formData.get('document_type')
+  const expiryDate       = formData.get('expiry_date')
+  const issueDate        = formData.get('issue_date')
+  const trainingCategory = formData.get('training_category')
+  const trainingName     = formData.get('training_name')
 
   // ── Validate required fields ───────────────────────────────────────────────
   if (!(file instanceof File)) {
@@ -76,8 +78,10 @@ export async function POST(
 
   const parsed = uploadDocumentSchema.safeParse({
     documentType,
-    expiryDate:   typeof expiryDate === 'string' ? expiryDate : undefined,
-    trainingName: typeof trainingName === 'string' ? trainingName : undefined,
+    expiryDate:       typeof expiryDate       === 'string' ? expiryDate       : undefined,
+    issueDate:        typeof issueDate         === 'string' ? issueDate         : undefined,
+    trainingCategory: typeof trainingCategory  === 'string' ? trainingCategory  : undefined,
+    trainingName:     typeof trainingName      === 'string' ? trainingName      : undefined,
   })
   if (!parsed.success) {
     const message = parsed.error.issues[0]?.message ?? 'Invalid request'
@@ -133,8 +137,17 @@ export async function POST(
     insertPayload.applicant_id = staffProfile.applicant_id
   }
 
-  if (documentType === 'training_certificate' && parsed.data.trainingName) {
-    insertPayload.training_name = parsed.data.trainingName
+  if (documentType === 'training_certificate') {
+    if (parsed.data.trainingCategory) {
+      insertPayload.training_category = parsed.data.trainingCategory
+    }
+    if (parsed.data.trainingName) {
+      insertPayload.training_name = parsed.data.trainingName
+    }
+  }
+
+  if (parsed.data.issueDate) {
+    insertPayload.issue_date = parsed.data.issueDate
   }
 
   const { data: document, error: insertError } = await adminClient

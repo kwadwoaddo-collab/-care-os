@@ -23,6 +23,16 @@ const DOCUMENT_TYPES = [
   { value: 'other',                label: 'Other' },
 ]
 
+const TRAINING_CATEGORIES = [
+  { value: 'manual_handling',    label: 'Manual Handling' },
+  { value: 'safeguarding',       label: 'Safeguarding' },
+  { value: 'basic_life_support', label: 'Basic Life Support' },
+  { value: 'infection_control',  label: 'Infection Control' },
+  { value: 'health_safety',      label: 'Health & Safety' },
+  { value: 'medication',         label: 'Medication Administration' },
+  { value: 'fire_safety',        label: 'Fire Safety' },
+]
+
 const ACCEPTED = '.pdf,.jpg,.jpeg,.png,.doc,.docx'
 const ACCEPTED_LABEL = 'PDF, JPG, PNG, DOC, DOCX · Max 10 MB'
 const MAX_SIZE_BYTES = 10 * 1024 * 1024
@@ -207,14 +217,16 @@ export default function WorkerDocumentsPage() {
   const [error,      setError]     = useState<string | null>(null)
   const [token,      setToken]     = useState('')
 
-  const [docType,    setDocType]   = useState('passport')
-  const [expiryDate, setExpiryDate] = useState('')
-  const [file,       setFile]      = useState<File | null>(null)
-  const [uploading,  setUploading] = useState(false)
-  const [progress,   setProgress]  = useState(0)
-  const [uploadErr,  setUploadErr] = useState<string | null>(null)
-  const [uploadOk,   setUploadOk]  = useState(false)
-  const [isDragOver, setIsDragOver] = useState(false)
+  const [docType,          setDocType]          = useState('passport')
+  const [trainingCategory, setTrainingCategory] = useState('')
+  const [expiryDate,       setExpiryDate]       = useState('')
+  const [issueDate,        setIssueDate]        = useState('')
+  const [file,             setFile]             = useState<File | null>(null)
+  const [uploading,        setUploading]        = useState(false)
+  const [progress,         setProgress]         = useState(0)
+  const [uploadErr,        setUploadErr]        = useState<string | null>(null)
+  const [uploadOk,         setUploadOk]         = useState(false)
+  const [isDragOver,       setIsDragOver]       = useState(false)
 
   function loadDocs(t: string) {
     fetch(`/api/worker/documents?token=${encodeURIComponent(t)}`)
@@ -290,6 +302,10 @@ export default function WorkerDocumentsPage() {
     fd.append('file',          file)
     fd.append('document_type', docType)
     if (expiryDate) fd.append('expiry_date', expiryDate)
+    if (issueDate)  fd.append('issue_date',  issueDate)
+    if (docType === 'training_certificate' && trainingCategory) {
+      fd.append('training_category', trainingCategory)
+    }
 
     // Use XHR for upload progress tracking
     await new Promise<void>((resolve) => {
@@ -307,6 +323,8 @@ export default function WorkerDocumentsPage() {
           setUploadOk(true)
           setFile(null)
           setExpiryDate('')
+          setIssueDate('')
+          setTrainingCategory('')
           setProgress(0)
           if (fileRef.current) fileRef.current.value = ''
           loadDocs(token)
@@ -409,6 +427,43 @@ export default function WorkerDocumentsPage() {
               ))}
             </select>
           </div>
+
+          {/* Training category — shown when type = training_certificate */}
+          {docType === 'training_certificate' && (
+            <>
+              <div>
+                <label htmlFor="training-cat" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Training category
+                </label>
+                <select
+                  id="training-cat"
+                  value={trainingCategory}
+                  onChange={(e) => setTrainingCategory(e.target.value)}
+                  className="block w-full rounded-xl border border-gray-300 px-3 py-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                >
+                  <option value="">— Select category —</option>
+                  {TRAINING_CATEGORIES.map((tc) => (
+                    <option key={tc.value} value={tc.value}>{tc.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="issue-date" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Issue date <span className="font-normal text-gray-400">(optional)</span>
+                </label>
+                <input
+                  id="issue-date"
+                  type="date"
+                  value={issueDate}
+                  onChange={(e) => setIssueDate(e.target.value)}
+                  className="block w-full rounded-xl border border-gray-300 px-3 py-3 text-base focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
+              <div className="rounded-xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-700">
+                👁️ Training certificates require admin approval before they count towards your compliance record.
+              </div>
+            </>
+          )}
 
           <div>
             <label htmlFor="expiry-date" className="block text-sm font-medium text-gray-700 mb-1.5">

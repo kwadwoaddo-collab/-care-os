@@ -1,5 +1,7 @@
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+import { getRequiredTraining } from '@/lib/training/matrix'
+
 export type OnboardingStage =
   | 'not_started'
   | 'in_progress'
@@ -38,6 +40,11 @@ export interface OnboardingInput {
   status?: string
   // Documents (pass in the types already uploaded)
   uploadedDocumentTypes?: string[]
+  // Training — approved and non-expired categories (from documents)
+  // Used to gate the training section. Populated by the page with approved certs.
+  approvedTrainingCategories?: string[]
+  // Job role — used to look up the required training matrix
+  job_role?: string | null
 }
 
 export interface OnboardingSections {
@@ -50,6 +57,8 @@ export interface OnboardingSections {
   compliance:  boolean
   documents:   boolean
   policy:      boolean
+  /** Hard gate — all role-required training must be approved + non-expired */
+  training:    boolean
 }
 
 export interface OnboardingStatus {
@@ -212,6 +221,23 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
   if (!checks.policy_acknowledged) missing.push('Policy acknowledgement')
   const policy = checks.policy_acknowledged
 
+  // ── Training (hard gate) ──────────────────────────────────────────────────
+  // All role-required training categories must have an approved, non-expired cert.
+  // This is a HARD GATE — missing or expired training blocks ready=true
+  // and activation, just like missing mandatory documents.
+  const requiredTraining  = getRequiredTraining(staff.job_role)
+  const approvedCategories = new Set(staff.approvedTrainingCategories ?? [])
+
+  for (const category of requiredTraining) {
+    const key = `training_${category}`
+    checks[key] = approvedCategories.has(category)
+    if (!checks[key]) missing.push(`Training: ${category.replace(/_/g, ' ')}`)
+  }
+
+  const training = requiredTraining.length === 0
+    ? true  // no training required for this role
+    : requiredTraining.every((cat) => approvedCategories.has(cat))
+
   // ── Aggregate ─────────────────────────────────────────────────────────────
   const sections: OnboardingSections = {
     personal,
@@ -223,6 +249,7 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
     compliance,
     documents,
     policy,
+    training,
   }
 
   const totalChecks  = Object.keys(checks).length
@@ -279,7 +306,7 @@ export function calculateOnboardingStatus(staff: OnboardingInput): OnboardingSta
 export interface NextAction {
   id:      string
   label:   string
-  section: 'personal' | 'address' | 'emergency' | 'hmrc' | 'banking' | 'employment' | 'compliance' | 'documents' | 'policy'
+  section: 'personal' | 'address' | 'emergency' | 'hmrc' | 'banking' | 'employment' | 'compliance' | 'documents' | 'policy' | 'training'
   urgent:  boolean
 }
 
@@ -314,6 +341,9 @@ export function getNextActions(status: OnboardingStatus): NextAction[] {
   }
   if (!status.sections.policy) {
     actions.push({ id: 'acknowledge_policy', label: 'Acknowledge company policies', section: 'policy', urgent: false })
+  }
+  if (!status.sections.training) {
+    actions.push({ id: 'complete_training', label: 'Upload and get approved for all mandatory training certificates', section: 'training', urgent: true })
   }
 
   return actions

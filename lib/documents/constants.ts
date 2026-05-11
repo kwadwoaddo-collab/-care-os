@@ -31,6 +31,40 @@ export const DOCUMENT_TYPES = DOCUMENT_TYPE_VALUES.map((value) => ({
 
 export const DOCUMENT_TYPE_SET = new Set<string>(DOCUMENT_TYPE_VALUES)
 
+// ── Training category constants ───────────────────────────────────────────────
+//
+// Structured training classification for training_certificate documents.
+// Must stay in sync with the CHECK constraint in 029_training_category.sql.
+
+export const TRAINING_CATEGORY_VALUES = [
+  'manual_handling',
+  'safeguarding',
+  'basic_life_support',
+  'infection_control',
+  'health_safety',
+  'medication',
+  'fire_safety',
+] as const
+
+export type TrainingCategory = (typeof TRAINING_CATEGORY_VALUES)[number]
+
+export const TRAINING_CATEGORY_LABELS: Record<TrainingCategory, string> = {
+  manual_handling:    'Manual Handling',
+  safeguarding:       'Safeguarding',
+  basic_life_support: 'Basic Life Support',
+  infection_control:  'Infection Control',
+  health_safety:      'Health & Safety',
+  medication:         'Medication Administration',
+  fire_safety:        'Fire Safety',
+}
+
+export const TRAINING_CATEGORIES = TRAINING_CATEGORY_VALUES.map((value) => ({
+  value,
+  label: TRAINING_CATEGORY_LABELS[value],
+}))
+
+export const TRAINING_CATEGORY_SET = new Set<string>(TRAINING_CATEGORY_VALUES)
+
 export const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
   'image/jpeg',
@@ -54,5 +88,16 @@ export const uploadDocumentSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'expiry_date must be ISO format YYYY-MM-DD')
     .optional()
     .or(z.literal('')),
+  issueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'issue_date must be ISO format YYYY-MM-DD')
+    .optional()
+    .or(z.literal('')),
+  trainingCategory: z
+    .string()
+    .refine((v) => TRAINING_CATEGORY_SET.has(v), {
+      message: `training_category must be one of: ${TRAINING_CATEGORY_VALUES.join(', ')}`,
+    })
+    .optional(),
   trainingName: z.string().max(200).optional(),
 })

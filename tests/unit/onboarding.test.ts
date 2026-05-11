@@ -51,6 +51,15 @@ const fullInput: OnboardingInput = {
   dbs_expiry_date:          '2027-01-01',
   policy_acknowledged:      true,
   uploadedDocumentTypes:    ['id', 'right_to_work', 'dbs', 'proof_of_address'],
+  // Training gate — all care_worker categories approved
+  job_role:                 'care_worker',
+  approvedTrainingCategories: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+  ],
 }
 
 const emptyInput: OnboardingInput = {}

@@ -95,17 +95,19 @@ interface Applicant {
 }
 
 interface Document {
-  id:              string
-  document_type:   string
-  file_name:       string
-  file_path:       string | null
-  file_size:       number | null
-  expiry_date:     string | null
-  created_at:      string
-  reviewed_status: string | null
-  review_notes:    string | null
-  reviewed_by:     string | null
-  reviewed_at:     string | null
+  id:                string
+  document_type:     string
+  file_name:         string
+  file_path:         string | null
+  file_size:         number | null
+  expiry_date:       string | null
+  issue_date:        string | null
+  training_category: string | null
+  created_at:        string
+  reviewed_status:   string | null
+  review_notes:      string | null
+  reviewed_by:       string | null
+  reviewed_at:       string | null
 }
 
 interface ComplianceItem {
@@ -346,10 +348,15 @@ function SectionBox({ title, children }: { title: string; children: React.ReactN
 
 // ── Compliance summary card ───────────────────────────────────────────────────
 
-function ComplianceCard({ documents }: { documents: Document[] }) {
+function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole: string | null }) {
   const summary = calculateCompliance(documents)
   const tier    = complianceTier(summary.percentage)
   const cls     = TIER_CLS[tier]
+
+  // Derive training labels for display
+  const { TRAINING_CATEGORY_LABELS } = require('@/lib/documents/constants')
+  const catLabel = (cat: string): string =>
+    (TRAINING_CATEGORY_LABELS as Record<string, string>)[cat] ?? cat.replace(/_/g, ' ')
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -429,25 +436,25 @@ function ComplianceCard({ documents }: { documents: Document[] }) {
         {/* Missing training */}
         {summary.missingTraining.length > 0 && (
           <div className="rounded-md bg-red-50 border border-red-200 p-3">
-            <p className="text-xs font-medium text-red-700 mb-1.5">Missing training</p>
+            <p className="text-xs font-medium text-red-700 mb-1.5">Missing / expired training</p>
             <ul className="flex flex-wrap gap-1.5">
               {summary.missingTraining.map((t) => (
                 <li key={t} className="text-xs bg-red-100 text-red-700 rounded px-1.5 py-0.5">
-                  {t.replace(/_/g, ' ')}
+                  {catLabel(t)}
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* Inferred training found */}
-        {summary.inferredTraining.length > 0 && (
+        {/* Satisfied training */}
+        {summary.satisfiedTraining.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Training detected from documents</p>
+            <p className="text-xs font-medium text-gray-500 mb-1.5">Approved training</p>
             <ul className="flex flex-wrap gap-1.5">
-              {summary.inferredTraining.map((t) => (
+              {summary.satisfiedTraining.map((t) => (
                 <li key={t} className="text-xs bg-green-50 text-green-700 rounded px-1.5 py-0.5 ring-1 ring-inset ring-green-600/20">
-                  ✓ {t.replace(/_/g, ' ')}
+                  ✓ {catLabel(t)}
                 </li>
               ))}
             </ul>
@@ -559,6 +566,14 @@ export default async function StaffDetailPage({
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold text-gray-700">Operational Onboarding Checklist</h2>
               {(() => {
+                const approvedTrainingCategories = documents
+                  .filter((d) =>
+                    d.document_type === 'training_certificate' &&
+                    d.reviewed_status === 'approved' &&
+                    d.training_category !== null &&
+                    !isExpired(d.expiry_date)
+                  )
+                  .map((d) => d.training_category as string)
                 const obs = calculateOnboardingStatus({
                   first_name:              sp.first_name,
                   last_name:               sp.last_name,
@@ -578,7 +593,10 @@ export default async function StaffDetailPage({
                   right_to_work_checked:   sp.right_to_work_checked,
                   dbs_checked:             sp.dbs_checked,
                   dbs_expiry_date:         sp.dbs_expiry_date ?? null,
+                  policy_acknowledged:     sp.policy_acknowledged,
                   uploadedDocumentTypes:   documents.map((d) => d.document_type),
+                  approvedTrainingCategories,
+                  job_role:                sp.job_role,
                 })
                 return (
                   <>
@@ -596,6 +614,11 @@ export default async function StaffDetailPage({
                     }`}>
                       {obs.payroll_ready ? '💷 Payroll Ready' : '💷 Not Payroll Ready'}
                     </span>
+                    {!obs.sections.training && (
+                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">
+                        🚫 Training incomplete
+                      </span>
+                    )}
                   </>
                 )
               })()}
@@ -623,7 +646,17 @@ export default async function StaffDetailPage({
                 right_to_work_checked:   sp.right_to_work_checked,
                 dbs_checked:             sp.dbs_checked,
                 dbs_expiry_date:         sp.dbs_expiry_date ?? null,
+                policy_acknowledged:     sp.policy_acknowledged,
                 uploadedDocumentTypes:   documents.map((d) => d.document_type),
+                approvedTrainingCategories: documents
+                  .filter((d) =>
+                    d.document_type === 'training_certificate' &&
+                    d.reviewed_status === 'approved' &&
+                    d.training_category !== null &&
+                    !isExpired(d.expiry_date)
+                  )
+                  .map((d) => d.training_category as string),
+                job_role: sp.job_role,
               }}
             />
           </div>
@@ -633,7 +666,7 @@ export default async function StaffDetailPage({
         <OnboardingTimeline staffProfileId={sp.id} />
 
         {/* ── Compliance summary card ─────────────────────────────────────── */}
-        <ComplianceCard documents={documents} />
+        <ComplianceCard documents={documents} jobRole={sp.job_role} />
 
         {/* ── Compliance review ───────────────────────────────────────────── */}
         <ComplianceReviewSection
@@ -837,6 +870,7 @@ export default async function StaffDetailPage({
                   <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
                       <th className="text-left pb-2 pr-4">File name</th>
                       <th className="text-left pb-2 pr-4">Type</th>
+                      <th className="text-left pb-2 pr-4">Training category</th>
                       <th className="text-left pb-2 pr-4">Expiry</th>
                       <th className="text-left pb-2 pr-4">Validity</th>
                       <th className="text-left pb-2 pr-4">Review</th>
@@ -847,16 +881,37 @@ export default async function StaffDetailPage({
                 <tbody className="divide-y divide-gray-50">
                   {documents.map((doc) => {
                     const expStatus = docExpiryStatus(doc.expiry_date)
+                    // Validity: approved + not expired = valid; approved + expired = expired; else pending/rejected
+                    const validityStatus =
+                      doc.reviewed_status === 'approved' && !isExpired(doc.expiry_date) ? 'valid' :
+                      doc.reviewed_status === 'approved' && isExpired(doc.expiry_date)  ? 'expired' :
+                      doc.reviewed_status === 'rejected' ? 'rejected' : 'pending'
+                    const VALIDITY_CLS: Record<string, string> = {
+                      valid:    'bg-green-50  text-green-700  ring-green-600/20',
+                      expired:  'bg-red-50    text-red-700    ring-red-600/20',
+                      rejected: 'bg-red-50    text-red-700    ring-red-600/20',
+                      pending:  'bg-gray-50   text-gray-500   ring-gray-400/20',
+                    }
                     return (
                       <tr key={doc.id} className={expiryRowCls(doc.expiry_date)}>
                         <td className="py-2 pr-4 text-gray-900 truncate max-w-[200px]">{doc.file_name}</td>
                         <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">{doc.document_type.replace(/_/g, ' ')}</td>
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                          {doc.document_type === 'training_certificate' && doc.training_category ? (
+                            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-indigo-50 text-indigo-700 ring-indigo-600/20">
+                              {doc.training_category.replace(/_/g, ' ')}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
                         <td className={`py-2 pr-4 whitespace-nowrap ${expiryTextCls(doc.expiry_date)}`}>
                           {doc.expiry_date ? formatDate(doc.expiry_date) : '—'}
                         </td>
                         <td className="py-2 pr-4">
-                          <Badge status={expStatus} map={DOC_STATUS_CLS} />
-                          <span className="sr-only">{docExpiryLabel(expStatus)}</span>
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${VALIDITY_CLS[validityStatus]}`}>
+                            {validityStatus.charAt(0).toUpperCase() + validityStatus.slice(1)}
+                          </span>
                         </td>
                         <td className="py-2 pr-4 min-w-[180px]">
                           <DocumentApprovalButton

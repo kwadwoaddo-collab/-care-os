@@ -129,7 +129,7 @@ export async function GET() {
   if (staffIds.length > 0) {
     const { data: sDocs } = await adminClient
       .from('documents')
-      .select('id, document_type, file_name, expiry_date, staff_profile_id')
+      .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date, staff_profile_id')
       .in('staff_profile_id', staffIds)
 
     for (const doc of sDocs ?? []) {
@@ -142,7 +142,7 @@ export async function GET() {
   if (applicantIds.length > 0) {
     const { data: aDocs } = await adminClient
       .from('documents')
-      .select('id, document_type, file_name, expiry_date, applicant_id')
+      .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date, applicant_id')
       .in('applicant_id', applicantIds)
 
     for (const doc of aDocs ?? []) {

@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
 import { validateUploadFile } from '@/lib/uploads/validateUploadFile'
-import { DOCUMENT_TYPE_SET, DOCUMENT_TYPE_VALUES } from '@/lib/documents/constants'
+import {
+  DOCUMENT_TYPE_SET,
+  DOCUMENT_TYPE_VALUES,
+  TRAINING_CATEGORY_SET,
+} from '@/lib/documents/constants'
 
 export async function POST(request: NextRequest) {
   let formData: FormData
@@ -12,10 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid multipart/form-data' }, { status: 400 })
   }
 
-  const rawToken     = formData.get('token')
-  const file         = formData.get('file')
-  const documentType = formData.get('document_type')
-  const expiryDate   = formData.get('expiry_date')
+  const rawToken        = formData.get('token')
+  const file            = formData.get('file')
+  const documentType    = formData.get('document_type')
+  const expiryDate      = formData.get('expiry_date')
+  const issueDate       = formData.get('issue_date')
+  const trainingCategory = formData.get('training_category')
 
   if (typeof rawToken !== 'string') {
     return NextResponse.json({ error: 'token is required' }, { status: 400 })
@@ -42,6 +48,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: validation.error }, { status: 422 })
   }
 
+  // Validate training_category when document type is training_certificate
+  if (
+    documentType === 'training_certificate' &&
+    typeof trainingCategory === 'string' &&
+    trainingCategory !== '' &&
+    !TRAINING_CATEGORY_SET.has(trainingCategory)
+  ) {
+    return NextResponse.json(
+      { error: 'Invalid training_category value' },
+      { status: 422 }
+    )
+  }
+
   const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
   const storagePath  = `${company_id}/worker/${staffProfileId}/${documentType}/${Date.now()}-${safeFileName}`
 
@@ -60,20 +79,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: uploadError.message ?? 'Upload failed' }, { status: 500 })
   }
 
+  const insertPayload: Record<string, unknown> = {
+    company_id,
+    staff_profile_id: staffProfileId,
+    document_type:    documentType,
+    file_name:        file.name,
+    file_path:        storagePath,
+    file_size:        file.size,
+    mime_type:        file.type || null,
+    expiry_date:      typeof expiryDate === 'string' && expiryDate ? expiryDate : null,
+    issue_date:       typeof issueDate  === 'string' && issueDate  ? issueDate  : null,
+    uploaded_by:      'worker',
+    // All worker-uploaded certs start as 'pending' — admin must approve
+    reviewed_status:  'pending',
+  }
+
+  // Persist training category when present
+  if (
+    documentType === 'training_certificate' &&
+    typeof trainingCategory === 'string' &&
+    trainingCategory &&
+    TRAINING_CATEGORY_SET.has(trainingCategory)
+  ) {
+    insertPayload.training_category = trainingCategory
+  }
+
   const { data: document, error: insertError } = await adminClient
     .from('documents')
-    .insert({
-      company_id,
-      staff_profile_id: staffProfileId,
-      document_type:    documentType,
-      file_name:        file.name,
-      file_path:        storagePath,
-      file_size:        file.size,
-      mime_type:        file.type || null,
-      expiry_date:      typeof expiryDate === 'string' && expiryDate ? expiryDate : null,
-      uploaded_by:      'worker',
-    })
-    .select('id, document_type, file_name, created_at')
+    .insert(insertPayload)
+    .select('id, document_type, file_name, training_category, created_at')
     .single()
 
   if (insertError || !document) {

@@ -54,13 +54,13 @@ export async function GET(request: NextRequest) {
   const [docsStaffResult, docsApplicantResult, availResult] = await Promise.all([
     adminClient
       .from('documents')
-      .select('id, document_type, file_name, expiry_date, staff_profile_id')
+      .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date, staff_profile_id')
       .in('staff_profile_id', staffIds),
 
     applicantIds.length > 0
       ? adminClient
           .from('documents')
-          .select('id, document_type, file_name, expiry_date, applicant_id')
+          .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date, applicant_id')
           .in('applicant_id', applicantIds)
       : Promise.resolve({ data: [], error: null }),
 
