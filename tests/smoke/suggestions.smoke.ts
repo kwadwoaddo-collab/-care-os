@@ -10,8 +10,6 @@
 import { test, expect, request as makeRequest } from '@playwright/test'
 import { expectAdminPage }                       from './helpers/auth'
 
-const BASE = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
-
 // ── Metrics API ───────────────────────────────────────────────────────────────
 
 test('scheduling metrics API returns valid shape', async ({ page }) => {
@@ -30,7 +28,12 @@ test('scheduling metrics API returns valid shape', async ({ page }) => {
 })
 
 test('scheduling metrics API: unauthenticated returns 401', async () => {
-  const ctx = await makeRequest.newContext({ baseURL: BASE })
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL
+  if (!baseURL) {
+    test.skip(true, 'staging URL not set — skipping unauth test locally')
+    return
+  }
+  const ctx = await makeRequest.newContext({ baseURL, storageState: { cookies: [], origins: [] } })
   const res  = await ctx.get('/api/admin/shifts/metrics')
   expect(res.status()).toBe(401)
   await ctx.dispose()
@@ -107,7 +110,12 @@ test('shift suggestions API: eligible workers appear before ineligible', async (
 })
 
 test('shift suggestions API: unauthenticated returns 401', async () => {
-  const ctx = await makeRequest.newContext({ baseURL: BASE })
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL
+  if (!baseURL) {
+    test.skip(true, 'staging URL not set — skipping unauth test locally')
+    return
+  }
+  const ctx = await makeRequest.newContext({ baseURL, storageState: { cookies: [], origins: [] } })
   const res  = await ctx.get('/api/admin/shifts/00000000-0000-0000-0000-000000000000/suggestions')
   expect(res.status()).toBe(401)
   await ctx.dispose()
