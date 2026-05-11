@@ -14,6 +14,7 @@ interface StaffProfileRow {
   job_role:              string | null
   status:                string
   start_date:            string | null
+  created_at:            string
   onboarding_completed:  boolean | null
   date_of_birth:         string | null
   nationality:           string | null
@@ -55,6 +56,7 @@ export interface OnboardingRow {
   sections_complete:     number
   sections_total:        number
   is_urgent:             boolean
+  stalled_days:          number | null
 }
 
 export interface OnboardingSummary {
@@ -64,6 +66,7 @@ export interface OnboardingSummary {
   not_started:         number
   in_progress:         number
   awaiting_review:     number
+  stalled_count:       number
   missing_hmrc:        number
   missing_banking:     number
   missing_documents:   number
@@ -76,6 +79,12 @@ export interface OnboardingResponse {
   summary: OnboardingSummary
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function daysSince(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24))
+}
+
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
@@ -85,12 +94,13 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const stageFilter = searchParams.get('stage') as OnboardingStage | 'all' | null
+  const q           = (searchParams.get('q') ?? '').trim().toLowerCase()
 
   const { data: rawProfiles, error: profilesError } = await adminClient
     .from('staff_profiles')
     .select([
       'id', 'first_name', 'last_name', 'email', 'job_role', 'status',
-      'start_date', 'onboarding_completed', 'date_of_birth', 'nationality',
+      'start_date', 'created_at', 'onboarding_completed', 'date_of_birth', 'nationality',
       'address_line_1', 'city', 'postcode', 'emergency_contact_name',
       'emergency_contact_phone', 'ni_number', 'starter_declaration',
       'employment_type', 'bank_account_number', 'bank_sort_code',
@@ -112,7 +122,7 @@ export async function GET(request: Request) {
       data: [],
       summary: {
         total: 0, complete: 0, incomplete: 0, not_started: 0,
-        in_progress: 0, awaiting_review: 0,
+        in_progress: 0, awaiting_review: 0, stalled_count: 0,
         missing_hmrc: 0, missing_banking: 0, missing_documents: 0,
         missing_compliance: 0, payroll_ready: 0,
       },
@@ -122,7 +132,6 @@ export async function GET(request: Request) {
 
   const staffIds = profiles.map((p) => p.id)
 
-  // Batch-fetch all documents for these staff profiles
   const { data: rawDocs } = await adminClient
     .from('documents')
     .select('id, document_type, staff_profile_id, reviewed_status')
@@ -130,19 +139,19 @@ export async function GET(request: Request) {
 
   const docs = (rawDocs ?? []) as {
     id: string
-    document_type:   string
+    document_type:    string
     staff_profile_id: string
     reviewed_status:  string | null
   }[]
 
-  // Index docs by staff profile id
   const docsByStaff: Record<string, string[]> = {}
   for (const doc of docs) {
     if (!docsByStaff[doc.staff_profile_id]) docsByStaff[doc.staff_profile_id] = []
     docsByStaff[doc.staff_profile_id].push(doc.document_type)
   }
 
-  // Build result rows
+  const STALLED_DAYS = 7
+
   const allRows: OnboardingRow[] = profiles.map((p) => {
     const uploadedDocumentTypes = docsByStaff[p.id] ?? []
 
@@ -172,6 +181,8 @@ export async function GET(request: Request) {
     const sectionsComplete = Object.values(obs.sections).filter(Boolean).length
     const sectionsTotal    = Object.keys(obs.sections).length
     const isUrgent         = p.status === 'active' && !obs.ready
+    const age              = daysSince(p.created_at)
+    const stalledDays      = obs.stage === 'in_progress' && age >= STALLED_DAYS ? age : null
 
     return {
       id:                   p.id,
@@ -194,19 +205,34 @@ export async function GET(request: Request) {
       sections_complete:    sectionsComplete,
       sections_total:       sectionsTotal,
       is_urgent:            isUrgent,
+      stalled_days:         stalledDays,
     }
   })
 
-  // Apply stage filter
-  const rows = stageFilter && stageFilter !== 'all'
-    ? allRows.filter((r) => r.stage === stageFilter)
+  // Server-side search
+  const searched = q
+    ? allRows.filter((r) => {
+        const name  = `${r.first_name ?? ''} ${r.last_name ?? ''}`.toLowerCase()
+        const email = (r.email ?? '').toLowerCase()
+        return name.includes(q) || email.includes(q)
+      })
     : allRows
 
-  // Sort: urgent (active + incomplete) first, then by progress ascending
+  // Stage filter
+  const rows = stageFilter && stageFilter !== 'all'
+    ? searched.filter((r) => r.stage === stageFilter)
+    : searched
+
+  // Sort: urgent first, stalled next, then by progress ascending
   rows.sort((a, b) => {
     if (a.is_urgent !== b.is_urgent) return a.is_urgent ? -1 : 1
+    const aStalled = a.stalled_days !== null
+    const bStalled = b.stalled_days !== null
+    if (aStalled !== bStalled) return aStalled ? -1 : 1
     return a.progress - b.progress
   })
+
+  const stalledCount = allRows.filter((r) => r.stalled_days !== null).length
 
   const summary: OnboardingSummary = {
     total:              allRows.length,
@@ -215,6 +241,7 @@ export async function GET(request: Request) {
     not_started:        allRows.filter((r) => r.stage === 'not_started').length,
     in_progress:        allRows.filter((r) => r.stage === 'in_progress').length,
     awaiting_review:    allRows.filter((r) => r.stage === 'awaiting_review').length,
+    stalled_count:      stalledCount,
     missing_hmrc:       allRows.filter((r) => r.missing_hmrc).length,
     missing_banking:    allRows.filter((r) => r.missing_banking).length,
     missing_documents:  allRows.filter((r) => r.missing_documents).length,

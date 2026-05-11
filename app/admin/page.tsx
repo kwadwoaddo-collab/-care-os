@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { adminClient } from '@/lib/supabase/admin'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
+import type { OnboardingResponse } from '@/app/api/admin/onboarding/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -196,6 +197,7 @@ export default async function AdminDashboard() {
     incidentsResult,
     complianceRes,
     auditRes,
+    onboardingRes,
   ] = await Promise.all([
     // Staff statuses (for active count + non-compliant from compliance)
     adminClient
@@ -304,6 +306,9 @@ export default async function AdminDashboard() {
 
     // Audit log API (reuse existing, last 10)
     adminFetch(`${BASE}/api/admin/audit-log`, { cache: 'no-store' }),
+
+    // Onboarding summary
+    adminFetch(`${BASE}/api/admin/onboarding`, { cache: 'no-store' }),
   ])
 
   // Parse HTTP responses
@@ -314,6 +319,10 @@ export default async function AdminDashboard() {
   const auditEntries: AuditEntry[] = auditRes.ok
     ? ((await auditRes.json() as AuditEntry[]).slice(0, 10))
     : []
+
+  const onboarding: OnboardingResponse | null = onboardingRes.ok
+    ? (await onboardingRes.json() as OnboardingResponse)
+    : null
 
   // Derive summary numbers
   const allStaff      = staffStatusResult.data ?? []
@@ -418,7 +427,7 @@ export default async function AdminDashboard() {
           label="HR incomplete"
           count={hrIncomplete}
           sub="Missing payroll or personal info"
-          href="/admin/staff"
+          href="/admin/onboarding"
           urgent={hrIncomplete > 0}
         />
         <SummaryCard
@@ -429,6 +438,59 @@ export default async function AdminDashboard() {
           urgent={notifFailed > 0}
         />
       </div>
+
+      {/* ── Onboarding overview ─────────────────────────────────────────────── */}
+      {onboarding && (
+        <>
+          {onboarding.summary.stalled_count > 0 && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-base">⏰</span>
+                <p className="text-sm font-semibold text-amber-800">
+                  {onboarding.summary.stalled_count} worker{onboarding.summary.stalled_count !== 1 ? 's' : ''} stalled in onboarding — in progress for 7+ days
+                </p>
+              </div>
+              <Link href="/admin/onboarding?stage=in_progress" className="text-xs font-medium text-amber-700 hover:text-amber-900 whitespace-nowrap">
+                Review →
+              </Link>
+            </div>
+          )}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-gray-700">Onboarding Overview</h2>
+              <Link href="/admin/onboarding" className="text-xs text-indigo-600 hover:underline">View queue →</Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <SummaryCard
+                label="In progress"
+                count={onboarding.summary.in_progress}
+                sub="Actively onboarding"
+                href="/admin/onboarding?stage=in_progress"
+              />
+              <SummaryCard
+                label="Awaiting review"
+                count={onboarding.summary.awaiting_review}
+                sub="Docs need review"
+                href="/admin/onboarding?stage=awaiting_review"
+                urgent={onboarding.summary.awaiting_review > 0}
+              />
+              <SummaryCard
+                label="Stalled"
+                count={onboarding.summary.stalled_count}
+                sub="No movement 7+ days"
+                href="/admin/onboarding?stage=in_progress"
+                urgent={onboarding.summary.stalled_count > 0}
+              />
+              <SummaryCard
+                label="Payroll ready"
+                count={onboarding.summary.payroll_ready}
+                sub="All payroll info complete"
+                href="/admin/onboarding"
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Operational alerts ─────────────────────────────────────────────── */}
       {(opsAlerts > 0 || unacknowledged > 0) && (
@@ -618,11 +680,11 @@ export default async function AdminDashboard() {
           <SectionBox title="Quick Actions">
             <div className="p-3 grid grid-cols-2 gap-2">
               {[
+                { label: 'Onboarding Queue',       href: '/admin/onboarding' },
                 { label: 'Create Shift',           href: '/admin/shifts' },
                 { label: 'Add Client',             href: '/admin/clients' },
                 { label: 'Create Care Package',    href: '/admin/care-packages' },
                 { label: 'Invite Applicant',       href: '/admin/applicants' },
-                { label: 'Add Existing Staff',     href: '/admin/staff' },
                 { label: 'Compliance Dashboard',   href: '/admin/compliance' },
               ].map((a) => (
                 <Link

@@ -23,6 +23,10 @@ const DOCUMENT_TYPES = [
   { value: 'other',                label: 'Other' },
 ]
 
+const ACCEPTED = '.pdf,.jpg,.jpeg,.png,.doc,.docx'
+const ACCEPTED_LABEL = 'PDF, JPG, PNG, DOC, DOCX · Max 10 MB'
+const MAX_SIZE_BYTES = 10 * 1024 * 1024
+
 function formatDate(iso: string | null) {
   if (!iso) return null
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -115,20 +119,102 @@ function Skeleton() {
   )
 }
 
+// ── Upload zone ───────────────────────────────────────────────────────────────
+
+function UploadZone({
+  file,
+  isDragOver,
+  onFileChange,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  fileRef,
+}: {
+  file:        File | null
+  isDragOver:  boolean
+  onFileChange: (f: File | null) => void
+  onDragOver:  (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onDrop:      (e: React.DragEvent) => void
+  fileRef:     React.RefObject<HTMLInputElement | null>
+}) {
+  return (
+    <label
+      className={[
+        'flex flex-col items-center gap-2 w-full rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-all',
+        isDragOver
+          ? 'border-indigo-500 bg-indigo-50 scale-[1.01]'
+          : file
+          ? 'border-green-400 bg-green-50/40'
+          : 'border-gray-300 bg-gray-50 hover:border-indigo-400 hover:bg-indigo-50/30',
+      ].join(' ')}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
+      <span className="text-2xl">{file ? '✅' : isDragOver ? '⬇️' : '📎'}</span>
+      <span className="text-sm font-medium text-indigo-600">
+        {file ? 'Change file' : isDragOver ? 'Drop to upload' : 'Tap to select or drag a file here'}
+      </span>
+      {file ? (
+        <span className="text-xs text-gray-600 text-center truncate max-w-full px-2">
+          {file.name} ({formatBytes(file.size)})
+        </span>
+      ) : (
+        <span className="text-xs text-gray-400">{ACCEPTED_LABEL}</span>
+      )}
+      <input
+        ref={fileRef}
+        type="file"
+        accept={ACCEPTED}
+        capture="environment"
+        onChange={(e) => {
+          onFileChange(e.target.files?.[0] ?? null)
+        }}
+        className="sr-only"
+        aria-label="Select document file"
+      />
+    </label>
+  )
+}
+
+// ── Upload progress bar ───────────────────────────────────────────────────────
+
+function UploadProgressBar({ progress }: { progress: number }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>Uploading…</span>
+        <span className="tabular-nums font-medium">{progress}%</span>
+      </div>
+      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function WorkerDocumentsPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [docs,    setDocs]    = useState<WorkerDocument[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState<string | null>(null)
-  const [token,   setToken]   = useState('')
+  const [docs,       setDocs]      = useState<WorkerDocument[]>([])
+  const [loading,    setLoading]   = useState(true)
+  const [error,      setError]     = useState<string | null>(null)
+  const [token,      setToken]     = useState('')
 
-  const [docType,    setDocType]    = useState('passport')
+  const [docType,    setDocType]   = useState('passport')
   const [expiryDate, setExpiryDate] = useState('')
-  const [file,       setFile]       = useState<File | null>(null)
-  const [uploading,  setUploading]  = useState(false)
-  const [uploadErr,  setUploadErr]  = useState<string | null>(null)
-  const [uploadOk,   setUploadOk]   = useState(false)
+  const [file,       setFile]      = useState<File | null>(null)
+  const [uploading,  setUploading] = useState(false)
+  const [progress,   setProgress]  = useState(0)
+  const [uploadErr,  setUploadErr] = useState<string | null>(null)
+  const [uploadOk,   setUploadOk]  = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   function loadDocs(t: string) {
     fetch(`/api/worker/documents?token=${encodeURIComponent(t)}`)
@@ -155,12 +241,49 @@ export default function WorkerDocumentsPage() {
     loadDocs(t)
   }, [])
 
+  function validateFile(f: File): string | null {
+    if (f.size > MAX_SIZE_BYTES) return `File too large — maximum size is 10 MB (your file is ${formatBytes(f.size)}).`
+    const ext = f.name.split('.').pop()?.toLowerCase() ?? ''
+    if (!['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'].includes(ext))
+      return `File type not accepted. Please upload a PDF, JPG, PNG, DOC, or DOCX file.`
+    return null
+  }
+
+  function handleFileChange(f: File | null) {
+    setFile(f)
+    setUploadOk(false)
+    setUploadErr(null)
+    if (f) {
+      const err = validateFile(f)
+      if (err) { setUploadErr(err); setFile(null) }
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  function handleDragLeave() { setIsDragOver(false) }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragOver(false)
+    const dropped = e.dataTransfer.files[0]
+    if (dropped) handleFileChange(dropped)
+  }
+
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
     if (!file) { setUploadErr('Please select a file.'); return }
+
+    const validErr = validateFile(file)
+    if (validErr) { setUploadErr(validErr); return }
+
     setUploading(true)
     setUploadErr(null)
     setUploadOk(false)
+    setProgress(0)
 
     const fd = new FormData()
     fd.append('token',         token)
@@ -168,20 +291,45 @@ export default function WorkerDocumentsPage() {
     fd.append('document_type', docType)
     if (expiryDate) fd.append('expiry_date', expiryDate)
 
-    try {
-      const res  = await fetch('/api/worker/documents/upload', { method: 'POST', body: fd })
-      const json = await res.json() as { error?: string }
-      if (!res.ok) { setUploadErr(json.error ?? 'Upload failed.'); return }
-      setUploadOk(true)
-      setFile(null)
-      setExpiryDate('')
-      if (fileRef.current) fileRef.current.value = ''
-      loadDocs(token)
-    } catch {
-      setUploadErr('Network error — please try again.')
-    } finally {
-      setUploading(false)
-    }
+    // Use XHR for upload progress tracking
+    await new Promise<void>((resolve) => {
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          setProgress(Math.round((ev.loaded / ev.total) * 100))
+        }
+      }
+
+      xhr.onload = () => {
+        setUploading(false)
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUploadOk(true)
+          setFile(null)
+          setExpiryDate('')
+          setProgress(0)
+          if (fileRef.current) fileRef.current.value = ''
+          loadDocs(token)
+        } else {
+          try {
+            const json = JSON.parse(xhr.responseText) as { error?: string }
+            setUploadErr(json.error ?? `Upload failed (${xhr.status}). Please try again.`)
+          } catch {
+            setUploadErr(`Upload failed (${xhr.status}). Please try again.`)
+          }
+        }
+        resolve()
+      }
+
+      xhr.onerror = () => {
+        setUploading(false)
+        setUploadErr('Network error — check your connection and try again.')
+        resolve()
+      }
+
+      xhr.open('POST', '/api/worker/documents/upload')
+      xhr.send(fd)
+    })
   }
 
   if (loading) return <Skeleton />
@@ -231,8 +379,18 @@ export default function WorkerDocumentsPage() {
             ✓ Document uploaded successfully.
           </div>
         )}
+
         {uploadErr && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-sm text-red-700">{uploadErr}</div>
+          <div className="rounded-xl bg-red-50 border border-red-200 p-3 space-y-2">
+            <p className="text-sm text-red-700">{uploadErr}</p>
+            <button
+              type="button"
+              onClick={() => { setUploadErr(null); setFile(null); if (fileRef.current) fileRef.current.value = '' }}
+              className="text-xs text-red-600 font-medium underline"
+            >
+              Try again
+            </button>
+          </div>
         )}
 
         <form onSubmit={handleUpload} className="space-y-4">
@@ -266,35 +424,22 @@ export default function WorkerDocumentsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              File <span className="font-normal text-gray-400">(PDF, JPG, PNG, DOC — max 10 MB)</span>
-            </label>
-            {/* Custom file button */}
-            <label className="flex flex-col items-center gap-2 w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-5 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition-colors">
-              <span className="text-2xl">📎</span>
-              <span className="text-sm font-medium text-indigo-600">
-                {file ? 'Change file' : 'Tap to select a file'}
-              </span>
-              {file ? (
-                <span className="text-xs text-gray-600 text-center truncate max-w-full px-2">
-                  {file.name} ({formatBytes(file.size)})
-                </span>
-              ) : (
-                <span className="text-xs text-gray-400">PDF, JPG, PNG, DOC, DOCX</span>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                onChange={(e) => {
-                  setFile(e.target.files?.[0] ?? null)
-                  setUploadOk(false)
-                }}
-                className="sr-only"
-                aria-label="Select document file"
-              />
-            </label>
+            <p className="block text-sm font-medium text-gray-700 mb-1.5">
+              File <span className="font-normal text-gray-400">({ACCEPTED_LABEL})</span>
+            </p>
+            <UploadZone
+              file={file}
+              isDragOver={isDragOver}
+              onFileChange={handleFileChange}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              fileRef={fileRef}
+            />
           </div>
+
+          {/* Progress bar while uploading */}
+          {uploading && <UploadProgressBar progress={progress} />}
 
           <button
             data-testid="upload-document-btn"
@@ -302,7 +447,7 @@ export default function WorkerDocumentsPage() {
             disabled={uploading || !file}
             className="w-full rounded-xl bg-indigo-600 py-3.5 text-base font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
           >
-            {uploading ? 'Uploading…' : 'Upload Document'}
+            {uploading ? `Uploading ${progress}%…` : 'Upload Document'}
           </button>
         </form>
       </div>
@@ -322,7 +467,6 @@ export default function WorkerDocumentsPage() {
           </div>
         ) : (
           <div className="space-y-2">
-            {/* Expired first */}
             {expiredDocs.map((d) => <DocCard key={d.id} d={d} />)}
             {soonDocs.map((d)    => <DocCard key={d.id} d={d} />)}
             {okDocs.map((d)      => <DocCard key={d.id} d={d} />)}

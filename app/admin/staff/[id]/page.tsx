@@ -13,6 +13,7 @@ import PortalInviteButton        from './PortalInviteButton'
 import EditStaffProfileForm      from './EditStaffProfileForm'
 import EditHrDetailsForm         from './EditHrDetailsForm'
 import OnboardingChecklist       from './OnboardingChecklist'
+import OnboardingTimeline        from './OnboardingTimeline'
 import DocumentApprovalButton    from './DocumentApprovalButton'
 import { calculateHrReadiness }  from '@/lib/staff/calculateHrReadiness'
 import { calculateOnboardingStatus } from '@/lib/staff/calculateOnboardingStatus'
@@ -627,6 +628,9 @@ export default async function StaffDetailPage({
             />
           </div>
         </div>
+
+        {/* ── Onboarding Activity Timeline ────────────────────────────────── */}
+        <OnboardingTimeline staffProfileId={sp.id} />
 
         {/* ── Compliance summary card ─────────────────────────────────────── */}
         <ComplianceCard documents={documents} />
