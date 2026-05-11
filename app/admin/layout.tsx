@@ -59,6 +59,31 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span>⚠️</span>
         </div>
       )}
+      {!isQaEnvironment && (
+        <div
+          id="pilot-mode-banner"
+          role="note"
+          style={{
+            background: '#eef2ff',
+            borderBottom: '1px solid #c7d2fe',
+            color: '#3730a3',
+            textAlign: 'center',
+            padding: '5px 16px',
+            fontSize: '12px',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>🚀</span>
+          <span>
+            <strong>Pilot mode:</strong> Care OS is being used for onboarding &amp; compliance only.
+            BrightHR remains the sign-in system for shifts, attendance &amp; payroll.
+          </span>
+        </div>
+      )}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-6">
           <span className="font-semibold text-gray-900 text-sm tracking-tight">Care OS — Admin</span>
