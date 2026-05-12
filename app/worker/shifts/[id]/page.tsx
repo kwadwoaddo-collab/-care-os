@@ -359,7 +359,7 @@ export default function WorkerShiftDetailPage() {
         </div>
       )}
 
-      {/* Clock in / out card */}
+      {/* Clock in / out — sticky action bar */}
       {(shift.status === 'accepted' || shift.status === 'in_progress' || shift.status === 'completed') && (
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Attendance</h2>
@@ -380,20 +380,36 @@ export default function WorkerShiftDetailPage() {
           </div>
 
           {clockError && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{clockError}</div>
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 flex items-start gap-2">
+              <span className="flex-shrink-0">⚠</span>
+              <div className="flex-1">
+                {clockError}
+                <button
+                  onClick={() => setClockError(null)}
+                  className="ml-2 text-xs text-red-600 underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
           )}
+        </div>
+      )}
 
-          <div className="grid grid-cols-2 gap-2">
+      {/* Sticky bottom action bar (clock in / out) — stays accessible without viewport jumping */}
+      {(shift.status === 'accepted' || shift.status === 'in_progress') && (
+        <div className="sticky bottom-[56px] z-20 bg-white/95 backdrop-blur border-t border-gray-200 shadow-lg -mx-4 px-4 py-3 sm:static sm:bg-transparent sm:shadow-none sm:border-0 sm:mx-0 sm:px-0 sm:py-0">
+          <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
             <button
               data-testid="clock-in-btn"
               onClick={async () => { 
                 const ok = await handleClock('in'); 
                 if (ok) await handleAction('start'); 
               }}
-              disabled={clockLoading || shift.status === 'in_progress' || shift.status === 'completed'}
-              className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
+              disabled={clockLoading || shift.status === 'in_progress'}
+              className="rounded-xl bg-indigo-600 py-3.5 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
             >
-              {(shift.status === 'in_progress' || shift.status === 'completed') ? '✓ Started' : '⏱ Start Shift'}
+              {clockLoading ? '…' : shift.status === 'in_progress' ? '✓ Started' : '⏱ Start Shift'}
             </button>
             <button
               data-testid="clock-out-btn"
@@ -402,9 +418,9 @@ export default function WorkerShiftDetailPage() {
                 if (ok) await handleAction('complete'); 
               }}
               disabled={clockLoading || !hasClockedIn || hasClockedOut}
-              className="rounded-xl bg-gray-800 py-3 text-sm font-semibold text-white hover:bg-gray-700 active:scale-95 transition-all disabled:opacity-40"
+              className="rounded-xl bg-gray-800 py-3.5 text-sm font-semibold text-white hover:bg-gray-700 active:scale-95 transition-all disabled:opacity-40"
             >
-              {shift.status === 'completed' ? '✓ Completed' : '⏹ Complete Shift'}
+              {clockLoading ? '…' : '⏹ Complete Shift'}
             </button>
           </div>
         </div>

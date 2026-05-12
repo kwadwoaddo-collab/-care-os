@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
+import NotificationBellWrapper from '@/components/shared/NotificationBellWrapper'
 
 const NAV = [
-  { href: '/worker/dashboard',    label: 'Home',         icon: '🏠' },
-  { href: '/worker/onboarding',   label: 'Onboarding',   icon: '✅' },
-  { href: '/worker/documents',    label: 'Documents',    icon: '📄' },
-  { href: '/worker/shifts',       label: 'Shifts',       icon: '📅' },
-  { href: '/worker/availability', label: 'Availability', icon: '🗓' },
+  { href: '/worker/dashboard',       label: 'Home',          icon: '🏠' },
+  { href: '/worker/onboarding',      label: 'Onboarding',    icon: '✅' },
+  { href: '/worker/documents',       label: 'Documents',     icon: '📄' },
+  { href: '/worker/shifts',          label: 'Shifts',        icon: '📅' },
+  { href: '/worker/availability',    label: 'Availability',  icon: '🗓' },
 ]
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {
@@ -21,7 +22,10 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
       <header className="bg-gray-900 text-white sticky top-0 z-30 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <span className="text-sm font-semibold tracking-tight">Care OS</span>
-          <span className="text-xs text-gray-400">Worker Portal</span>
+          <div className="flex items-center gap-2">
+            <NotificationBellWrapper />
+            <span className="text-xs text-gray-400">Worker Portal</span>
+          </div>
         </div>
       </header>
 

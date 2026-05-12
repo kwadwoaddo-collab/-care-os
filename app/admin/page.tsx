@@ -383,6 +383,39 @@ export default async function AdminDashboard() {
 
   const unassignedToday = todayShifts.filter((s) => !s.assigned_staff_id).length
 
+  // ── Pilot analytics — separate lightweight parallel set ────────────────────
+  const analyticsWindow = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const [
+    pilotTotalStaffResult,
+    pilotOnboardedResult,
+    pilotInvitedResult,
+    pilotInviteLoginResult,
+    pilotAcceptedResult,
+    pilotCompletedResult,
+    pilotTotalAssignedResult,
+  ] = await Promise.all([
+    adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).not('status', 'eq', 'terminated'),
+    adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).eq('onboarding_completed', true),
+    adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).not('portal_invite_sent_at', 'is', null),
+    adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).not('portal_last_login_at', 'is', null),
+    adminClient.from('shifts').select('id', { count: 'exact', head: true }).eq('worker_ack_status', 'accepted').gte('shift_date', analyticsWindow),
+    adminClient.from('shifts').select('id', { count: 'exact', head: true }).eq('status', 'completed').gte('shift_date', analyticsWindow),
+    adminClient.from('shifts').select('id', { count: 'exact', head: true }).not('assigned_staff_id', 'is', null).gte('shift_date', analyticsWindow),
+  ])
+
+  const pilotTotalStaff     = pilotTotalStaffResult.count    ?? 0
+  const pilotOnboarded      = pilotOnboardedResult.count     ?? 0
+  const pilotInvited        = pilotInvitedResult.count       ?? 0
+  const pilotInviteLogin    = pilotInviteLoginResult.count   ?? 0
+  const pilotAccepted       = pilotAcceptedResult.count      ?? 0
+  const pilotCompleted      = pilotCompletedResult.count     ?? 0
+  const pilotTotalAssigned  = pilotTotalAssignedResult.count ?? 0
+
+  const onboardingPct   = pilotTotalStaff     > 0 ? Math.round((pilotOnboarded  / pilotTotalStaff)      * 100) : 0
+  const inviteSuccessPct = pilotInvited       > 0 ? Math.round((pilotInviteLogin / pilotInvited)        * 100) : 0
+  const acceptancePct   = pilotTotalAssigned  > 0 ? Math.round((pilotAccepted   / pilotTotalAssigned)   * 100) : 0
+  const completionPct   = pilotTotalAssigned  > 0 ? Math.round((pilotCompleted  / pilotTotalAssigned)   * 100) : 0
+
   return (
     <div className="space-y-5">
 
@@ -845,6 +878,31 @@ export default async function AdminDashboard() {
             </table>
           </div>
         )}
+      </SectionBox>
+
+      {/* ── Pilot Analytics ─────────────────────────────────────────── */}
+      <SectionBox
+        title="Pilot Analytics · Last 30 days"
+        action={
+          <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20">
+            PILOT
+          </span>
+        }
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-gray-100">
+          {([
+            { label: 'Onboarding completion', value: `${onboardingPct}%`,    sub: `${pilotOnboarded} / ${pilotTotalStaff} staff`,          colour: onboardingPct   === 100 ? 'text-green-600' : onboardingPct   > 50 ? 'text-amber-600' : 'text-red-600' },
+            { label: 'Invite → portal login',  value: `${inviteSuccessPct}%`, sub: `${pilotInviteLogin} of ${pilotInvited} invited`,        colour: inviteSuccessPct === 100 ? 'text-green-600' : inviteSuccessPct > 50 ? 'text-amber-600' : 'text-red-600' },
+            { label: 'Shift acceptance rate',  value: `${acceptancePct}%`,   sub: `${pilotAccepted} of ${pilotTotalAssigned} assigned`,      colour: acceptancePct   >=  80 ? 'text-green-600' : acceptancePct   > 50 ? 'text-amber-600' : 'text-red-600' },
+            { label: 'Shift completion rate',  value: `${completionPct}%`,   sub: `${pilotCompleted} of ${pilotTotalAssigned} assigned`,     colour: completionPct   >=  80 ? 'text-green-600' : completionPct   > 50 ? 'text-amber-600' : 'text-red-600' },
+          ] as { label: string; value: string; sub: string; colour: string }[]).map(({ label, value, sub, colour }) => (
+            <div key={label} className="bg-white px-4 py-4">
+              <p className="text-xs font-medium text-gray-500">{label}</p>
+              <p className={`text-2xl font-bold tabular-nums mt-0.5 ${colour}`}>{value}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+            </div>
+          ))}
+        </div>
       </SectionBox>
 
     </div>
