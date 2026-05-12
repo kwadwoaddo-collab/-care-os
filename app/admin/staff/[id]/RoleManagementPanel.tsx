@@ -66,8 +66,8 @@ export interface RoleManagementPanelProps {
   lastChangedAt:     string | null
   /** True if staff_profiles.portal_token_hash is non-null (worker portal active) */
   portalTokenActive: boolean
-  /** When the admin invite was last sent (may be null) */
-  adminInviteSentAt: string | null
+  /** When the worker last successfully logged into the portal */
+  portalLastLoginAt: string | null
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -81,6 +81,7 @@ export default function RoleManagementPanel({
   lastChangedAt,
   portalTokenActive,
   adminInviteSentAt,
+  portalLastLoginAt,
 }: RoleManagementPanelProps) {
   const router = useRouter()
 
@@ -214,7 +215,12 @@ export default function RoleManagementPanel({
               )}
               {adminInviteSentAt && (
                 <p className="text-xs text-gray-400">
-                  Admin portal invite last sent on {formatDate(adminInviteSentAt)}
+                  Portal invite last sent on {formatDate(adminInviteSentAt)}
+                </p>
+              )}
+              {portalLastLoginAt && (
+                <p className="text-xs text-gray-400">
+                  Worker last logged in on {formatDate(portalLastLoginAt)}
                 </p>
               )}
             </div>

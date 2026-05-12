@@ -776,6 +776,7 @@ export default async function StaffDetailPage({
             lastChangedAt={lastChangedAt}
             portalTokenActive={portalTokenActive}
             adminInviteSentAt={adminInviteSentAt}
+            portalLastLoginAt={sp.portal_last_login_at ?? null}
           />
         </SectionBox>
 

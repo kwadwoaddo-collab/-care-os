@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import NotificationBellWrapper from '@/components/shared/NotificationBellWrapper'
+import WorkerAuthGuard from './WorkerAuthGuard'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 const NAV = [
   { href: '/worker/dashboard',       label: 'Home',          icon: '🏠' },
@@ -15,16 +17,45 @@ const NAV = [
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const router   = useRouter()
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  async function handleLogout() {
+    setLoggingOut(true)
+    const token = sessionStorage.getItem('worker_token')
+    try {
+      if (token) {
+        await fetch('/api/worker/auth/logout', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ token }),
+        })
+      }
+    } finally {
+      sessionStorage.removeItem('worker_token')
+      router.replace('/worker/login')
+      setLoggingOut(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <WorkerAuthGuard>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header bar */}
       <header className="bg-gray-900 text-white sticky top-0 z-30 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <span className="text-sm font-semibold tracking-tight">Care OS</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <NotificationBellWrapper />
-            <span className="text-xs text-gray-400">Worker Portal</span>
+            {pathname !== '/worker/login' && (
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="text-xs text-gray-400 hover:text-white transition-colors"
+              >
+                {loggingOut ? '...' : 'Logout'}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -61,6 +92,6 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
           })}
         </div>
       </nav>
-    </div>
+    </WorkerAuthGuard>
   )
 }

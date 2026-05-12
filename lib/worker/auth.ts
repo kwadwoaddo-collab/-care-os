@@ -40,13 +40,37 @@ export async function validateWorkerToken(
   }
 
   if (!sp) {
-    return { ok: false, status: 401, error: 'Invalid or expired token' }
+    // Audit: Login failed (Invalid token)
+    void adminClient.from('audit_logs').insert({
+      action:      'worker.login_failed',
+      entity_type: 'staff_profile',
+      entity_id:   '00000000-0000-0000-0000-000000000000', // Placeholder for untracked attempts
+      company_id:  '00000000-0000-0000-0000-000000000000',
+      metadata:    { error: 'Invalid token hash', token_snippet: tokenHash.slice(0, 8) }
+    })
+    return { ok: false, status: 401, error: 'This login link is no longer valid. Please request a new one.' }
   }
 
   const expiresAt = new Date(sp.portal_token_expires_at as string)
   if (isNaN(expiresAt.getTime()) || expiresAt < new Date()) {
-    return { ok: false, status: 401, error: 'Token has expired — please request a new portal invite.' }
+    // Audit: Token expired
+    void adminClient.from('audit_logs').insert({
+      company_id:  sp.company_id,
+      action:      'worker.token_expired',
+      entity_type: 'staff_profile',
+      entity_id:   sp.id,
+      metadata:    { expired_at: sp.portal_token_expires_at }
+    })
+    return { ok: false, status: 401, error: 'Your login link has expired. Please request a new one.' }
   }
+
+  // Audit: Login success
+  void adminClient.from('audit_logs').insert({
+    company_id:  sp.company_id,
+    action:      'worker.login_success',
+    entity_type: 'staff_profile',
+    entity_id:   sp.id,
+  })
 
   // Fire-and-forget: record last login time
   void adminClient
