@@ -9,6 +9,7 @@ import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { sendNotification } from '@/lib/notifications/sendNotification'
+import { createNotification } from '@/lib/notifications/createNotification'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -212,18 +213,38 @@ export async function PATCH(
       })
     } catch { /* ignore */ }
 
-    const portalLink = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/worker/dashboard`
+    const appUrl     = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const portalLink = `${appUrl}/worker/dashboard`
+    const eventType  = isDirectAssign ? 'shift_assigned' : 'shift_offer'
+
     for (const staff of staffList) {
+      const workerName = [staff.first_name, staff.last_name].filter(Boolean).join(' ') || 'Worker'
+
+      // In-app notification (fire-and-forget)
+      void createNotification({
+        recipient:       'worker',
+        staffProfileId:  staff.id,
+        companyId,
+        eventType,
+        title:     isDirectAssign
+          ? `Shift assigned: ${shift.title as string}`
+          : `New shift offer: ${shift.title as string}`,
+        message:   `${shift.shift_date as string} · ${(shift.start_time as string).slice(0, 5)}–${(shift.end_time as string).slice(0, 5)}`,
+        actionUrl: `${appUrl}/worker/shifts`,
+        entityId:  shiftId,
+      })
+
+      // Email notification
       const receiveEmails = staff.receive_shift_emails ?? true
       if (staff.email && receiveEmails) {
         await sendNotification({
-          type:           'shift.assigned', // Broadcasted offers use the same assigned template for now
+          type:           'shift.assigned',
           companyId,
           entityId:       shiftId,
           recipientEmail: staff.email,
           data: {
             companyName: '',
-            workerName:  [staff.first_name, staff.last_name].filter(Boolean).join(' ') || 'Worker',
+            workerName,
             shiftTitle:  shift.title    as string,
             shiftDate:   shift.shift_date as string,
             startTime:   (shift.start_time as string).slice(0, 5),

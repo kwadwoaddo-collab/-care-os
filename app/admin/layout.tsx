@@ -2,6 +2,7 @@ import { ENABLE_TIMESHEETS } from '@/lib/features'
 import { createClient } from '@/lib/supabase/server'
 import { normaliseRole } from '@/lib/auth/roles'
 import { can, type Permission } from '@/lib/auth/permissions'
+import AdminNotificationBell from '@/components/shared/AdminNotificationBell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Fetch user profile once for: QA banner + nav permission filtering.
@@ -159,12 +160,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </a>
             )}
           </nav>
-          <a
-            href="/admin/logout"
-            className="ml-auto text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Logout
-          </a>
+          <div className="ml-auto flex items-center gap-3">
+            <AdminNotificationBell />
+            <a
+              href="/admin/logout"
+              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+            >
+              Logout
+            </a>
+          </div>
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>

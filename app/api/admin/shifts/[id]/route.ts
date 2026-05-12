@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { createNotification } from '@/lib/notifications/createNotification'
 
 const ALLOWED_STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'] as const
 const ALLOWED_TYPES    = ['day', 'night', 'sleep_in', 'live_in', 'emergency', null] as const
@@ -84,6 +85,21 @@ export async function PATCH(
       metadata:    updates,
     })
   } catch { /* non-critical */ }
+
+  // ── In-app notification: shift cancelled ───────────────────────────────────
+  if (body.status === 'cancelled' && shift.assigned_staff_id) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    void createNotification({
+      recipient:      'worker',
+      staffProfileId: shift.assigned_staff_id as string,
+      companyId,
+      eventType:      'shift_cancelled',
+      title:          `Shift cancelled: ${shift.title as string}`,
+      message:        `Your shift on ${shift.shift_date as string} has been cancelled.`,
+      actionUrl:      `${appUrl}/worker/shifts`,
+      entityId:       id,
+    })
+  }
 
   return NextResponse.json(shift)
 }

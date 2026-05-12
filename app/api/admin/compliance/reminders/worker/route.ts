@@ -10,6 +10,7 @@ import { writeLog, sendEmail, APP_URL, getCompanyName } from '@/lib/notification
 import { TRAINING_CATEGORY_LABELS } from '@/lib/documents/constants'
 import { DOCUMENT_TYPE_LABELS }     from '@/lib/documents/constants'
 import type { ComplianceDocument }  from '@/lib/compliance/calculateCompliance'
+import { createNotification }        from '@/lib/notifications/createNotification'
 
 // ── POST /api/admin/compliance/reminders/worker ───────────────────────────────
 //
@@ -175,6 +176,23 @@ export async function POST(request: NextRequest) {
       entityType:     'staff_profile',
       entityId:       s.id,
     })
+
+    // In-app notification (fire-and-forget)
+    if (result.success) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      void createNotification({
+        recipient:      'worker',
+        staffProfileId: s.id,
+        companyId,
+        eventType:      'compliance_expiring',
+        title:          'Action needed: compliance documents require attention',
+        message:        expiring.length > 0
+          ? `${expiring.length} document${expiring.length === 1 ? '' : 's'} expiring soon.`
+          : 'Please upload missing compliance documents.',
+        actionUrl:      `${appUrl}/worker/documents`,
+        entityId:       s.id,
+      })
+    }
 
     results.push({ staffId: s.id, staffName: name, email: s.email, sent: result.success, skipped: false, subject })
   }

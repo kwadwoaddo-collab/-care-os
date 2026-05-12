@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
 import { sendNotification } from '@/lib/notifications/sendNotification'
+import { createNotification } from '@/lib/notifications/createNotification'
 
 const ALLOWED_ACTIONS = ['accept', 'decline', 'start', 'complete', 'running_late'] as const
 type WorkerAction = typeof ALLOWED_ACTIONS[number]
@@ -168,6 +169,54 @@ export async function POST(
       })
     } catch { /* ignore */ }
 
+    // Admin in-app notifications
+    if (action === 'accept') {
+      void createNotification({
+        recipient:  'admin',
+        companyId,
+        eventType:  'shift_accepted',
+        title:      `${workerName} accepted a shift`,
+        message:    `${s.title} on ${s.shift_date}`,
+        actionUrl:  adminLink,
+        entityId:   shiftId,
+        actorId:    staffProfileId,
+      })
+    } else if (action === 'decline') {
+      void createNotification({
+        recipient:  'admin',
+        companyId,
+        eventType:  'shift_declined',
+        title:      `${workerName} declined a shift`,
+        message:    `${s.title} on ${s.shift_date}${body.reason ? ` — ${body.reason.trim()}` : ''}`,
+        actionUrl:  adminLink,
+        entityId:   shiftId,
+        actorId:    staffProfileId,
+      })
+    } else if (action === 'running_late') {
+      void createNotification({
+        recipient:  'admin',
+        companyId,
+        eventType:  'running_late',
+        title:      `${workerName} is running late`,
+        message:    `${s.title} on ${s.shift_date}${body.reason ? ` — ${body.reason.trim()}` : ''}`,
+        actionUrl:  adminLink,
+        entityId:   shiftId,
+        actorId:    staffProfileId,
+      })
+    } else if (action === 'complete') {
+      void createNotification({
+        recipient:  'admin',
+        companyId,
+        eventType:  'shift_completed',
+        title:      `${workerName} completed a shift`,
+        message:    `${s.title} on ${s.shift_date}`,
+        actionUrl:  adminLink,
+        entityId:   shiftId,
+        actorId:    staffProfileId,
+      })
+    }
+
+    // Email notifications (existing behaviour for decline / running_late)
     if (action === 'decline' || action === 'running_late') {
       const type = action === 'decline' ? 'shift.declined' : 'shift.running_late'
       await sendNotification({

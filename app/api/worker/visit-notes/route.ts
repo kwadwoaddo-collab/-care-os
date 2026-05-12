@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
+import { createNotification } from '@/lib/notifications/createNotification'
 
 // ── GET /api/worker/visit-notes?shift_id=xxx ──────────────────────────────────
 // Returns the visit note for a specific shift, enforcing worker ownership.
@@ -229,6 +230,21 @@ export async function PATCH(request: NextRequest) {
         metadata:    updates,
       })
     } catch (e) { console.error('[worker/visit-notes] audit log error:', e) }
+
+    // Notify admins when a visit note is submitted
+    if (body.status === 'submitted') {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      void createNotification({
+        recipient:  'admin',
+        companyId,
+        eventType:  'visit_note',
+        title:      'Visit note submitted',
+        message:    `A worker submitted a visit note for review.`,
+        actionUrl:  `${appUrl}/admin/visit-notes`,
+        entityId:   noteId,
+        actorId:    staffProfileId,
+      })
+    }
   })()
 
   return NextResponse.json(updated)

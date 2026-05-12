@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { sendNotification } from '@/lib/notifications/sendNotification'
+import { createNotification } from '@/lib/notifications/createNotification'
 import { ipRateLimit } from '@/lib/rateLimit'
 import {
   getPaginationParams,
@@ -210,6 +211,20 @@ export async function POST(request: NextRequest) {
       metadata:    { incident_type, severity: severity ?? 'medium', client_id, staff_profile_id },
     })
   } catch { /* non-critical */ }
+
+  // In-app admin notification for ALL severities (fire-and-forget)
+  void (async () => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    void createNotification({
+      recipient:  'admin',
+      companyId,
+      eventType:  'incident_created',
+      title:      `Incident reported: ${String(incident_type).replace(/_/g, ' ')}`,
+      message:    `Severity: ${severity ?? 'medium'}. ${String(description).slice(0, 100)}`,
+      actionUrl:  `${appUrl}/admin/incidents/${incident.id as string}`,
+      entityId:   incident.id as string,
+    })
+  })()
 
   // Alert coordinators for high/critical incidents (fire-and-forget)
   const effectiveSeverity = (severity ?? 'medium') as string

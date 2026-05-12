@@ -3,6 +3,7 @@ import { adminClient }  from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
 import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
+import { createNotification } from '@/lib/notifications/createNotification'
 
 // ── PATCH /api/admin/staff/[id]/documents/[docId]/approve ─────────────────────
 //
@@ -151,6 +152,22 @@ export async function PATCH(
   } catch (err) {
     // Non-fatal: the document was still approved successfully
     console.error('[document-approve] compliance recalculation failed:', err)
+  }
+
+  // In-app notification on rejection (fire-and-forget)
+  if (action === 'reject') {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    void createNotification({
+      recipient:      'worker',
+      staffProfileId: staffProfileId,
+      companyId:      companyId,
+      eventType:      'document_rejected',
+      title:          `Document rejected: ${(updated as { document_type: string }).document_type.replace(/_/g, ' ')}`,
+      message:        notes?.trim() || 'Please re-upload a valid document.',
+      actionUrl:      `${appUrl}/worker/documents`,
+      entityId:       docId,
+      actorId:        userId,
+    })
   }
 
   return NextResponse.json({ document: updated, complianceSummary })

@@ -98,3 +98,34 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(data, { status: 201 })
 }
+
+// ── PATCH — mark admin notifications as read ────────────────────────────────────────
+// Body: { id?: string }  — omit to mark all unread as read.
+
+export async function PATCH(request: NextRequest) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { userId } = auth.ctx
+
+  let body: { id?: string } = {}
+  try { body = await request.json() as { id?: string } } catch { /* body is optional */ }
+
+  let q = adminClient
+    .from('in_app_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('profile_id', userId)
+    .is('read_at', null)
+
+  if (body.id) {
+    q = q.eq('id', body.id)
+  }
+
+  const { error } = await q
+
+  if (error) {
+    console.error('[in-app-notifications/PATCH]', error.message)
+    return NextResponse.json({ error: 'Failed to mark as read' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}

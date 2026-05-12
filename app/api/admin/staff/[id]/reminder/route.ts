@@ -11,6 +11,7 @@ import { requireAdmin }               from '@/lib/auth/requireAdmin'
 import { calculateOnboardingStatus }  from '@/lib/staff/calculateOnboardingStatus'
 import { sendOnboardingReminderEmail } from '@/lib/email/resend'
 import { emailConfig }                from '@/lib/email/config'
+import { createNotification }         from '@/lib/notifications/createNotification'
 
 interface SpRow {
   id:                    string
@@ -126,6 +127,21 @@ export async function POST(
     console.error('[reminder] email failed:', result.error)
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
   }
+
+  // In-app notification (fire-and-forget)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  void createNotification({
+    recipient:      'worker',
+    staffProfileId: staffProfileId,
+    companyId,
+    eventType:      'onboarding_reminder',
+    title:          'Action needed: complete your onboarding',
+    message:        obs.missing.length > 0
+      ? `${obs.missing.length} item${obs.missing.length === 1 ? '' : 's'} still required.`
+      : 'Please review your onboarding checklist.',
+    actionUrl:      `${appUrl}/worker/onboarding`,
+    entityId:       staffProfileId,
+  })
 
   return NextResponse.json({ success: true })
 }
