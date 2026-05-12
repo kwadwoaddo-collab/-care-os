@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAssignableRoles, canManageRoles } from '@/lib/rbac/can'
-import { getAccessState, getAccessStateMessage } from '@/lib/rbac/access'
+import { getAccessState } from '@/lib/rbac/access'
 import type { Role } from '@/lib/rbac/roles'
+import AdminAccessButton from './AdminAccessButton'
 
 // ── Role metadata ─────────────────────────────────────────────────────────────
 
@@ -67,236 +68,6 @@ export interface RoleManagementPanelProps {
   portalTokenActive: boolean
   /** When the admin invite was last sent (may be null) */
   adminInviteSentAt: string | null
-}
-
-// ── Admin Access Button ───────────────────────────────────────────────────────
-
-function AdminAccessButton({ staffProfileId, adminInviteSentAt }: {
-  staffProfileId:    string
-  adminInviteSentAt: string | null
-}) {
-  const router = useRouter()
-  const [open,    setOpen]    = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState<string | null>(null)
-  const [done,    setDone]    = useState(false)
-
-  async function handleCreate() {
-    setLoading(true)
-    setError(null)
-    try {
-      const res  = await fetch(`/api/admin/staff/${staffProfileId}/admin-access`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ send_email: true }),
-      })
-      const json = await res.json() as { ok?: boolean; error?: string }
-      if (!res.ok) {
-        setError(json.error ?? 'Failed to create admin access.')
-        return
-      }
-      setDone(true)
-      setTimeout(() => {
-        setOpen(false)
-        router.refresh()
-      }, 1500)
-    } catch {
-      setError('Network error — please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <>
-      <button
-        id="create-admin-access-btn"
-        type="button"
-        onClick={() => { setOpen(true); setError(null); setDone(false) }}
-        style={{
-          display:      'inline-flex',
-          alignItems:   'center',
-          gap:          '6px',
-          fontSize:     '13px',
-          fontWeight:   500,
-          padding:      '7px 14px',
-          borderRadius: '6px',
-          border:       '1px solid #2563eb',
-          background:   '#2563eb',
-          color:        '#fff',
-          cursor:       'pointer',
-          whiteSpace:   'nowrap',
-        }}
-      >
-        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
-          <path fillRule="evenodd" d="M15.5 8a.5.5 0 01.5.5v1h1a.5.5 0 010 1h-1v1a.5.5 0 01-1 0v-1h-1a.5.5 0 010-1h1v-1a.5.5 0 01.5-.5z" clipRule="evenodd" />
-        </svg>
-        {adminInviteSentAt ? 'Resend Admin Invite' : 'Create Admin Portal Access'}
-      </button>
-
-      {open && (
-        <div
-          style={{
-            position:        'fixed',
-            inset:           0,
-            zIndex:          50,
-            display:         'flex',
-            alignItems:      'center',
-            justifyContent:  'center',
-            background:      'rgba(0,0,0,0.4)',
-          }}
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
-        >
-          <div style={{
-            background:   '#fff',
-            borderRadius: '12px',
-            padding:      '28px',
-            width:        'min(440px, 92vw)',
-            boxShadow:    '0 20px 60px rgba(0,0,0,0.18)',
-          }}>
-            {done ? (
-              <div style={{ textAlign: 'center', padding: '8px 0' }}>
-                <p style={{ fontSize: '32px', marginBottom: '8px' }}>✅</p>
-                <p style={{ fontSize: '15px', fontWeight: 600, color: '#111827' }}>Admin account created</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Invite email sent. Refreshing…</p>
-              </div>
-            ) : (
-              <>
-                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#111827', margin: '0 0 8px' }}>
-                  Create Admin Portal Access
-                </h2>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px', lineHeight: '1.5' }}>
-                  This will create an admin portal login for this staff member and
-                  send them an email to set up their password.
-                </p>
-                <div style={{
-                  padding:      '10px 14px',
-                  borderRadius: '8px',
-                  background:   '#fffbeb',
-                  border:       '1px solid #fde68a',
-                  fontSize:     '13px',
-                  color:        '#92400e',
-                  marginBottom: '20px',
-                  lineHeight:   '1.5',
-                }}>
-                  <strong>Note:</strong> Creating admin access does not automatically
-                  promote the user. You must assign an operational role (e.g. Coordinator)
-                  manually once their account is created.
-                </div>
-
-                {error && (
-                  <div style={{
-                    padding:      '10px 14px',
-                    borderRadius: '8px',
-                    background:   '#fef2f2',
-                    border:       '1px solid #fecaca',
-                    fontSize:     '13px',
-                    color:        '#991b1b',
-                    marginBottom: '16px',
-                  }}>
-                    {error}
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button
-                    id="create-admin-access-cancel"
-                    type="button"
-                    onClick={() => setOpen(false)}
-                    disabled={loading}
-                    style={{
-                      padding:      '8px 16px',
-                      borderRadius: '6px',
-                      border:       '1px solid #d1d5db',
-                      background:   '#fff',
-                      color:        '#374151',
-                      fontSize:     '14px',
-                      fontWeight:   500,
-                      cursor:       'pointer',
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    id="create-admin-access-confirm"
-                    type="button"
-                    onClick={() => void handleCreate()}
-                    disabled={loading}
-                    style={{
-                      padding:      '8px 16px',
-                      borderRadius: '6px',
-                      border:       'none',
-                      background:   loading ? '#93c5fd' : '#2563eb',
-                      color:        '#fff',
-                      fontSize:     '14px',
-                      fontWeight:   500,
-                      cursor:       loading ? 'wait' : 'pointer',
-                    }}
-                  >
-                    {loading ? 'Creating…' : 'Create & Send Invite'}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// ── No-access state panel ─────────────────────────────────────────────────────
-
-function AccessStateBanner({
-  staffProfileId,
-  portalTokenActive,
-  profileId,
-  callerRole,
-  adminInviteSentAt,
-}: {
-  staffProfileId:    string
-  portalTokenActive: boolean
-  profileId:         string | null
-  callerRole:        string
-  adminInviteSentAt: string | null
-}) {
-  const state   = getAccessState({ hasWorkerToken: portalTokenActive, hasAdminAccount: !!profileId })
-  const msg     = getAccessStateMessage(state)
-  const canAdmin = canManageRoles(callerRole) && !profileId
-
-  return (
-    <div style={{
-      padding:      '14px 16px',
-      borderRadius: '8px',
-      background:   state === 'no_access' ? '#f9fafb' : '#eff6ff',
-      border:       `1px solid ${state === 'no_access' ? '#e5e7eb' : '#bfdbfe'}`,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-        <div>
-          <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', margin: '0 0 4px' }}>
-            {state === 'worker_only' ? '🔒 ' : '⚠️ '}{msg.status}
-          </p>
-          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, lineHeight: '1.5' }}>
-            {msg.description}
-          </p>
-          {adminInviteSentAt && (
-            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px' }}>
-              Last admin invite sent: {formatDate(adminInviteSentAt)}
-            </p>
-          )}
-        </div>
-        {canAdmin && msg.showCreateAdminButton && (
-          <div style={{ flexShrink: 0 }}>
-            <AdminAccessButton
-              staffProfileId={staffProfileId}
-              adminInviteSentAt={adminInviteSentAt}
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  )
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -374,74 +145,107 @@ export default function RoleManagementPanel({
   const meta    = roleMeta(currentRole)
   const selMeta = roleMeta(selectedRole)
 
+  const accessState = getAccessState({ hasWorkerToken: portalTokenActive, hasAdminAccount: !!profileId })
+
   return (
-    <div>
-      {/* ── Access state display ─────────────────────────────────────────── */}
-      {!profileId ? (
-        <AccessStateBanner
-          staffProfileId={staffProfileId}
-          portalTokenActive={portalTokenActive}
-          profileId={profileId}
-          callerRole={callerRole}
-          adminInviteSentAt={adminInviteSentAt}
-        />
-      ) : (
-        <>
-          {/* ── Admin account active: show role UI ──────────────────────── */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+    <div className="space-y-6">
+      {/* ── Status overview ────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Worker Portal</dt>
+          <dd className="flex items-center gap-2">
+            {portalTokenActive ? (
+              <>
+                <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                <span className="text-sm font-semibold text-gray-900">Active</span>
+              </>
+            ) : (
+              <>
+                <span className="flex h-2 w-2 rounded-full bg-gray-300" />
+                <span className="text-sm font-medium text-gray-500">Not configured</span>
+              </>
+            )}
+          </dd>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Admin Portal</dt>
+          <dd className="flex items-center gap-2">
+            {profileId ? (
+              <>
+                <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
+                <span className="text-sm font-semibold text-gray-900">Account Created</span>
+              </>
+            ) : (
+              <>
+                <span className="flex h-2 w-2 rounded-full bg-gray-300" />
+                <span className="text-sm font-medium text-gray-500">No admin access</span>
+              </>
+            )}
+          </dd>
+        </div>
+      </div>
+
+      {/* ── Role detail ────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
+        <div className="flex-1">
+          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">System Permissions</h4>
+          {profileId ? (
             <div>
               <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${meta.colour}`}>
                 {meta.label}
               </span>
-              <p style={{ marginTop: '6px', fontSize: '13px', color: '#6b7280' }}>{meta.description}</p>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed">{meta.description}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 italic">
+              {accessState === 'worker_only' 
+                ? 'Standard worker portal access. Promote to an operational role by creating admin portal access above.'
+                : 'No portal access configured. Use the header actions to invite this staff member.'}
+            </p>
+          )}
 
-              {/* History line */}
+          {/* Audit trace */}
+          {(lastChangedBy || adminInviteSentAt) && (
+            <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
               {lastChangedBy && lastChangedAt && (
-                <p style={{ marginTop: '8px', fontSize: '12px', color: '#9ca3af' }}>
-                  Last changed by <strong style={{ color: '#6b7280' }}>{lastChangedBy}</strong>
-                  {' '}· {formatDate(lastChangedAt)}
+                <p className="text-xs text-gray-400">
+                  Role last updated by <span className="font-medium text-gray-600">{lastChangedBy}</span> on {formatDate(lastChangedAt)}
+                </p>
+              )}
+              {adminInviteSentAt && (
+                <p className="text-xs text-gray-400">
+                  Admin portal invite last sent on {formatDate(adminInviteSentAt)}
                 </p>
               )}
             </div>
-
-            {canChange && (
-              <button
-                id="change-role-btn"
-                type="button"
-                onClick={openModal}
-                style={{
-                  flexShrink:  0,
-                  fontSize:    '13px',
-                  fontWeight:  500,
-                  padding:     '6px 12px',
-                  borderRadius:'6px',
-                  border:      '1px solid #d1d5db',
-                  background:  '#fff',
-                  color:       '#374151',
-                  cursor:      'pointer',
-                  whiteSpace:  'nowrap',
-                }}
-              >
-                Change role
-              </button>
-            )}
-          </div>
-
-          {/* Inline banner (outside modal) */}
-          {banner && !modalOpen && (
-            <div style={{
-              marginTop:   '12px',
-              padding:     '10px 14px',
-              borderRadius:'8px',
-              fontSize:    '13px',
-              background:  banner.type === 'success' ? '#f0fdf4' : '#fef2f2',
-              color:       banner.type === 'success' ? '#166534' : '#991b1b',
-              border:      `1px solid ${banner.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
-            }}>
-              {banner.message}
-            </div>
           )}
-        </>
+        </div>
+
+        {canChange && (
+          <button
+            id="change-role-btn"
+            type="button"
+            onClick={openModal}
+            className="flex-shrink-0 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+          >
+            Change role
+          </button>
+        )}
+      </div>
+
+      {/* Inline banner (outside modal) */}
+      {banner && !modalOpen && (
+        <div style={{
+          marginTop:   '12px',
+          padding:     '10px 14px',
+          borderRadius:'8px',
+          fontSize:    '13px',
+          background:  banner.type === 'success' ? '#f0fdf4' : '#fef2f2',
+          color:       banner.type === 'success' ? '#166534' : '#991b1b',
+          border:      `1px solid ${banner.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
+        }}>
+          {banner.message}
+        </div>
       )}
 
       {/* ── Confirmation modal ───────────────────────────────────────────── */}

@@ -26,6 +26,7 @@ import RoleManagementPanel     from './RoleManagementPanel'
 import { requireAdmin }        from '@/lib/auth/requireAdmin'
 import { adminClient }         from '@/lib/supabase/admin'
 import { canManageRoles }      from '@/lib/rbac/can'
+import AdminAccessButton    from './AdminAccessButton'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -610,10 +611,31 @@ export default async function StaffDetailPage({
           </div>
           <Badge status={sp.status} map={STATUS_CLS} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-0">
           <EditStaffProfileForm staff={sp} />
+
+          {/* Case A/B: Worker Portal Actions */}
           {(sp.status === 'pre_employment' || sp.status === 'active') && (
             <PortalInviteButton staffProfileId={sp.id} lastSentAt={sp.portal_invite_sent_at} />
+          )}
+
+          {/* Case A/B: Admin Portal Actions */}
+          {!sp.profile_id ? (
+            <AdminAccessButton staffProfileId={sp.id} adminInviteSentAt={adminInviteSentAt} />
+          ) : (
+            <div className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 ring-1 ring-inset ring-green-600/20 shadow-sm">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+              Admin Portal Active
+            </div>
+          )}
+
+          {/* Case C: Suspended Warning */}
+          {sp.status === 'suspended' && (
+            <div className="inline-flex items-center gap-1.5 rounded-md bg-orange-50 px-3 py-2 text-sm font-semibold text-orange-700 ring-1 ring-inset ring-orange-600/20">
+              ⚠️ Access Suspended
+            </div>
           )}
         </div>
       </div>
@@ -744,7 +766,7 @@ export default async function StaffDetailPage({
         />
 
         {/* ── System Role ─────────────────────────────────────────────────── */}
-        <SectionBox title="System Role">
+        <SectionBox title="Portal & System Role">
           <RoleManagementPanel
             staffProfileId={sp.id}
             profileId={sp.profile_id ?? null}
