@@ -44,6 +44,7 @@ export async function POST(
     .update({
       portal_token_hash:       tokenHash,
       portal_token_expires_at: tokenExpiresAt,
+      portal_invite_sent_at:   new Date().toISOString(),
     })
     .eq('id', sp.id)
 
@@ -64,15 +65,26 @@ export async function POST(
     metadata:    { email: sp.email },
   })
 
-  sendWorkerPortalEmail({
+  console.log(`[portal-invite] Sending email to ${sp.email}...`)
+  const emailResult = await sendWorkerPortalEmail({
     to:        sp.email as string,
     firstName: (sp.first_name as string | null) ?? '',
     jobRole:   (sp.job_role   as string | null) ?? '',
     magicLink,
     expiresAt: tokenExpiresAt,
-  }).then((result) => {
-    if (!result.success) console.error('[portal-invite] email failed:', result.error)
-  }).catch((err: unknown) => console.error('[portal-invite] email error:', err))
+  })
 
-  return NextResponse.json({ magic_link: magicLink, expires_at: tokenExpiresAt })
+  if (!emailResult.success) {
+    console.error('[portal-invite] email failed:', emailResult.error)
+    return NextResponse.json({ error: 'Failed to send invite email via Resend' }, { status: 500 })
+  }
+
+  console.log(`[portal-invite] Email successfully sent to ${sp.email}. Resend ID: ${emailResult.id}`)
+
+  return NextResponse.json({ 
+    magic_link: magicLink, 
+    expires_at: tokenExpiresAt,
+    email_status: 'sent',
+    email_id: emailResult.id
+  })
 }

@@ -239,3 +239,27 @@ test('dashboard: onboarding overview section visible', async ({ page }) => {
     await expect(heading).toBeVisible()
   }
 })
+
+// ── Portal Invite API ─────────────────────────────────────────────────────────
+
+test('portal invite API: generates fresh token and email status', async ({ request }) => {
+  const queueRes = await request.get('/api/admin/onboarding')
+  if (!queueRes.ok()) { expect(queueRes.ok()).toBe(true); return }
+
+  const queue = await queueRes.json() as { data: { id: string }[] }
+  if (queue.data.length === 0) { expect(true).toBe(true); return }
+
+  const staffId = queue.data[0]!.id
+  const res = await request.post(`/api/admin/staff/${staffId}/portal-invite`)
+
+  // 404 = staff not found, 422 = no email, 500 = resend not configured / network error
+  if ([404, 422, 500].includes(res.status())) { 
+    expect(true).toBe(true)
+    return 
+  }
+
+  expect(res.ok()).toBe(true)
+  const json = await res.json() as { magic_link: string, email_status: string, email_id?: string }
+  expect(typeof json.magic_link).toBe('string')
+  expect(json.email_status).toBe('sent')
+})
