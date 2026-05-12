@@ -21,7 +21,11 @@ import {
   parseAvailabilityRecord,
   type StaffAvailability,
 } from '@/lib/staff/types'
-import { adminFetch } from '@/lib/admin/serverFetch'
+import { adminFetch }          from '@/lib/admin/serverFetch'
+import RoleManagementPanel     from './RoleManagementPanel'
+import { requireAdmin }        from '@/lib/auth/requireAdmin'
+import { adminClient }         from '@/lib/supabase/admin'
+import { canManageRoles }      from '@/lib/rbac/can'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -494,9 +498,9 @@ export default async function StaffDetailPage({
   const { id } = await params
 
   // Start fetches in parallel
-  const availabilityPromise   = getAvailability(id)
-  const recentShiftsPromise   = getRecentShifts(id)
-  const recentNotesPromise    = getRecentVisitNotes(id)
+  const availabilityPromise    = getAvailability(id)
+  const recentShiftsPromise    = getRecentShifts(id)
+  const recentNotesPromise     = getRecentVisitNotes(id)
   const recentIncidentsPromise = getRecentIncidents(id)
 
   let data: ApiResponse
@@ -510,9 +514,9 @@ export default async function StaffDetailPage({
     )
   }
 
-  const availability   = await availabilityPromise.catch(() => null)
-  const recentShifts   = await recentShiftsPromise.catch(() => [])
-  const recentNotes    = await recentNotesPromise.catch(() => [])
+  const availability    = await availabilityPromise.catch(() => null)
+  const recentShifts    = await recentShiftsPromise.catch(() => [])
+  const recentNotes     = await recentNotesPromise.catch(() => [])
   const recentIncidents = await recentIncidentsPromise.catch(() => [] as StaffIncident[])
 
   const { staff_profile: sp, applicant, documents, compliance_items, hr_readiness } = data
@@ -527,6 +531,53 @@ export default async function StaffDetailPage({
     employment_type:        sp.employment_type,
     starter_declaration:    sp.starter_declaration,
   })
+
+  // ── RBAC: fetch caller role + staff member's profile role ─────────────────
+  let callerRole        = 'coordinator'   // safe fallback — hides change button
+  let staffProfileRole: string | null = null
+  let lastChangedBy:    string | null = null
+  let lastChangedAt:    string | null = null
+
+  try {
+    const auth = await requireAdmin()
+    if (auth.ok) {
+      callerRole = auth.ctx.role
+
+      // Fetch staff member's linked profile role
+      if (sp.profile_id) {
+        const { data: linkedProfile } = await adminClient
+          .from('profiles')
+          .select('role')
+          .eq('id', sp.profile_id)
+          .maybeSingle()
+        staffProfileRole = (linkedProfile?.role as string | null) ?? null
+
+        // Fetch last role change from audit log
+        const { data: lastChange } = await adminClient
+          .from('audit_logs')
+          .select('actor_id, metadata, created_at')
+          .eq('entity_type', 'profile')
+          .eq('entity_id', sp.profile_id)
+          .eq('action', 'role.assigned')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (lastChange?.actor_id) {
+          lastChangedAt = lastChange.created_at as string
+          const { data: actor } = await adminClient
+            .from('profiles')
+            .select('first_name, last_name, email')
+            .eq('id', lastChange.actor_id as string)
+            .maybeSingle()
+          if (actor) {
+            lastChangedBy = [actor.first_name, actor.last_name].filter(Boolean).join(' ')
+              || (actor.email as string | null)
+          }
+        }
+      }
+    }
+  } catch { /* non-critical — page still renders */ }
 
   const displayName =
     [sp.first_name, sp.last_name].filter(Boolean).join(' ') ||
@@ -684,6 +735,18 @@ export default async function StaffDetailPage({
           currentStatus={sp.status}
           isCompliant={calculateCompliance(documents).compliant}
         />
+
+        {/* ── System Role ─────────────────────────────────────────────────── */}
+        <SectionBox title="System Role">
+          <RoleManagementPanel
+            staffProfileId={sp.id}
+            profileId={sp.profile_id ?? null}
+            currentRole={staffProfileRole}
+            callerRole={callerRole}
+            lastChangedBy={lastChangedBy}
+            lastChangedAt={lastChangedAt}
+          />
+        </SectionBox>
 
         {/* ── Personal Info ──────────────────────────────────────────────── */}
         <SectionBox title="Personal Info">

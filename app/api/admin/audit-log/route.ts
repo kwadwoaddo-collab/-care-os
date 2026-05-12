@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
-import { can } from '@/lib/auth/permissions'
+import { canViewAuditLogs } from '@/lib/rbac/can'
 import { forbidden } from '@/lib/auth/responses'
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
-  if (!can(auth.ctx.role, 'audit_log:read')) return forbidden('Insufficient permissions')
+  if (!canViewAuditLogs(auth.ctx.role)) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
+
 
   const { searchParams } = new URL(request.url)
   const action    = searchParams.get('action')    ?? ''
