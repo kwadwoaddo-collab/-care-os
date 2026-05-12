@@ -393,7 +393,7 @@ export default function WorkerShiftDetailPage() {
             <button
               data-testid="clock-out-btn"
               onClick={() => { handleClock('out'); handleAction('complete'); }}
-              disabled={clockLoading || shift.status !== 'in_progress' || shift.status === 'completed'}
+              disabled={clockLoading || shift.status !== 'in_progress'}
               className="rounded-xl bg-gray-800 py-3 text-sm font-semibold text-white hover:bg-gray-700 active:scale-95 transition-all disabled:opacity-40"
             >
               {shift.status === 'completed' ? '✓ Completed' : '⏹ Complete Shift'}

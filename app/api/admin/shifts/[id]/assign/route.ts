@@ -113,7 +113,7 @@ export async function PATCH(
     const docs = [
       ...(staffDocsRes.data?.filter(d => (d as any).staff_profile_id === staff.id) ?? []),
       ...(appDocsRes.data?.filter(d => (d as any).applicant_id === staff.applicant_id) ?? [])
-    ] as ComplianceDocument[]
+    ] as unknown as ComplianceDocument[]
 
     const compliance = calculateCompliance(docs)
 
@@ -217,7 +217,7 @@ export async function PATCH(
       const receiveEmails = staff.receive_shift_emails ?? true
       if (staff.email && receiveEmails) {
         await sendNotification({
-          type:           isDirectAssign ? 'shift.assigned' : 'shift.offered', // you might need to add shift.offered to types
+          type:           'shift.assigned', // Broadcasted offers use the same assigned template for now
           companyId,
           entityId:       shiftId,
           recipientEmail: staff.email,

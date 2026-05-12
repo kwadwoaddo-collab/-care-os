@@ -140,7 +140,9 @@ export async function POST(
   if (updateErr) return NextResponse.json({ error: 'Failed to update shift' }, { status: 500 })
 
   if (offerUpdatePayload) {
-    await adminClient.from('shift_offers').update(offerUpdatePayload).eq('id', offer.id)
+    if (offer) {
+      await adminClient.from('shift_offers').update(offerUpdatePayload).eq('id', offer.id)
+    }
     if (action === 'accept') {
       // Expire other pending offers
       await adminClient.from('shift_offers').update({ status: 'expired' }).eq('shift_id', shiftId).eq('status', 'pending')

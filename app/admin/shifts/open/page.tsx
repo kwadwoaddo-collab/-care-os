@@ -2,7 +2,7 @@ import Link           from 'next/link'
 import OpenShiftsTable, { type OpenShiftRow, type Urgency } from './OpenShiftsTable'
 import { type Shift } from '../ShiftsTable'
 import { adminFetch } from '@/lib/admin/serverFetch'
-import { type SchedulingMetrics } from '@/app/api/admin/shifts/metrics/route'
+import { type SchedulingMetrics } from '@/lib/shifts/types'
 
 // ── Urgency ────────────────────────────────────────────────────────────────────
 
