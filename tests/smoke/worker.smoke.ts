@@ -328,6 +328,48 @@ test('worker: visit note form fields are visible', async ({ page }) => {
   // No visit-note-capable shift found — not a failure
 })
 
+// ── Onboarding ────────────────────────────────────────────────────────────────
+// Regression guard for: /worker/onboarding rejecting valid worker sessions
+// (was using legacy portal_invitations lookup instead of validateWorkerToken).
+
+test('worker: onboarding page loads without session error', async ({ page }) => {
+  await page.goto('/worker/onboarding')
+  await page.waitForLoadState('networkidle')
+
+  // The bug produced "Invalid or expired session" — guard against it
+  await expect(page.getByText(/invalid.*session|session.*expired|expired.*session/i)).not.toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(/session error/i)).not.toBeVisible()
+})
+
+test('worker: onboarding page shows progress ring and checklist', async ({ page }) => {
+  await page.goto('/worker/onboarding')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByText(/invalid.*session|session.*expired/i)).not.toBeVisible({ timeout: 15_000 })
+  // Hero card with progress % always rendered
+  await expect(page.getByText(/Hi |Complete your onboarding|complete/i).first()).toBeVisible({ timeout: 15_000 })
+  // Checklist heading
+  await expect(page.getByText('Your checklist')).toBeVisible({ timeout: 15_000 })
+  await assertNoOverflow(page)
+})
+
+test('worker: onboarding page shows policy section', async ({ page }) => {
+  await page.goto('/worker/onboarding')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByText(/invalid.*session|session.*expired/i)).not.toBeVisible({ timeout: 15_000 })
+  // Policy section is always present in the checklist
+  await expect(page.getByText('Company Policies')).toBeVisible({ timeout: 15_000 })
+})
+
+test('worker: onboarding quick links to documents and profile', async ({ page }) => {
+  await page.goto('/worker/onboarding')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByText(/invalid.*session|session.*expired/i)).not.toBeVisible({ timeout: 15_000 })
+  await expect(page.getByRole('link', { name: /My Documents/i })).toBeVisible({ timeout: 15_000 })
+})
+
 // ── Mobile overflow spot-checks ───────────────────────────────────────────────
 // These complement the viewport-specific assertions above and are especially
 // useful when the "worker-mobile" project runs this file at Pixel 5 dimensions.
@@ -337,6 +379,7 @@ const WORKER_PATHS = [
   '/worker/shifts',
   '/worker/availability',
   '/worker/documents',
+  '/worker/onboarding',
 ]
 
 for (const workerPath of WORKER_PATHS) {

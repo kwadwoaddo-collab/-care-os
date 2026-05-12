@@ -2,11 +2,24 @@
  * app/api/worker/onboarding/route.ts
  *
  * Returns the current worker's onboarding status, documents, and profile data.
- * Authentication: worker session token in ?token= query param.
+ *
+ * Auth: worker session token in ?token= query param.
+ *
+ * FIXED (2026-05-12):
+ *   This route previously authenticated via the legacy `portal_invitations` table,
+ *   which is a separate one-time-use token table no longer used for active sessions.
+ *   All other worker API routes (validate, documents, shifts, timesheets, availability)
+ *   authenticate via `staff_profiles.portal_token_hash` using `validateWorkerToken()`.
+ *   This mismatch caused "Invalid or expired session" even for authenticated workers.
+ *
+ *   Fix: replaced portal_invitations lookup with validateWorkerToken() (identical to
+ *   every other worker route), and passed approvedTrainingCategories + job_role to
+ *   calculateOnboardingStatus so training gate and compliance state are accurate.
  */
 
-import { NextResponse }              from 'next/server'
-import { adminClient }               from '@/lib/supabase/admin'
+import { NextResponse }               from 'next/server'
+import { adminClient }                from '@/lib/supabase/admin'
+import { validateWorkerToken }        from '@/lib/worker/auth'
 import { calculateOnboardingStatus, getNextActions } from '@/lib/staff/calculateOnboardingStatus'
 
 interface SpRow {
@@ -15,6 +28,8 @@ interface SpRow {
   last_name:             string | null
   email:                 string | null
   status:                string
+  job_role:              string | null
+  applicant_id:          string | null
   date_of_birth:         string | null
   nationality:           string | null
   address_line_1:        string | null
@@ -37,44 +52,32 @@ interface SpRow {
 }
 
 interface DocRow {
-  id:              string
-  document_type:   string
-  file_name:       string
-  expiry_date:     string | null
-  created_at:      string
-  reviewed_status: string | null
+  id:                string
+  document_type:     string
+  file_name:         string
+  expiry_date:       string | null
+  created_at:        string
+  reviewed_status:   string | null
+  training_category: string | null
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const token = searchParams.get('token')
 
-  if (!token) {
-    return NextResponse.json({ error: 'token required' }, { status: 400 })
+  // ── Auth: same validateWorkerToken as every other worker route ────────────
+  const auth = await validateWorkerToken(token)
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
-  // Resolve the token → staff_profile_id
-  const { data: inv, error: invErr } = await adminClient
-    .from('portal_invitations')
-    .select('staff_profile_id, applicant_id, expires_at')
-    .eq('token', token)
-    .maybeSingle()
+  const profileId = auth.worker.id
 
-  if (invErr || !inv) {
-    return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
-  }
-
-  if (new Date((inv as { expires_at: string }).expires_at) < new Date()) {
-    return NextResponse.json({ error: 'Session has expired' }, { status: 401 })
-  }
-
-  const profileId = (inv as { staff_profile_id: string }).staff_profile_id
-
-  // Fetch staff profile
+  // ── Fetch staff profile ───────────────────────────────────────────────────
   const { data: rawSp, error: spErr } = await adminClient
     .from('staff_profiles')
     .select([
-      'id', 'first_name', 'last_name', 'email', 'status',
+      'id', 'first_name', 'last_name', 'email', 'status', 'job_role', 'applicant_id',
       'date_of_birth', 'nationality', 'address_line_1', 'city', 'postcode',
       'emergency_contact_name', 'emergency_contact_phone',
       'ni_number', 'employment_type', 'starter_declaration',
@@ -92,15 +95,44 @@ export async function GET(request: Request) {
 
   const sp = rawSp as unknown as SpRow
 
-  // Fetch uploaded documents
-  const { data: rawDocs } = await adminClient
-    .from('documents')
-    .select('id, document_type, file_name, expiry_date, created_at, reviewed_status')
-    .eq('staff_profile_id', profileId)
-    .order('created_at', { ascending: false })
+  // ── Fetch documents (staff_profile_id OR applicant_id) ───────────────────
+  // Include training_category so we can derive approvedTrainingCategories.
+  const [staffDocsRes, applicantDocsRes] = await Promise.all([
+    adminClient
+      .from('documents')
+      .select('id, document_type, file_name, expiry_date, created_at, reviewed_status, training_category')
+      .eq('staff_profile_id', profileId)
+      .order('created_at', { ascending: false }),
 
-  const documents = (rawDocs ?? []) as unknown as DocRow[]
-  const uploadedDocumentTypes = documents.map((d) => d.document_type)
+    sp.applicant_id
+      ? adminClient
+          .from('documents')
+          .select('id, document_type, file_name, expiry_date, created_at, reviewed_status, training_category')
+          .eq('applicant_id', sp.applicant_id)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ])
+
+  // Merge, dedupe by id (staff-linked docs take precedence)
+  const seen    = new Set<string>()
+  const allDocs: DocRow[] = []
+  for (const d of [...(staffDocsRes.data ?? []), ...(applicantDocsRes.data ?? [])] as DocRow[]) {
+    if (!seen.has(d.id)) { seen.add(d.id); allDocs.push(d) }
+  }
+
+  const uploadedDocumentTypes = allDocs.map((d) => d.document_type)
+
+  // Extract approved training categories for the training gate
+  const now = new Date()
+  const approvedTrainingCategories = allDocs
+    .filter((d) =>
+      d.document_type     === 'training_certificate' &&
+      d.reviewed_status   === 'approved' &&
+      d.training_category !== null &&
+      // Exclude expired certs — they don't satisfy the gate
+      (!d.expiry_date || new Date(d.expiry_date) >= now)
+    )
+    .map((d) => d.training_category as string)
 
   const status = calculateOnboardingStatus({
     first_name:              sp.first_name,
@@ -123,9 +155,21 @@ export async function GET(request: Request) {
     dbs_expiry_date:         sp.dbs_expiry_date,
     policy_acknowledged:     sp.policy_acknowledged,
     uploadedDocumentTypes,
+    approvedTrainingCategories,
+    job_role:                sp.job_role,
   })
 
   const nextActions = getNextActions(status)
+
+  // Surface only the fields workers need to see (no training_category — not relevant to worker UI)
+  const documents = allDocs.map((d) => ({
+    id:              d.id,
+    document_type:   d.document_type,
+    file_name:       d.file_name,
+    expiry_date:     d.expiry_date,
+    created_at:      d.created_at,
+    reviewed_status: d.reviewed_status,
+  }))
 
   return NextResponse.json({
     profile: {

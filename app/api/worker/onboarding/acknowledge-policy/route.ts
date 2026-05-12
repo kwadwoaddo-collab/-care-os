@@ -2,11 +2,16 @@
  * POST /api/worker/onboarding/acknowledge-policy
  *
  * Marks the worker's policy_acknowledged field as true.
- * Authentication: worker session token in request body.
+ *
+ * FIXED (2026-05-12):
+ *   Previously used portal_invitations token lookup (legacy).
+ *   Now uses validateWorkerToken() — identical to every other worker API route.
+ *   Token is sent in the JSON body for backwards compatibility with the page.
  */
 
-import { NextResponse } from 'next/server'
-import { adminClient }  from '@/lib/supabase/admin'
+import { NextResponse }        from 'next/server'
+import { adminClient }         from '@/lib/supabase/admin'
+import { validateWorkerToken } from '@/lib/worker/auth'
 
 export async function POST(request: Request) {
   let body: { token?: string }
@@ -16,24 +21,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  const { token } = body
-  if (!token) {
-    return NextResponse.json({ error: 'token required' }, { status: 400 })
-  }
-
-  // Resolve token
-  const { data: inv } = await adminClient
-    .from('portal_invitations')
-    .select('staff_profile_id, expires_at')
-    .eq('token', token)
-    .maybeSingle()
-
-  if (!inv) {
-    return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 })
-  }
-
-  if (new Date(inv.expires_at) < new Date()) {
-    return NextResponse.json({ error: 'Session has expired' }, { status: 401 })
+  // ── Auth: same validateWorkerToken as every other worker route ────────────
+  const auth = await validateWorkerToken(body.token)
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
   }
 
   const { error } = await adminClient
@@ -42,7 +33,7 @@ export async function POST(request: Request) {
       policy_acknowledged:    true,
       policy_acknowledged_at: new Date().toISOString(),
     })
-    .eq('id', inv.staff_profile_id)
+    .eq('id', auth.worker.id)
 
   if (error) {
     console.error('[acknowledge-policy]', error.message)
