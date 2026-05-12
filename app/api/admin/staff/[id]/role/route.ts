@@ -14,6 +14,7 @@ import {
   hierarchyLevel,
   type Role,
 } from '@/lib/rbac/roles'
+import { requiresAdminAccount }      from '@/lib/rbac/access'
 
 // ── PATCH /api/admin/staff/[id]/role ─────────────────────────────────────────
 //
@@ -25,8 +26,9 @@ import {
 //  1. requireAdmin()        — session + company isolation
 //  2. canManageRoles()      — roles:write permission
 //  3. Target in same company — tenant isolation
-//  4. profile_id exists     — must have portal account
+//  4. profile_id exists     — must have admin portal account
 //  5. Target profile same company — double-check
+// 5b. Operational roles require admin account (redundant guard, belt-and-braces)
 //  6. Role in ASSIGNABLE_ROLES — super_admin blocked
 //  7. canAssignRole()       — privilege escalation guard
 //  8. Self-lockout guard    — cannot demote yourself
@@ -79,10 +81,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
   }
 
-  // ── 4. Must have a portal account ─────────────────────────────────────────
+  // ── 4. Must have an admin portal account ──────────────────────────────────
   if (!sp.profile_id) {
+    void writeFailedAudit({
+      companyId,
+      actorId:    userId,
+      entityId:   staffProfileId,
+      reason:     'no_admin_account',
+      callerRole,
+    })
     return NextResponse.json(
-      { error: 'Staff member has no portal account. Send a portal invite first.' },
+      { error: 'This staff member has no admin portal account. Use \'Create Admin Portal Access\' first.' },
       { status: 400 }
     )
   }
@@ -112,8 +121,28 @@ export async function PATCH(
     return NextResponse.json({ error: 'Cross-company role change blocked' }, { status: 403 })
   }
 
-  // ── 6. Role must be in ASSIGNABLE_ROLES (super_admin blocked) ──────────────
+  // ── 5b. Operational roles require admin account (belt-and-braces) ───────────
+  //  Note: step 4 already blocks if profile_id is null, but this catches the
+  //  edge case where someone calls the API with a forged profile_id that is null
+  //  but role is non-care_worker. This is the semantic guard.
   const requestedRole = normaliseRole(requestedRoleRaw)
+
+  if (requiresAdminAccount(requestedRole) && !sp.profile_id) {
+    void writeFailedAudit({
+      companyId,
+      actorId:    userId,
+      entityId:   staffProfileId,
+      reason:     'operational_role_requires_admin_account',
+      callerRole,
+      targetRole: requestedRole,
+    })
+    return NextResponse.json(
+      { error: `Role '${requestedRole}' requires admin portal access. Create an admin account first.` },
+      { status: 409 }
+    )
+  }
+
+  // ── 6. Role must be in ASSIGNABLE_ROLES (super_admin blocked) ──────────────
   if (!ASSIGNABLE_ROLES.includes(requestedRole)) {
     return NextResponse.json(
       { error: `Invalid role. Assignable roles: ${ASSIGNABLE_ROLES.join(', ')}` },

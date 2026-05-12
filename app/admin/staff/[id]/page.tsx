@@ -87,6 +87,9 @@ interface StaffProfile {
   policy_acknowledged_at?:     string | null
   portal_last_login_at?:       string | null
   portal_invite_sent_at?:      string | null
+  // Admin access (presence only — hash never sent to client)
+  portal_token_hash?:          string | null   // non-null = worker portal active
+  admin_invite_sent_at?:       string | null
 }
 
 interface Applicant {
@@ -538,6 +541,10 @@ export default async function StaffDetailPage({
   let lastChangedBy:    string | null = null
   let lastChangedAt:    string | null = null
 
+  // Portal access state (computed here server-side, presence only)
+  const portalTokenActive = !!(sp.portal_token_hash)
+  const adminInviteSentAt = (sp.admin_invite_sent_at as string | null) ?? null
+
   try {
     const auth = await requireAdmin()
     if (auth.ok) {
@@ -745,6 +752,8 @@ export default async function StaffDetailPage({
             callerRole={callerRole}
             lastChangedBy={lastChangedBy}
             lastChangedAt={lastChangedAt}
+            portalTokenActive={portalTokenActive}
+            adminInviteSentAt={adminInviteSentAt}
           />
         </SectionBox>
 

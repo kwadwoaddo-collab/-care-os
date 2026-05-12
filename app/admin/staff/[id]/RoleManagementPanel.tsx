@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAssignableRoles, canManageRoles } from '@/lib/rbac/can'
+import { getAccessState, getAccessStateMessage } from '@/lib/rbac/access'
 import type { Role } from '@/lib/rbac/roles'
 
 // ── Role metadata ─────────────────────────────────────────────────────────────
@@ -34,7 +35,6 @@ const ROLE_META: Record<string, { label: string; description: string; warning?: 
     warning:     '⚠️ This grants full company-wide administrative access including role management.',
     colour:      'bg-amber-50 text-amber-700 ring-amber-500/30',
   },
-  // Fallback for unknown roles
   unknown: {
     label:       'Unknown',
     description: 'Role not recognised.',
@@ -57,15 +57,249 @@ function formatDate(iso: string | null): string {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface RoleManagementPanelProps {
-  staffProfileId: string
-  profileId:      string | null   // null → no portal account
-  currentRole:    string | null   // from profiles.role
-  callerRole:     string          // the currently logged-in admin's role
-  lastChangedBy:  string | null
-  lastChangedAt:  string | null
+  staffProfileId:    string
+  profileId:         string | null   // null → no admin portal account
+  currentRole:       string | null   // from profiles.role
+  callerRole:        string          // the currently logged-in admin's role
+  lastChangedBy:     string | null
+  lastChangedAt:     string | null
+  /** True if staff_profiles.portal_token_hash is non-null (worker portal active) */
+  portalTokenActive: boolean
+  /** When the admin invite was last sent (may be null) */
+  adminInviteSentAt: string | null
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Admin Access Button ───────────────────────────────────────────────────────
+
+function AdminAccessButton({ staffProfileId, adminInviteSentAt }: {
+  staffProfileId:    string
+  adminInviteSentAt: string | null
+}) {
+  const router = useRouter()
+  const [open,    setOpen]    = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState<string | null>(null)
+  const [done,    setDone]    = useState(false)
+
+  async function handleCreate() {
+    setLoading(true)
+    setError(null)
+    try {
+      const res  = await fetch(`/api/admin/staff/${staffProfileId}/admin-access`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ send_email: true }),
+      })
+      const json = await res.json() as { ok?: boolean; error?: string }
+      if (!res.ok) {
+        setError(json.error ?? 'Failed to create admin access.')
+        return
+      }
+      setDone(true)
+      setTimeout(() => {
+        setOpen(false)
+        router.refresh()
+      }, 1500)
+    } catch {
+      setError('Network error — please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        id="create-admin-access-btn"
+        type="button"
+        onClick={() => { setOpen(true); setError(null); setDone(false) }}
+        style={{
+          display:      'inline-flex',
+          alignItems:   'center',
+          gap:          '6px',
+          fontSize:     '13px',
+          fontWeight:   500,
+          padding:      '7px 14px',
+          borderRadius: '6px',
+          border:       '1px solid #2563eb',
+          background:   '#2563eb',
+          color:        '#fff',
+          cursor:       'pointer',
+          whiteSpace:   'nowrap',
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+          <path fillRule="evenodd" d="M15.5 8a.5.5 0 01.5.5v1h1a.5.5 0 010 1h-1v1a.5.5 0 01-1 0v-1h-1a.5.5 0 010-1h1v-1a.5.5 0 01.5-.5z" clipRule="evenodd" />
+        </svg>
+        {adminInviteSentAt ? 'Resend Admin Invite' : 'Create Admin Portal Access'}
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position:        'fixed',
+            inset:           0,
+            zIndex:          50,
+            display:         'flex',
+            alignItems:      'center',
+            justifyContent:  'center',
+            background:      'rgba(0,0,0,0.4)',
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
+        >
+          <div style={{
+            background:   '#fff',
+            borderRadius: '12px',
+            padding:      '28px',
+            width:        'min(440px, 92vw)',
+            boxShadow:    '0 20px 60px rgba(0,0,0,0.18)',
+          }}>
+            {done ? (
+              <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                <p style={{ fontSize: '32px', marginBottom: '8px' }}>✅</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#111827' }}>Admin account created</p>
+                <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>Invite email sent. Refreshing…</p>
+              </div>
+            ) : (
+              <>
+                <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#111827', margin: '0 0 8px' }}>
+                  Create Admin Portal Access
+                </h2>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px', lineHeight: '1.5' }}>
+                  This will create a Supabase authentication account for this staff member
+                  and send them an invite email to set up their admin portal password.
+                </p>
+                <div style={{
+                  padding:      '10px 14px',
+                  borderRadius: '8px',
+                  background:   '#fffbeb',
+                  border:       '1px solid #fde68a',
+                  fontSize:     '13px',
+                  color:        '#92400e',
+                  marginBottom: '20px',
+                  lineHeight:   '1.5',
+                }}>
+                  <strong>After creating:</strong> the staff member's role will default
+                  to <em>Care Worker</em>. Use the role panel to assign an operational
+                  role once their account is active.
+                </div>
+
+                {error && (
+                  <div style={{
+                    padding:      '10px 14px',
+                    borderRadius: '8px',
+                    background:   '#fef2f2',
+                    border:       '1px solid #fecaca',
+                    fontSize:     '13px',
+                    color:        '#991b1b',
+                    marginBottom: '16px',
+                  }}>
+                    {error}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    id="create-admin-access-cancel"
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    disabled={loading}
+                    style={{
+                      padding:      '8px 16px',
+                      borderRadius: '6px',
+                      border:       '1px solid #d1d5db',
+                      background:   '#fff',
+                      color:        '#374151',
+                      fontSize:     '14px',
+                      fontWeight:   500,
+                      cursor:       'pointer',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    id="create-admin-access-confirm"
+                    type="button"
+                    onClick={() => void handleCreate()}
+                    disabled={loading}
+                    style={{
+                      padding:      '8px 16px',
+                      borderRadius: '6px',
+                      border:       'none',
+                      background:   loading ? '#93c5fd' : '#2563eb',
+                      color:        '#fff',
+                      fontSize:     '14px',
+                      fontWeight:   500,
+                      cursor:       loading ? 'wait' : 'pointer',
+                    }}
+                  >
+                    {loading ? 'Creating…' : 'Create & Send Invite'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// ── No-access state panel ─────────────────────────────────────────────────────
+
+function AccessStateBanner({
+  staffProfileId,
+  portalTokenActive,
+  profileId,
+  callerRole,
+  adminInviteSentAt,
+}: {
+  staffProfileId:    string
+  portalTokenActive: boolean
+  profileId:         string | null
+  callerRole:        string
+  adminInviteSentAt: string | null
+}) {
+  const state   = getAccessState({ hasWorkerToken: portalTokenActive, hasAdminAccount: !!profileId })
+  const msg     = getAccessStateMessage(state)
+  const canAdmin = canManageRoles(callerRole) && !profileId
+
+  return (
+    <div style={{
+      padding:      '14px 16px',
+      borderRadius: '8px',
+      background:   state === 'no_access' ? '#f9fafb' : '#eff6ff',
+      border:       `1px solid ${state === 'no_access' ? '#e5e7eb' : '#bfdbfe'}`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+        <div>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: '#374151', margin: '0 0 4px' }}>
+            {state === 'worker_only' ? '🔒 ' : '⚠️ '}{msg.status}
+          </p>
+          <p style={{ fontSize: '13px', color: '#6b7280', margin: 0, lineHeight: '1.5' }}>
+            {msg.description}
+          </p>
+          {adminInviteSentAt && (
+            <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '6px' }}>
+              Last admin invite sent: {formatDate(adminInviteSentAt)}
+            </p>
+          )}
+        </div>
+        {canAdmin && msg.showCreateAdminButton && (
+          <div style={{ flexShrink: 0 }}>
+            <AdminAccessButton
+              staffProfileId={staffProfileId}
+              adminInviteSentAt={adminInviteSentAt}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function RoleManagementPanel({
   staffProfileId,
@@ -74,6 +308,8 @@ export default function RoleManagementPanel({
   callerRole,
   lastChangedBy,
   lastChangedAt,
+  portalTokenActive,
+  adminInviteSentAt,
 }: RoleManagementPanelProps) {
   const router = useRouter()
 
@@ -114,7 +350,7 @@ export default function RoleManagementPanel({
     setLoading(true)
     setBanner(null)
     try {
-      const res = await fetch(`/api/admin/staff/${staffProfileId}/role`, {
+      const res  = await fetch(`/api/admin/staff/${staffProfileId}/role`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ role: selectedRole, reason: reason.trim() || undefined }),
@@ -140,72 +376,75 @@ export default function RoleManagementPanel({
 
   return (
     <div>
-      {/* Current role display */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-        <div>
-          {profileId ? (
-            <>
+      {/* ── Access state display ─────────────────────────────────────────── */}
+      {!profileId ? (
+        <AccessStateBanner
+          staffProfileId={staffProfileId}
+          portalTokenActive={portalTokenActive}
+          profileId={profileId}
+          callerRole={callerRole}
+          adminInviteSentAt={adminInviteSentAt}
+        />
+      ) : (
+        <>
+          {/* ── Admin account active: show role UI ──────────────────────── */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+            <div>
               <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${meta.colour}`}>
                 {meta.label}
               </span>
               <p style={{ marginTop: '6px', fontSize: '13px', color: '#6b7280' }}>{meta.description}</p>
-            </>
-          ) : (
-            <div style={{ padding: '10px 12px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-              <p style={{ fontSize: '13px', color: '#6b7280' }}>
-                No portal account linked — send a portal invite to enable role management.
-              </p>
+
+              {/* History line */}
+              {lastChangedBy && lastChangedAt && (
+                <p style={{ marginTop: '8px', fontSize: '12px', color: '#9ca3af' }}>
+                  Last changed by <strong style={{ color: '#6b7280' }}>{lastChangedBy}</strong>
+                  {' '}· {formatDate(lastChangedAt)}
+                </p>
+              )}
+            </div>
+
+            {canChange && (
+              <button
+                id="change-role-btn"
+                type="button"
+                onClick={openModal}
+                style={{
+                  flexShrink:  0,
+                  fontSize:    '13px',
+                  fontWeight:  500,
+                  padding:     '6px 12px',
+                  borderRadius:'6px',
+                  border:      '1px solid #d1d5db',
+                  background:  '#fff',
+                  color:       '#374151',
+                  cursor:      'pointer',
+                  whiteSpace:  'nowrap',
+                }}
+              >
+                Change role
+              </button>
+            )}
+          </div>
+
+          {/* Inline banner (outside modal) */}
+          {banner && !modalOpen && (
+            <div style={{
+              marginTop:   '12px',
+              padding:     '10px 14px',
+              borderRadius:'8px',
+              fontSize:    '13px',
+              background:  banner.type === 'success' ? '#f0fdf4' : '#fef2f2',
+              color:       banner.type === 'success' ? '#166534' : '#991b1b',
+              border:      `1px solid ${banner.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
+            }}>
+              {banner.message}
             </div>
           )}
-
-          {/* History line */}
-          {lastChangedBy && lastChangedAt && (
-            <p style={{ marginTop: '8px', fontSize: '12px', color: '#9ca3af' }}>
-              Last changed by <strong style={{ color: '#6b7280' }}>{lastChangedBy}</strong>
-              {' '}· {formatDate(lastChangedAt)}
-            </p>
-          )}
-        </div>
-
-        {canChange && (
-          <button
-            id="change-role-btn"
-            type="button"
-            onClick={openModal}
-            style={{
-              flexShrink: 0,
-              fontSize: '13px',
-              fontWeight: 500,
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              background: '#fff',
-              color: '#374151',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Change role
-          </button>
-        )}
-      </div>
-
-      {/* Inline banner (outside modal) */}
-      {banner && !modalOpen && (
-        <div style={{
-          marginTop: '12px',
-          padding: '10px 14px',
-          borderRadius: '8px',
-          fontSize: '13px',
-          background: banner.type === 'success' ? '#f0fdf4' : '#fef2f2',
-          color:      banner.type === 'success' ? '#166534' : '#991b1b',
-          border:     `1px solid ${banner.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
-        }}>
-          {banner.message}
-        </div>
+        </>
       )}
 
-      {/* Confirmation modal */}
+      {/* ── Confirmation modal ───────────────────────────────────────────── */}
       <dialog
         ref={dialogRef}
         id="role-change-modal"
@@ -231,12 +470,12 @@ export default function RoleManagementPanel({
           {banner && modalOpen && (
             <div style={{
               marginBottom: '16px',
-              padding: '10px 14px',
+              padding:      '10px 14px',
               borderRadius: '8px',
-              fontSize: '13px',
-              background: banner.type === 'error' ? '#fef2f2' : '#f0fdf4',
-              color:      banner.type === 'error' ? '#991b1b' : '#166534',
-              border:     `1px solid ${banner.type === 'error' ? '#fecaca' : '#bbf7d0'}`,
+              fontSize:     '13px',
+              background:   banner.type === 'error' ? '#fef2f2' : '#f0fdf4',
+              color:        banner.type === 'error' ? '#991b1b' : '#166534',
+              border:       `1px solid ${banner.type === 'error' ? '#fecaca' : '#bbf7d0'}`,
             }}>
               {banner.message}
             </div>
@@ -253,14 +492,14 @@ export default function RoleManagementPanel({
               onChange={(e) => setSelectedRole(e.target.value)}
               disabled={loading}
               style={{
-                width: '100%',
-                padding: '8px 10px',
+                width:        '100%',
+                padding:      '8px 10px',
                 borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '14px',
-                color: '#111827',
-                background: '#fff',
-                cursor: 'pointer',
+                border:       '1px solid #d1d5db',
+                fontSize:     '14px',
+                color:        '#111827',
+                background:   '#fff',
+                cursor:       'pointer',
               }}
             >
               <option value="" disabled>Select role…</option>
@@ -294,13 +533,13 @@ export default function RoleManagementPanel({
               disabled={loading}
               maxLength={200}
               style={{
-                width: '100%',
-                padding: '8px 10px',
+                width:        '100%',
+                padding:      '8px 10px',
                 borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '14px',
-                color: '#111827',
-                boxSizing: 'border-box',
+                border:       '1px solid #d1d5db',
+                fontSize:     '14px',
+                color:        '#111827',
+                boxSizing:    'border-box',
               }}
             />
           </div>
@@ -313,14 +552,14 @@ export default function RoleManagementPanel({
               onClick={closeModal}
               disabled={loading}
               style={{
-                padding: '8px 16px',
+                padding:      '8px 16px',
                 borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                background: '#fff',
-                color: '#374151',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
+                border:       '1px solid #d1d5db',
+                background:   '#fff',
+                color:        '#374151',
+                fontSize:     '14px',
+                fontWeight:   500,
+                cursor:       'pointer',
               }}
             >
               Cancel
@@ -331,15 +570,15 @@ export default function RoleManagementPanel({
               onClick={() => void handleConfirm()}
               disabled={loading || !selectedRole || selectedRole === currentRole}
               style={{
-                padding: '8px 16px',
+                padding:      '8px 16px',
                 borderRadius: '6px',
-                border: 'none',
-                background: loading ? '#93c5fd' : '#2563eb',
-                color: '#fff',
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: loading ? 'wait' : 'pointer',
-                opacity: (!selectedRole || selectedRole === currentRole) ? 0.5 : 1,
+                border:       'none',
+                background:   loading ? '#93c5fd' : '#2563eb',
+                color:        '#fff',
+                fontSize:     '14px',
+                fontWeight:   500,
+                cursor:       loading ? 'wait' : 'pointer',
+                opacity:      (!selectedRole || selectedRole === currentRole) ? 0.5 : 1,
               }}
             >
               {loading ? 'Saving…' : 'Confirm change'}
