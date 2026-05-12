@@ -167,8 +167,8 @@ function AdminAccessButton({ staffProfileId, adminInviteSentAt }: {
                   Create Admin Portal Access
                 </h2>
                 <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px', lineHeight: '1.5' }}>
-                  This will create a Supabase authentication account for this staff member
-                  and send them an invite email to set up their admin portal password.
+                  This will create an admin portal login for this staff member and
+                  send them an email to set up their password.
                 </p>
                 <div style={{
                   padding:      '10px 14px',
@@ -180,9 +180,9 @@ function AdminAccessButton({ staffProfileId, adminInviteSentAt }: {
                   marginBottom: '20px',
                   lineHeight:   '1.5',
                 }}>
-                  <strong>After creating:</strong> the staff member's role will default
-                  to <em>Care Worker</em>. Use the role panel to assign an operational
-                  role once their account is active.
+                  <strong>Note:</strong> Creating admin access does not automatically
+                  promote the user. You must assign an operational role (e.g. Coordinator)
+                  manually once their account is created.
                 </div>
 
                 {error && (

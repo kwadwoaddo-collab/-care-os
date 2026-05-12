@@ -93,14 +93,14 @@ export function getAccessStateMessage(state: AccessState): AccessStateMessage {
     case 'no_access':
       return {
         status:               'No portal access',
-        description:          'This staff member has no portal access configured. Send a worker portal invite, or create admin portal access.',
+        description:          'No portal access configured. Send a Worker Portal Invite for staff app access, or Create Admin Portal Access for dashboard login.',
         showCreateAdminButton: true,
       }
 
     case 'worker_only':
       return {
         status:               'Worker portal active',
-        description:          'Worker portal access is active. To assign an operational role, create admin portal access first.',
+        description:          'Staff app access is active. To promote this user to an operational role (e.g. Coordinator), you must create admin portal access first.',
         showCreateAdminButton: true,
       }
 
