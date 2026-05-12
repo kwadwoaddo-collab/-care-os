@@ -160,13 +160,13 @@ export async function POST(request: NextRequest) {
     if (staff.applicant_id) {
       const { data: applicantDocs } = await adminClient
         .from('documents')
-        .select('id, document_type, file_name, expiry_date')
+        .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date')
         .eq('applicant_id', staff.applicant_id)
       if (applicantDocs) docs = applicantDocs as ComplianceDocument[]
     }
     const { data: staffDocs } = await adminClient
       .from('documents')
-      .select('id, document_type, file_name, expiry_date')
+      .select('id, document_type, file_name, expiry_date, training_category, reviewed_status, issue_date')
       .eq('staff_profile_id', assigned_staff_id)
     if (staffDocs) docs.push(...(staffDocs as ComplianceDocument[]))
 

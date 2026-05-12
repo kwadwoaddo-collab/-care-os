@@ -57,6 +57,8 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
 
   function set(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+    setError(null)
+    setBlockers([])
   }
 
   const isOvernight =
