@@ -17,6 +17,8 @@ interface WorkerShift {
   shift_type:        string | null
   visit_note_id:     string | null
   worker_ack_status: string | null
+  is_offer?:         boolean
+  offer_status?:     string
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -32,11 +34,14 @@ function formatTime(t: string) { return t.slice(0, 5) }
 function today() { return new Date().toISOString().slice(0, 10) }
 
 const SHIFT_STATUS_CLS: Record<string, string> = {
-  scheduled: 'bg-blue-100   text-blue-700',
-  confirmed: 'bg-green-100  text-green-700',
-  completed: 'bg-gray-100   text-gray-600',
-  cancelled: 'bg-red-100    text-red-700',
-  no_show:   'bg-orange-100 text-orange-700',
+  open:        'bg-blue-100   text-blue-700',
+  offered:     'bg-purple-100 text-purple-700',
+  accepted:    'bg-indigo-100 text-indigo-700',
+  in_progress: 'bg-green-100  text-green-800',
+  completed:   'bg-gray-100   text-gray-600',
+  declined:    'bg-red-100    text-red-700',
+  cancelled:   'bg-red-100    text-red-700',
+  missed:      'bg-orange-100 text-orange-700',
 }
 
 const ACK_CLS: Record<string, string> = {
@@ -45,7 +50,7 @@ const ACK_CLS: Record<string, string> = {
   running_late: 'bg-yellow-100 text-yellow-700',
 }
 
-type FilterKey = 'all' | 'upcoming' | 'today' | 'completed' | 'not_acknowledged'
+type FilterKey = 'all' | 'offers' | 'upcoming' | 'today' | 'completed' | 'not_acknowledged'
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -76,22 +81,25 @@ export default function WorkerShiftsPage() {
   const td = today()
 
   const filtered = shifts.filter((s) => {
-    if (filter === 'today')           return s.shift_date === td
-    if (filter === 'upcoming')        return s.shift_date >= td && s.status !== 'cancelled'
-    if (filter === 'completed')       return s.status === 'completed'
-    if (filter === 'not_acknowledged') return !s.worker_ack_status && s.shift_date >= td && s.status !== 'cancelled'
-    return true
+    if (filter === 'offers')          return s.is_offer && s.offer_status === 'pending'
+    if (filter === 'today')           return !s.is_offer && s.shift_date === td
+    if (filter === 'upcoming')        return !s.is_offer && s.shift_date >= td && s.status !== 'cancelled'
+    if (filter === 'completed')       return !s.is_offer && s.status === 'completed'
+    if (filter === 'not_acknowledged') return !s.is_offer && !s.worker_ack_status && s.shift_date >= td && s.status !== 'cancelled' && s.status !== 'completed'
+    return !s.is_offer
   })
 
   const counts = {
-    all:              shifts.length,
-    today:            shifts.filter((s) => s.shift_date === td).length,
-    upcoming:         shifts.filter((s) => s.shift_date >= td && s.status !== 'cancelled').length,
-    completed:        shifts.filter((s) => s.status === 'completed').length,
-    not_acknowledged: shifts.filter((s) => !s.worker_ack_status && s.shift_date >= td && s.status !== 'cancelled').length,
+    all:              shifts.filter(s => !s.is_offer).length,
+    offers:           shifts.filter(s => s.is_offer && s.offer_status === 'pending').length,
+    today:            shifts.filter((s) => !s.is_offer && s.shift_date === td).length,
+    upcoming:         shifts.filter((s) => !s.is_offer && s.shift_date >= td && s.status !== 'cancelled').length,
+    completed:        shifts.filter((s) => !s.is_offer && s.status === 'completed').length,
+    not_acknowledged: shifts.filter((s) => !s.is_offer && !s.worker_ack_status && s.shift_date >= td && s.status !== 'cancelled' && s.status !== 'completed').length,
   }
 
   const FILTERS: Array<{ key: FilterKey; label: string }> = [
+    { key: 'offers',          label: `Offers (${counts.offers})`               },
     { key: 'upcoming',        label: `Upcoming (${counts.upcoming})`           },
     { key: 'today',           label: `Today (${counts.today})`                 },
     { key: 'not_acknowledged', label: `Not responded (${counts.not_acknowledged})` },
@@ -156,7 +164,12 @@ export default function WorkerShiftsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="text-sm font-semibold text-gray-900">{s.title}</p>
-                      {isToday && (
+                      {s.is_offer && s.offer_status === 'pending' && (
+                        <span className="inline-flex rounded-full bg-purple-100 text-purple-700 px-2 py-0.5 text-xs font-semibold">
+                          New Offer
+                        </span>
+                      )}
+                      {isToday && !s.is_offer && (
                         <span className="inline-flex rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-semibold">
                           Today
                         </span>

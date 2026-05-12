@@ -26,11 +26,14 @@ function staffName(s: OperationsShift): string {
 }
 
 const STATUS_CLS: Record<string, string> = {
-  scheduled: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  confirmed: 'bg-green-50  text-green-700  ring-green-600/20',
-  completed: 'bg-gray-50   text-gray-600   ring-gray-500/20',
-  cancelled: 'bg-red-50    text-red-700    ring-red-600/20',
-  no_show:   'bg-orange-50 text-orange-700 ring-orange-600/20',
+  open:        'bg-blue-50   text-blue-700   ring-blue-600/20',
+  offered:     'bg-purple-50 text-purple-700 ring-purple-600/20',
+  accepted:    'bg-green-50  text-green-700  ring-green-600/20',
+  in_progress: 'bg-green-100 text-green-800  ring-green-600/30',
+  completed:   'bg-gray-50   text-gray-600   ring-gray-500/20',
+  declined:    'bg-red-50    text-red-700    ring-red-600/20',
+  cancelled:   'bg-red-50    text-red-700    ring-red-600/20',
+  missed:      'bg-orange-50 text-orange-700 ring-orange-600/20',
 }
 
 const ACK_CLS: Record<string, string> = {
@@ -291,7 +294,7 @@ export default function ShiftOperationsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {shifts.map((shift) => {
-                  const isDeclined    = shift.worker_ack_status === 'declined'
+                  const isDeclined    = shift.status === 'declined'
                   const isLate        = shift.worker_ack_status === 'running_late'
                   const noAck         = !shift.worker_ack_status && shift.assigned_staff_id
                   const rowCls        = isDeclined ? 'bg-red-50/50' : isLate ? 'bg-yellow-50/50' : ''

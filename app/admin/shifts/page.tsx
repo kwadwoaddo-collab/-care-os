@@ -86,8 +86,8 @@ export default async function ShiftsPage({
   const today         = todayStr()
   const todayCount    = shifts.filter((s) => s.shift_date === today).length
   const upcomingCount = shifts.filter((s) => s.shift_date >  today).length
-  const scheduledCount = shifts.filter((s) => s.status === 'scheduled' || s.status === 'confirmed').length
-  const openCount     = shifts.filter((s) => !s.assigned_staff_id).length
+  const inProgressCount = shifts.filter((s) => s.status === 'in_progress').length
+  const openCount     = shifts.filter((s) => s.status === 'open' || s.status === 'declined').length
 
   // Hard-code company_id for now (same pattern used in rest of app)
   // TODO: derive from session when auth is restored
@@ -120,27 +120,31 @@ export default async function ShiftsPage({
           </p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Upcoming</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{upcomingCount}</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">In Progress</p>
+          <p className={`text-2xl font-semibold tabular-nums ${inProgressCount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
+            {inProgressCount}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Scheduled / Confirmed</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{scheduledCount}</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">Missing Coverage</p>
+          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-gray-900'}`}>
+            {openCount}
+          </p>
         </div>
       </div>
 
       {/* Open shifts callout */}
       <Link
-        href="/admin/shifts/open"
+        href="/admin/shifts/operations"
         className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-5 py-4 hover:bg-orange-100 transition-colors group"
       >
         <div>
           <p className="text-sm font-semibold text-orange-800">
             {openCount === 0
               ? 'All shifts are assigned'
-              : `${openCount} unassigned shift${openCount !== 1 ? 's' : ''} need${openCount === 1 ? 's' : ''} staff`}
+              : `${openCount} shift${openCount !== 1 ? 's' : ''} missing coverage`}
           </p>
-          <p className="text-xs text-orange-600 mt-0.5">View open shifts queue →</p>
+          <p className="text-xs text-orange-600 mt-0.5">View operations dashboard →</p>
         </div>
         <span className={`text-3xl font-bold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-orange-300'}`}>
           {openCount}
@@ -151,11 +155,14 @@ export default async function ShiftsPage({
       <ListFilters fields={[
         { type: 'text',   name: 'search',     placeholder: 'Search title, location, client…', label: 'Search' },
         { type: 'select', name: 'status',     label: 'Status', options: [
-            { value: 'scheduled', label: 'Scheduled' },
-            { value: 'confirmed', label: 'Confirmed' },
-            { value: 'completed', label: 'Completed' },
-            { value: 'cancelled', label: 'Cancelled' },
-            { value: 'no_show',   label: 'No show' },
+            { value: 'open',        label: 'Open' },
+            { value: 'offered',     label: 'Offered' },
+            { value: 'accepted',    label: 'Accepted' },
+            { value: 'in_progress', label: 'In Progress' },
+            { value: 'completed',   label: 'Completed' },
+            { value: 'declined',    label: 'Declined' },
+            { value: 'cancelled',   label: 'Cancelled' },
+            { value: 'missed',      label: 'Missed' },
         ]},
         { type: 'select', name: 'shift_type', label: 'Shift type', options: [
             { value: 'day',       label: 'Day' },

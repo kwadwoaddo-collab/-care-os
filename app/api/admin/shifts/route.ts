@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
       care_package_id:  body.care_package_id  ?? null,
       shift_type:       body.shift_type       ?? null,
       notes:       body.notes       ?? null,
-      status:      'scheduled',
+      status:      assigned_staff_id ? 'offered' : 'open',
     })
     .select()
     .single()

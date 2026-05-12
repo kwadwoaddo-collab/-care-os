@@ -29,6 +29,8 @@ interface Shift {
   shift_type:        string | null
   visit_note_id:     string | null
   worker_ack_status: string | null
+  is_offer?:         boolean
+  offer_status?:     string
 }
 
 interface WorkerDocument {
@@ -200,10 +202,10 @@ export default function WorkerDashboard() {
   const td        = today()
   const in30      = in30Days()
 
-  const todayShifts    = shifts.filter((s) => s.shift_date === td && s.status !== 'cancelled')
-  const upcomingShifts = shifts.filter((s) => s.shift_date >  td && s.status !== 'cancelled').slice(0, 5)
+  const todayShifts    = shifts.filter((s) => !s.is_offer && s.shift_date === td && s.status !== 'cancelled')
+  const upcomingShifts = shifts.filter((s) => !s.is_offer && s.shift_date >  td && s.status !== 'cancelled').slice(0, 5)
   const pendingAck     = todayShifts.filter((s) => !s.worker_ack_status)
-  const pendingNotes   = shifts.filter((s) => s.visit_note_id === null && (s.status === 'confirmed' || s.status === 'scheduled'))
+  const pendingNotes   = shifts.filter((s) => !s.is_offer && s.visit_note_id === null && (s.status === 'in_progress' || s.status === 'accepted'))
   const expiringDocs   = docs.filter((d) => d.expiry_date && d.expiry_date <= in30 && d.expiry_date >= td)
   const expiredDocs    = docs.filter((d) => d.expiry_date && d.expiry_date < td)
 

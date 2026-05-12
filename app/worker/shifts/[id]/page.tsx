@@ -135,25 +135,39 @@ export default function WorkerShiftDetailPage() {
     load(t)
   }, [load])
 
-  // ── Acknowledge ──────────────────────────────────────────────────────────
-  async function handleAck(action: 'accepted' | 'declined' | 'running_late', reason?: string) {
+  // ── Action ───────────────────────────────────────────────────────────────
+  async function handleAction(action: 'accept' | 'decline' | 'start' | 'complete' | 'running_late', reason?: string) {
     setAckLoading(true)
     setAckError(null)
+    setClockError(null)
+    setClockLoading(true)
     try {
-      const res = await fetch(`/api/worker/shifts/${shiftId}/acknowledge`, {
+      const res = await fetch(`/api/worker/shifts/${shiftId}/action`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ token, action, reason }),
       })
-      const json = await res.json() as { error?: string; worker_ack_status?: string }
-      if (!res.ok) { setAckError(json.error ?? 'Failed to acknowledge shift'); return }
-      setShift((prev) => prev ? { ...prev, worker_ack_status: json.worker_ack_status ?? action } : prev)
+      const json = await res.json() as { error?: string; status?: string; worker_ack_status?: string }
+      if (!res.ok) {
+        const err = json.error ?? 'Failed to perform action'
+        if (action === 'start' || action === 'complete') setClockError(err)
+        else setAckError(err)
+        return
+      }
+      setShift((prev) => prev ? { 
+        ...prev, 
+        status: json.status ?? prev.status,
+        worker_ack_status: json.worker_ack_status ?? prev.worker_ack_status
+      } : prev)
       setShowDeclineReason(false)
       setDeclineReason('')
     } catch {
-      setAckError('Network error — please try again.')
+      const err = 'Network error — please try again.'
+      if (action === 'start' || action === 'complete') setClockError(err)
+      else setAckError(err)
     } finally {
       setAckLoading(false)
+      setClockLoading(false)
     }
   }
 
@@ -256,8 +270,14 @@ export default function WorkerShiftDetailPage() {
       {shift.status !== 'cancelled' && shift.status !== 'completed' && (
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Shift Response</h2>
-            {shift.worker_ack_status && (
+            <h2 className="text-sm font-semibold text-gray-700">Shift Action</h2>
+            {shift.status === 'accepted' && (
+              <Badge text="Accepted" cls="bg-green-50 text-green-700 ring-green-600/20" />
+            )}
+            {shift.status === 'declined' && (
+              <Badge text="Declined" cls="bg-red-50 text-red-700 ring-red-600/20" />
+            )}
+            {shift.worker_ack_status && shift.status !== 'declined' && shift.status !== 'accepted' && (
               <Badge text={shift.worker_ack_status} cls={ackCls} />
             )}
           </div>
@@ -273,35 +293,40 @@ export default function WorkerShiftDetailPage() {
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{ackError}</div>
           )}
 
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              data-testid="ack-accept-btn"
-              onClick={() => handleAck('accepted')}
-              disabled={ackLoading}
-              className="flex flex-col items-center gap-1 rounded-xl border-2 border-green-200 bg-green-50 p-3 text-xs font-semibold text-green-700 hover:bg-green-100 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <span className="text-xl">✓</span>
-              Accept
-            </button>
-            <button
-              data-testid="ack-decline-btn"
-              onClick={() => { setShowDeclineReason(true); setAckError(null) }}
-              disabled={ackLoading}
-              className="flex flex-col items-center gap-1 rounded-xl border-2 border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700 hover:bg-red-100 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <span className="text-xl">✕</span>
-              Decline
-            </button>
-            <button
-              data-testid="ack-late-btn"
-              onClick={() => handleAck('running_late')}
-              disabled={ackLoading}
-              className="flex flex-col items-center gap-1 rounded-xl border-2 border-yellow-200 bg-yellow-50 p-3 text-xs font-semibold text-yellow-700 hover:bg-yellow-100 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <span className="text-xl">⏱</span>
-              Late
-            </button>
-          </div>
+          {(shift.status === 'open' || shift.status === 'offered') ? (
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                data-testid="ack-accept-btn"
+                onClick={() => handleAction('accept')}
+                disabled={ackLoading}
+                className="flex flex-col items-center gap-1 rounded-xl border-2 border-green-200 bg-green-50 p-3 text-xs font-semibold text-green-700 hover:bg-green-100 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <span className="text-xl">✓</span>
+                Accept
+              </button>
+              <button
+                data-testid="ack-decline-btn"
+                onClick={() => { setShowDeclineReason(true); setAckError(null) }}
+                disabled={ackLoading}
+                className="flex flex-col items-center gap-1 rounded-xl border-2 border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700 hover:bg-red-100 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <span className="text-xl">✕</span>
+                Decline
+              </button>
+            </div>
+          ) : shift.status === 'accepted' ? (
+            <div className="grid grid-cols-1">
+              <button
+                data-testid="ack-late-btn"
+                onClick={() => handleAction('running_late')}
+                disabled={ackLoading}
+                className="flex flex-col items-center gap-1 rounded-xl border-2 border-yellow-200 bg-yellow-50 p-3 text-xs font-semibold text-yellow-700 hover:bg-yellow-100 active:scale-95 transition-all disabled:opacity-50"
+              >
+                <span className="text-xl">⏱</span>
+                I'm Running Late
+              </button>
+            </div>
+          ) : null}
 
           {showDeclineReason && (
             <div className="space-y-2 pt-1">
@@ -314,7 +339,7 @@ export default function WorkerShiftDetailPage() {
               />
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleAck('declined', declineReason)}
+                  onClick={() => handleAction('decline', declineReason)}
                   disabled={ackLoading}
                   className="flex-1 rounded-lg bg-red-600 py-2.5 text-sm font-semibold text-white hover:bg-red-500 disabled:opacity-50"
                 >
@@ -333,7 +358,7 @@ export default function WorkerShiftDetailPage() {
       )}
 
       {/* Clock in / out card */}
-      {(shift.status === 'scheduled' || shift.status === 'confirmed' || shift.status === 'completed') && (
+      {(shift.status === 'accepted' || shift.status === 'in_progress' || shift.status === 'completed') && (
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Attendance</h2>
 
@@ -359,26 +384,26 @@ export default function WorkerShiftDetailPage() {
           <div className="grid grid-cols-2 gap-2">
             <button
               data-testid="clock-in-btn"
-              onClick={() => handleClock('in')}
-              disabled={clockLoading || hasClockedIn}
+              onClick={() => { handleClock('in'); handleAction('start'); }}
+              disabled={clockLoading || shift.status === 'in_progress' || shift.status === 'completed'}
               className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
             >
-              {hasClockedIn ? '✓ Clocked In' : '⏱ Clock In'}
+              {(shift.status === 'in_progress' || shift.status === 'completed') ? '✓ Started' : '⏱ Start Shift'}
             </button>
             <button
               data-testid="clock-out-btn"
-              onClick={() => handleClock('out')}
-              disabled={clockLoading || !hasClockedIn || hasClockedOut}
+              onClick={() => { handleClock('out'); handleAction('complete'); }}
+              disabled={clockLoading || shift.status !== 'in_progress' || shift.status === 'completed'}
               className="rounded-xl bg-gray-800 py-3 text-sm font-semibold text-white hover:bg-gray-700 active:scale-95 transition-all disabled:opacity-40"
             >
-              {hasClockedOut ? '✓ Clocked Out' : '⏹ Clock Out'}
+              {shift.status === 'completed' ? '✓ Completed' : '⏹ Complete Shift'}
             </button>
           </div>
         </div>
       )}
 
       {/* Visit note card */}
-      {(shift.status === 'confirmed' || shift.status === 'scheduled' || shift.status === 'completed') && (
+      {(shift.status === 'in_progress' || shift.status === 'completed') && (
         <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-700">Visit Note</h2>

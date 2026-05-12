@@ -78,8 +78,7 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact', head: true })
       .eq('company_id', companyId)
       .eq('shift_date', today)
-      .is('assigned_staff_id', null)
-      .neq('status', 'cancelled'),
+      .eq('status', 'open'),
 
     adminClient
       .from('shifts')
@@ -87,7 +86,7 @@ export async function GET(request: NextRequest) {
       .eq('company_id', companyId)
       .gte('shift_date', today)
       .lte('shift_date', in14days)
-      .eq('worker_ack_status', 'declined'),
+      .eq('status', 'declined'),
 
     adminClient
       .from('shifts')
@@ -105,7 +104,7 @@ export async function GET(request: NextRequest) {
       .lte('shift_date', in14days)
       .not('assigned_staff_id', 'is', null)
       .is('worker_ack_status', null)
-      .in('status', ['scheduled', 'confirmed']),
+      .in('status', ['offered', 'accepted']),
   ])
 
   const summary: OperationsSummary = {
@@ -144,7 +143,7 @@ export async function GET(request: NextRequest) {
     case 'declined':
       query = query
         .gte('shift_date', today)
-        .eq('worker_ack_status', 'declined')
+        .eq('status', 'declined')
       break
     case 'running_late':
       query = query
@@ -157,14 +156,13 @@ export async function GET(request: NextRequest) {
         .lte('shift_date', in14days)
         .not('assigned_staff_id', 'is', null)
         .is('worker_ack_status', null)
-        .in('status', ['scheduled', 'confirmed'])
+        .in('status', ['offered', 'accepted'])
       break
     case 'unassigned':
       query = query
         .gte('shift_date', today)
         .lte('shift_date', in14days)
-        .is('assigned_staff_id', null)
-        .neq('status', 'cancelled')
+        .eq('status', 'open')
       break
     default:
       query = query.eq('shift_date', today).neq('status', 'cancelled')
