@@ -7,7 +7,7 @@ interface InviteResult {
   expires_at: string
 }
 
-export default function PortalInviteButton({ staffProfileId }: { staffProfileId: string }) {
+export default function PortalInviteButton({ staffProfileId, lastSentAt }: { staffProfileId: string; lastSentAt?: string | null }) {
   const [loading, setLoading] = useState(false)
   const [result,  setResult]  = useState<InviteResult | null>(null)
   const [error,   setError]   = useState<string | null>(null)
@@ -47,7 +47,14 @@ export default function PortalInviteButton({ staffProfileId }: { staffProfileId:
         onClick={handleClick}
         className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
       >
-        Send Worker Portal Invite
+        <span className="flex flex-col items-start">
+          <span>{lastSentAt ? 'Resend Portal Invite' : 'Send Worker Portal Invite'}</span>
+          {lastSentAt && (
+            <span className="text-[10px] font-normal opacity-80 mt-0.5 leading-none">
+              Last sent: {new Date(lastSentAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+        </span>
       </button>
 
       {open && (

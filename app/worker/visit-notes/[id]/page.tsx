@@ -186,8 +186,18 @@ export default function WorkerVisitNotePage() {
       </div>
 
       {isLocked && (
-        <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-          ✓ This visit note has been submitted and is now locked.
+        <div className="rounded-xl bg-green-50 border border-green-200 p-6 flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="text-3xl">✅</div>
+          <div>
+            <h2 className="text-lg font-bold text-green-800">Visit Note Submitted</h2>
+            <p className="text-sm text-green-700 mt-1">Your visit note has been securely saved and locked.</p>
+          </div>
+          <Link
+            href="/worker/shifts"
+            className="inline-flex items-center justify-center rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white hover:bg-green-700 transition-colors shadow-sm"
+          >
+            Return to My Shifts
+          </Link>
         </div>
       )}
 

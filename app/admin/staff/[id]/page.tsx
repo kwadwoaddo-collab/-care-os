@@ -82,6 +82,7 @@ interface StaffProfile {
   policy_acknowledged?:        boolean | null
   policy_acknowledged_at?:     string | null
   portal_last_login_at?:       string | null
+  portal_invite_sent_at?:      string | null
 }
 
 interface Applicant {
@@ -554,7 +555,7 @@ export default async function StaffDetailPage({
         <div className="flex items-center gap-2">
           <EditStaffProfileForm staff={sp} />
           {(sp.status === 'pre_employment' || sp.status === 'active') && (
-            <PortalInviteButton staffProfileId={sp.id} />
+            <PortalInviteButton staffProfileId={sp.id} lastSentAt={sp.portal_invite_sent_at} />
           )}
         </div>
       </div>

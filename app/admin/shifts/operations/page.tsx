@@ -347,6 +347,13 @@ export default function ShiftOperationsPage() {
                           value={shift.status}
                           cls={STATUS_CLS[shift.status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'}
                         />
+                        {shift.visit_notes?.[0] && (shift.visit_notes[0].status === 'submitted' || shift.visit_notes[0].status === 'locked') && (
+                          <div className="mt-1.5">
+                            <Link href={`/admin/visit-notes/${shift.visit_notes[0].id}`} className="inline-flex items-center rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/20 hover:bg-indigo-100 transition-colors">
+                              📝 Note submitted
+                            </Link>
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3 max-w-[200px]">
                         {shift.worker_ack_reason ? (

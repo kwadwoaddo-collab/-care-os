@@ -172,7 +172,7 @@ export default function WorkerShiftDetailPage() {
   }
 
   // ── Clock in / out ───────────────────────────────────────────────────────
-  async function handleClock(type: 'in' | 'out') {
+  async function handleClock(type: 'in' | 'out'): Promise<boolean> {
     setClockLoading(true)
     setClockError(null)
     try {
@@ -182,7 +182,7 @@ export default function WorkerShiftDetailPage() {
         body:    JSON.stringify({ token, shift_id: shiftId }),
       })
       const json = await res.json() as { error?: string; id?: string; clock_in?: string; clock_out?: string }
-      if (!res.ok) { setClockError(json.error ?? `Failed to clock ${type}`); return }
+      if (!res.ok) { setClockError(json.error ?? `Failed to clock ${type}`); return false }
       setShift((prev) => prev ? {
         ...prev,
         timesheet: {
@@ -192,8 +192,10 @@ export default function WorkerShiftDetailPage() {
           status:    type === 'in' ? 'clocked_in' : 'completed',
         },
       } : prev)
+      return true
     } catch {
       setClockError(`Network error — please try again.`)
+      return false
     } finally {
       setClockLoading(false)
     }
@@ -384,7 +386,10 @@ export default function WorkerShiftDetailPage() {
           <div className="grid grid-cols-2 gap-2">
             <button
               data-testid="clock-in-btn"
-              onClick={() => { handleClock('in'); handleAction('start'); }}
+              onClick={async () => { 
+                const ok = await handleClock('in'); 
+                if (ok) await handleAction('start'); 
+              }}
               disabled={clockLoading || shift.status === 'in_progress' || shift.status === 'completed'}
               className="rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-40"
             >
@@ -392,8 +397,11 @@ export default function WorkerShiftDetailPage() {
             </button>
             <button
               data-testid="clock-out-btn"
-              onClick={() => { handleClock('out'); handleAction('complete'); }}
-              disabled={clockLoading || shift.status !== 'in_progress'}
+              onClick={async () => { 
+                const ok = await handleClock('out'); 
+                if (ok) await handleAction('complete'); 
+              }}
+              disabled={clockLoading || !hasClockedIn || hasClockedOut}
               className="rounded-xl bg-gray-800 py-3 text-sm font-semibold text-white hover:bg-gray-700 active:scale-95 transition-all disabled:opacity-40"
             >
               {shift.status === 'completed' ? '✓ Completed' : '⏹ Complete Shift'}

@@ -30,6 +30,10 @@ export interface OperationsShift {
     first_name: string
     last_name:  string
   } | null
+  visit_notes: {
+    id:     string
+    status: string
+  }[] | null
 }
 
 export interface OperationsSummary {
@@ -123,7 +127,8 @@ export async function GET(request: NextRequest) {
       location, client_name, notes, assigned_staff_id,
       worker_ack_status, worker_ack_at, worker_ack_reason,
       staff_profiles!assigned_staff_id ( id, first_name, last_name, email ),
-      clients!client_id              ( id, first_name, last_name )
+      clients!client_id              ( id, first_name, last_name ),
+      visit_notes                      ( id, status )
     `)
     .eq('company_id', companyId)
     .order('shift_date', { ascending: true })
