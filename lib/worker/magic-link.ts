@@ -94,13 +94,12 @@ export async function requestWorkerMagicLink(email: string): Promise<MagicLinkRe
     metadata:    { 
       email: normalizedEmail,
       ip:    'masked',
-      success: emailResult.success,
-      error: emailResult.error
+      success: emailResult.success
     },
   })
 
   if (!emailResult.success) {
-    console.error('[worker/magic-link] email failed:', emailResult.error)
+    console.error('[worker/magic-link] email failed')
     // We still return 200 to user to prevent enumeration, but log the error
   }
 

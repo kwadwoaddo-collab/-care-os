@@ -68,6 +68,8 @@ export interface RoleManagementPanelProps {
   portalTokenActive: boolean
   /** When the worker last successfully logged into the portal */
   portalLastLoginAt: string | null
+  /** When the admin portal invite was sent */
+  adminInviteSentAt: string | null
 }
 
 // ── Main component ────────────────────────────────────────────────────────────

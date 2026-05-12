@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import NotificationBellWrapper from '@/components/shared/NotificationBellWrapper'
 import WorkerAuthGuard from './WorkerAuthGuard'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const NAV = [
@@ -92,6 +92,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
           })}
         </div>
       </nav>
+      </div>
     </WorkerAuthGuard>
   )
 }

@@ -101,8 +101,8 @@ export async function POST(
         first_name: sp.first_name ?? '',
         last_name:  sp.last_name  ?? '',
       },
-      // Redirect to the admin panel after they accept the invite
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/admin`,
+      // Redirect to the dedicated password setup page
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/admin/set-password`,
     }
   )
 

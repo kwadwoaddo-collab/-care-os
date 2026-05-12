@@ -12,7 +12,7 @@ import {
   canManageRoles,
 } from '@/lib/rbac/can'
 import { can, type Permission } from '@/lib/rbac/permissions'
-import AdminNotificationBell from '@/components/shared/AdminNotificationBell'
+import AdminHeader from '@/components/admin/AdminHeader'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Fetch user profile once for: QA banner + nav permission filtering.
@@ -38,151 +38,34 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // Non-blocking — don't crash the layout
   }
 
-  // If role is unknown (unauthenticated or error), show all nav links.
-  // Individual API routes and page guards enforce the real restrictions.
-  const showAll = userRole === ''
-  // Named capability checks — defaults to true when unauthenticated (showAll).
-  function navCan(check: (role: string) => boolean): boolean {
-    return showAll || check(userRole)
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {isQaEnvironment && (
         <div
           id="qa-environment-banner"
           role="alert"
-          style={{
-            background: 'linear-gradient(90deg, #78350f 0%, #92400e 50%, #78350f 100%)',
-            color: '#fef3c7',
-            textAlign: 'center',
-            padding: '6px 16px',
-            fontSize: '13px',
-            fontWeight: 600,
-            letterSpacing: '0.03em',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
+          className="bg-amber-900 text-amber-50 text-center px-4 py-1.5 text-xs font-semibold flex items-center justify-center gap-2"
         >
           <span>⚠️</span>
           <span>QA Environment — Test Data Only. Do not use real client or staff information.</span>
           <span>⚠️</span>
         </div>
       )}
-      {!isQaEnvironment && (
+      {!isQaEnvironment && userRole && (
         <div
           id="pilot-mode-banner"
           role="note"
-          style={{
-            background: '#eef2ff',
-            borderBottom: '1px solid #c7d2fe',
-            color: '#3730a3',
-            textAlign: 'center',
-            padding: '5px 16px',
-            fontSize: '12px',
-            fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-          }}
+          className="bg-indigo-50 border-b border-indigo-100 text-indigo-700 text-center px-4 py-1.5 text-[11px] font-medium flex items-center justify-center gap-2"
         >
           <span>🚀</span>
           <span>
             <strong>Pilot mode:</strong> Care OS is being used for onboarding &amp; compliance only.
-            BrightHR remains the sign-in system for shifts, attendance &amp; payroll.
           </span>
         </div>
       )}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-6">
-          <span className="font-semibold text-gray-900 text-sm tracking-tight">Care OS — Admin</span>
-          <nav className="flex items-center gap-4 text-sm text-gray-600">
-            {navCan((r) => can(r, 'applicants:read')) && (
-              <a href="/admin/applicants" className="hover:text-gray-900 transition-colors">
-                Applicants
-              </a>
-            )}
-            {navCan(canManageStaff) && (
-              <a href="/admin/staff" className="hover:text-gray-900 transition-colors">
-                Staff
-              </a>
-            )}
-            {navCan(canManageStaff) && (
-              <a href="/admin/onboarding" className="hover:text-gray-900 transition-colors">
-                Onboarding
-              </a>
-            )}
-            {navCan(canViewCompliance) && (
-              <a href="/admin/compliance" className="hover:text-gray-900 transition-colors">
-                Compliance
-              </a>
-            )}
-            {navCan(canViewAuditLogs) && (
-              <a href="/admin/audit-log" className="hover:text-gray-900 transition-colors">
-                Audit Log
-              </a>
-            )}
-            {navCan(canViewNotifications) && (
-              <a href="/admin/notifications" className="hover:text-gray-900 transition-colors">
-                Notifications
-              </a>
-            )}
-            {navCan((r) => can(r, 'clients:read')) && (
-              <a href="/admin/clients" className="hover:text-gray-900 transition-colors">
-                Clients
-              </a>
-            )}
-            {navCan((r) => can(r, 'care_packages:read')) && (
-              <a href="/admin/care-packages" className="hover:text-gray-900 transition-colors">
-                Care Packages
-              </a>
-            )}
-            {navCan(canViewShifts) && (
-              <a href="/admin/shifts" className="hover:text-gray-900 transition-colors">
-                Shifts
-              </a>
-            )}
-            {navCan(canViewShifts) && (
-              <a href="/admin/shifts/operations" className="hover:text-gray-900 transition-colors">
-                Shift Ops
-              </a>
-            )}
-            {navCan((r) => can(r, 'visit_notes:read')) && (
-              <a href="/admin/visit-notes" className="hover:text-gray-900 transition-colors">
-                Visit Notes
-              </a>
-            )}
-            {navCan(canViewIncidents) && (
-              <a href="/admin/incidents" className="hover:text-gray-900 transition-colors">
-                Incidents
-              </a>
-            )}
-            {navCan(canViewSystemHealth) && (
-              <a href="/admin/system" className="hover:text-gray-900 transition-colors">
-                System
-              </a>
-            )}
-            {ENABLE_TIMESHEETS && navCan((r) => can(r, 'timesheets:read')) && (
-              <a href="/admin/timesheets" className="hover:text-gray-900 transition-colors">
-                Timesheets
-              </a>
-            )}
-
-          </nav>
-          <div className="ml-auto flex items-center gap-3">
-            <AdminNotificationBell />
-            <a
-              href="/admin/logout"
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-            >
-              Logout
-            </a>
-          </div>
-        </div>
-      </header>
+      
+      <AdminHeader userRole={userRole} isQaEnvironment={isQaEnvironment} />
+      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
     </div>
   )
