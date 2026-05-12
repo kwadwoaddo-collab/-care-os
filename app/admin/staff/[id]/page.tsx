@@ -81,6 +81,7 @@ interface StaffProfile {
   onboarding_completed?:       boolean | null
   policy_acknowledged?:        boolean | null
   policy_acknowledged_at?:     string | null
+  portal_last_login_at?:       string | null
 }
 
 interface Applicant {
@@ -821,6 +822,25 @@ export default async function StaffDetailPage({
                 </div>
                 <Field label="DBS number"      value={sp.dbs_number} />
                 <Field label="DBS expiry"      value={formatDate(sp.dbs_expiry_date ?? null)} />
+                <div>
+                  <dt className="text-xs font-medium text-gray-500">Policy acknowledged</dt>
+                  <dd className="mt-0.5">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                      sp.policy_acknowledged
+                        ? 'bg-green-50 text-green-700 ring-green-600/20'
+                        : 'bg-amber-50 text-amber-700 ring-amber-600/20'
+                    }`}>
+                      {sp.policy_acknowledged ? '✓ Acknowledged' : 'Not yet'}
+                    </span>
+                    {sp.policy_acknowledged_at && (
+                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(sp.policy_acknowledged_at)}</p>
+                    )}
+                  </dd>
+                </div>
+                <Field
+                  label="Portal last login"
+                  value={sp.portal_last_login_at ? formatDate(sp.portal_last_login_at) : null}
+                />
               </dl>
             </div>
 

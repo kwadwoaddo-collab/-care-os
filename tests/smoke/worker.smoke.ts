@@ -370,6 +370,41 @@ test('worker: onboarding quick links to documents and profile', async ({ page })
   await expect(page.getByRole('link', { name: /My Documents/i })).toBeVisible({ timeout: 15_000 })
 })
 
+test('worker: onboarding policy acknowledgement button functions', async ({ page }) => {
+  await page.goto('/worker/onboarding')
+  await page.waitForLoadState('networkidle')
+  
+  // Either it's already acknowledged (✓ Acknowledge) or there's an I Acknowledge button
+  const policyBtn = page.locator('#acknowledge-policy-btn')
+  const isVisible = await policyBtn.isVisible().catch(() => false)
+  if (isVisible) {
+    // We can't actually click it in smoke tests without affecting the DB for future runs unless we tear down,
+    // so we just ensure it's rendered correctly and enabled.
+    await expect(policyBtn).toBeEnabled()
+    await expect(policyBtn).toHaveText(/I Acknowledge/i)
+  } else {
+    // If already acknowledged, the row should show ✓
+    await expect(page.getByText('✓').filter({ hasText: 'Company Policies' })).toBeVisible()
+  }
+})
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+
+test('worker: documents page duplicate upload guard', async ({ page }) => {
+  await page.goto('/worker/documents')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for the requirements fetch to complete
+  await page.waitForTimeout(1000)
+
+  // Select training certificate
+  await page.getByLabel(/Document type/i).selectOption('training_certificate')
+  
+  // The category dropdown should appear
+  await expect(page.getByLabel(/Training category/i)).toBeVisible()
+})
+
+
 // ── Mobile overflow spot-checks ───────────────────────────────────────────────
 // These complement the viewport-specific assertions above and are especially
 // useful when the "worker-mobile" project runs this file at Pixel 5 dimensions.

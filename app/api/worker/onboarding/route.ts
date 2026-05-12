@@ -21,6 +21,7 @@ import { NextResponse }               from 'next/server'
 import { adminClient }                from '@/lib/supabase/admin'
 import { validateWorkerToken }        from '@/lib/worker/auth'
 import { calculateOnboardingStatus, getNextActions } from '@/lib/staff/calculateOnboardingStatus'
+import { calculateCompliance }        from '@/lib/compliance/calculateCompliance'
 
 interface SpRow {
   id:                    string
@@ -56,6 +57,7 @@ interface DocRow {
   document_type:     string
   file_name:         string
   expiry_date:       string | null
+  issue_date:        string | null
   created_at:        string
   reviewed_status:   string | null
   training_category: string | null
@@ -161,15 +163,34 @@ export async function GET(request: Request) {
 
   const nextActions = getNextActions(status)
 
-  // Surface only the fields workers need to see (no training_category — not relevant to worker UI)
+  // Surface docs with training_category for per-category status in the UI
   const documents = allDocs.map((d) => ({
-    id:              d.id,
-    document_type:   d.document_type,
-    file_name:       d.file_name,
-    expiry_date:     d.expiry_date,
-    created_at:      d.created_at,
-    reviewed_status: d.reviewed_status,
+    id:                d.id,
+    document_type:     d.document_type,
+    training_category: d.training_category,
+    file_name:         d.file_name,
+    expiry_date:       d.expiry_date,
+    created_at:        d.created_at,
+    reviewed_status:   d.reviewed_status,
   }))
+
+  // Per-category training breakdown for the onboarding checklist UI
+  const compliance = calculateCompliance(allDocs)
+  const trainingBreakdown = {
+    satisfied: compliance.satisfiedTraining,
+    missing:   compliance.missingTraining,
+    expired:   compliance.expiredTraining,
+    // Pending: has a cert in pending review but not yet approved
+    pending:   allDocs
+      .filter((d) =>
+        d.document_type   === 'training_certificate' &&
+        d.training_category &&
+        d.reviewed_status === 'pending' &&
+        !compliance.satisfiedTraining.includes(d.training_category)
+      )
+      .map((d) => d.training_category as string)
+      .filter((cat, i, arr) => arr.indexOf(cat) === i), // dedupe
+  }
 
   return NextResponse.json({
     profile: {
@@ -183,5 +204,6 @@ export async function GET(request: Request) {
     status,
     nextActions,
     documents,
+    trainingBreakdown,
   })
 }

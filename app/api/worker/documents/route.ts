@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { validateWorkerToken } from '@/lib/worker/auth'
 
+const DOC_SELECT = [
+  'id', 'document_type', 'training_category',
+  'file_name', 'file_path', 'file_size',
+  'expiry_date', 'issue_date', 'created_at',
+  'reviewed_status', 'review_notes',
+].join(', ')
+
+interface DocRecord {
+  id:                string
+  document_type:     string
+  training_category: string | null
+  file_name:         string
+  file_path:         string | null
+  file_size:         number | null
+  expiry_date:       string | null
+  issue_date:        string | null
+  created_at:        string
+  reviewed_status:   string | null
+  review_notes:      string | null
+}
+
 export async function GET(request: NextRequest) {
   const token  = request.nextUrl.searchParams.get('token')
   const result = await validateWorkerToken(token)
@@ -15,7 +36,7 @@ export async function GET(request: NextRequest) {
   // Fetch by staff_profile_id
   const { data: staffDocs, error: e1 } = await adminClient
     .from('documents')
-    .select('id, document_type, file_name, file_path, file_size, expiry_date, created_at')
+    .select(DOC_SELECT)
     .eq('staff_profile_id', staffProfileId)
     .order('created_at', { ascending: false })
 
@@ -24,22 +45,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 })
   }
 
-  let applicantDocs: typeof staffDocs = []
+  let applicantDocs: DocRecord[] = []
 
   // Also fetch docs uploaded via applicant flow (deduped by id)
   if (applicant_id) {
     const { data: aDocs } = await adminClient
       .from('documents')
-      .select('id, document_type, file_name, file_path, file_size, expiry_date, created_at')
+      .select(DOC_SELECT)
       .eq('applicant_id', applicant_id)
       .order('created_at', { ascending: false })
-    applicantDocs = aDocs ?? []
+    applicantDocs = (aDocs ?? []) as unknown as DocRecord[]
   }
 
-  const seenIds = new Set((staffDocs ?? []).map((d) => d.id))
-  const merged  = [
-    ...(staffDocs ?? []),
-    ...(applicantDocs ?? []).filter((d) => !seenIds.has(d.id)),
+  const typed    = (staffDocs ?? []) as unknown as DocRecord[]
+  const seenIds  = new Set(typed.map((d) => d.id))
+  const merged   = [
+    ...typed,
+    ...applicantDocs.filter((d) => !seenIds.has(d.id)),
   ]
 
   return NextResponse.json(merged)
