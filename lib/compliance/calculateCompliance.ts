@@ -5,6 +5,18 @@ import {
   type RequiredTraining,
 } from './requirements'
 
+// ── Compliance State ──────────────────────────────────────────────────────────
+//
+// A single operational status derived from the full compliance summary.
+//
+//   compliant     — all required items satisfied, nothing expiring imminently
+//   warning       — all satisfied, but ≥1 item expires within EXPIRY_WARN_DAYS
+//   non_compliant — ≥1 required item missing or expired
+//   blocked       — non_compliant AND the missing items include required training
+//                   (this triggers the onboarding hard gate — activation is blocked)
+
+export type ComplianceState = 'compliant' | 'warning' | 'non_compliant' | 'blocked'
+
 // ── Input types ───────────────────────────────────────────────────────────────
 
 export interface ComplianceDocument {
@@ -33,6 +45,8 @@ export interface ComplianceSummary {
   /** @deprecated Use satisfiedTraining. Kept for backwards compat. */
   inferredTraining:    string[]
   compliant:           boolean
+  /** Operational compliance state — drives dashboard, blocks, and reminders */
+  complianceState:     ComplianceState
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -169,6 +183,13 @@ export function calculateCompliance(
     missingT.length          === 0 &&
     expiredT.length          === 0
 
+  const allMissing = [...missingDocuments, ...expiredDocuments, ...missingT, ...expiredT]
+  const complianceState: ComplianceState = getComplianceState(
+    compliant,
+    expiringSoon.length > 0,
+    missingT.length > 0 || expiredT.length > 0
+  )
+
   return {
     percentage,
     missingDocuments,
@@ -179,7 +200,25 @@ export function calculateCompliance(
     expiredTraining:   expiredT,
     inferredTraining:  satisfied,                   // backwards compat alias
     compliant,
+    complianceState,
   }
+}
+
+// ── Compliance state derivation ───────────────────────────────────────────────
+
+/**
+ * Derives the operational ComplianceState from summary booleans.
+ * Exported so callers can reuse it without rerunning the full calculation.
+ */
+export function getComplianceState(
+  compliant: boolean,
+  hasExpiringSoon: boolean,
+  hasTrainingGap: boolean,  // missing or expired mandatory training
+): ComplianceState {
+  if (!compliant && hasTrainingGap) return 'blocked'
+  if (!compliant)                   return 'non_compliant'
+  if (hasExpiringSoon)              return 'warning'
+  return 'compliant'
 }
 
 // ── Badge colour helper (shared by UI) ────────────────────────────────────────

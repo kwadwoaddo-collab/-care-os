@@ -17,9 +17,10 @@ export type NotificationEventType =
   | 'shift.declined'
   | 'shift.running_late'
   | 'compliance.expiring'
-  | 'compliance.expired'   // items past their expiry date
-  | 'compliance.missing'   // items never started
-  | 'compliance.digest'    // combined compliance reminder digest
+  | 'compliance.expired'          // items past their expiry date
+  | 'compliance.missing'          // items never started
+  | 'compliance.digest'           // combined compliance reminder digest
+  | 'compliance.worker_reminder'  // per-worker individual compliance email
   | 'onboarding.incomplete'
   | 'incident.escalated'
   | 'shift.reminder'

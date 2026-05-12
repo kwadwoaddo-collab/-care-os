@@ -198,6 +198,9 @@ export default async function AdminDashboard() {
     complianceRes,
     auditRes,
     onboardingRes,
+    pendingCertsResult,
+    recentlyApprovedResult,
+    expiring7dResult,
   ] = await Promise.all([
     // Staff statuses (for active count + non-compliant from compliance)
     adminClient
@@ -309,6 +312,29 @@ export default async function AdminDashboard() {
 
     // Onboarding summary
     adminFetch(`${BASE}/api/admin/onboarding`, { cache: 'no-store' }),
+
+    // Pending training certs awaiting review
+    adminClient
+      .from('documents')
+      .select('id', { count: 'exact', head: true })
+      .eq('document_type', 'training_certificate')
+      .eq('reviewed_status', 'pending'),
+
+    // Recently approved training certs (last 7 days)
+    adminClient
+      .from('documents')
+      .select('id', { count: 'exact', head: true })
+      .eq('document_type', 'training_certificate')
+      .eq('reviewed_status', 'approved')
+      .gte('reviewed_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+
+    // Documents expiring within 7 days (distinct staff count via expiry_date)
+    adminClient
+      .from('documents')
+      .select('id', { count: 'exact', head: true })
+      .not('expiry_date', 'is', null)
+      .gte('expiry_date', today)
+      .lte('expiry_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)),
   ])
 
   // Parse HTTP responses
@@ -342,6 +368,9 @@ export default async function AdminDashboard() {
   const nonCompliant    = compliance?.summary.nonCompliantCount ?? 0
   const expiredCount    = compliance?.summary.expiredCount      ?? 0
   const expiringSoon    = compliance?.summary.expiringWithin30  ?? 0
+  const pendingCerts    = pendingCertsResult.count              ?? 0
+  const recentlyApproved = recentlyApprovedResult.count         ?? 0
+  const expiring7d      = expiring7dResult.count                ?? 0
 
   // Top 5 compliance alerts (expired first, then expiring soon)
   const topAlerts: AlertItem[] = [
@@ -368,16 +397,10 @@ export default async function AdminDashboard() {
       {/* ── Summary cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard
-          label="Active staff"
-          count={activeStaff}
-          sub="Currently employed"
-          href="/admin/staff"
-        />
-        <SummaryCard
           label="Non-compliant staff"
           count={nonCompliant}
           sub="Missing or expired docs"
-          href="/admin/compliance"
+          href="/admin/compliance?filter=non_compliant"
           urgent
         />
         <SummaryCard
@@ -391,12 +414,49 @@ export default async function AdminDashboard() {
           label="Expiring within 30 days"
           count={expiringSoon}
           sub="Needs renewal soon"
-          href="/admin/compliance"
+          href="/admin/compliance?filter=expiring30d"
           urgent={expiringSoon > 0}
+        />
+        <SummaryCard
+          label="Active staff"
+          count={activeStaff}
+          sub="Currently employed"
+          href="/admin/staff"
         />
       </div>
 
+      {/* ── Compliance widgets row 2 ──────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <SummaryCard
+          label="Expiring this week"
+          count={expiring7d}
+          sub="Documents expiring ≤7 days"
+          href="/admin/compliance?filter=expiring7d"
+          urgent={expiring7d > 0}
+        />
+        <SummaryCard
+          label="Pending cert reviews"
+          count={pendingCerts}
+          sub="Training certs awaiting approval"
+          href="/admin/staff"
+          urgent={pendingCerts > 0}
+        />
+        <SummaryCard
+          label="Approved this week"
+          count={recentlyApproved}
+          sub="Training certs approved last 7d"
+          href="/admin/compliance"
+        />
+        <SummaryCard
+          label="HR incomplete"
+          count={hrIncomplete}
+          sub="Missing payroll or personal info"
+          href="/admin/onboarding"
+          urgent={hrIncomplete > 0}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <SummaryCard
           label="Open shifts"
           count={openShifts}
@@ -422,13 +482,6 @@ export default async function AdminDashboard() {
           sub="Awaiting submission"
           href="/admin/visit-notes"
           urgent={draftNotes > 0}
-        />
-        <SummaryCard
-          label="HR incomplete"
-          count={hrIncomplete}
-          sub="Missing payroll or personal info"
-          href="/admin/onboarding"
-          urgent={hrIncomplete > 0}
         />
         <SummaryCard
           label="Notifications today"

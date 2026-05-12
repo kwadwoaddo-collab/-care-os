@@ -120,6 +120,27 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update document' }, { status: 500 })
   }
 
+  // ── Renewal workflow — supersede older certs for the same training category ─
+  // When a new training certificate is approved for a category, mark any
+  // previously-approved cert for the same category as 'superseded'.
+  // The superseded cert is kept for audit history but ignored by the
+  // compliance engine (only 'approved' status satisfies training requirements).
+  if (action === 'approve' && doc.document_type === 'training_certificate') {
+    const { training_category } = updated as { training_category: string | null }
+    if (training_category) {
+      await adminClient
+        .from('documents')
+        .update({ reviewed_status: 'superseded' })
+        .eq('reviewed_status', 'approved')
+        .eq('training_category', training_category)
+        .neq('id', docId)
+        // Scope to this staff member (by staff_profile_id OR applicant_id)
+        .or(
+          `staff_profile_id.eq.${staffProfileId}${staff.applicant_id ? `,applicant_id.eq.${staff.applicant_id}` : ''}`
+        )
+    }
+  }
+
   // ── Recalculate compliance immediately after approval ──────────────────────
   // Fetch all documents for this staff member and recompute compliance so the
   // UI can update without a separate GET /compliance call.
@@ -134,4 +155,5 @@ export async function PATCH(
 
   return NextResponse.json({ document: updated, complianceSummary })
 }
+
 
