@@ -121,7 +121,12 @@ export async function GET(request: NextRequest) {
         expiringSoon: summary.expiringSoon.length > 0,
         hasExpired:   summary.expiredDocuments.length > 0,
       },
-      readiness: { ready: ready.ready, score: ready.score },
+      readiness: { 
+        ready: ready.ready, 
+        score: ready.score,
+        blockers: ready.blockers,
+        warnings: ready.warnings,
+      },
     }
   })
 

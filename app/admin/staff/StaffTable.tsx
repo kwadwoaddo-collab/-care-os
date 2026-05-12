@@ -26,6 +26,8 @@ export interface StaffProfileWithCompliance {
   readiness: {
     ready: boolean
     score: number
+    blockers: string[]
+    warnings: string[]
   }
 }
 
@@ -214,13 +216,23 @@ export default function StaffTable({ staff }: { staff: StaffProfileWithComplianc
                     </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
+                    <div
+                      className="flex items-center gap-1.5"
+                      title={
+                        !s.readiness.ready || s.readiness.score < 100
+                          ? [
+                              ...(s.readiness.blockers.length ? [`Blockers:\n• ${s.readiness.blockers.join('\n• ')}`] : []),
+                              ...(s.readiness.warnings.length ? [`Warnings:\n• ${s.readiness.warnings.join('\n• ')}`] : []),
+                            ].join('\n\n')
+                          : 'Operationally ready'
+                      }
+                    >
                       <span
                         className={`inline-flex items-center rounded-full w-2 h-2 ${
                           s.readiness.ready ? 'bg-green-500' : 'bg-red-500'
                         }`}
                       />
-                      <span className="text-xs text-gray-700 tabular-nums">
+                      <span className="text-xs text-gray-700 tabular-nums cursor-help border-b border-dotted border-gray-400">
                         {s.readiness.score}%
                       </span>
                       <span

@@ -26,7 +26,15 @@ export function calculateReadiness(
   let score = 100
 
   if (status !== 'active') {
-    blockers.push('Staff is not active')
+    if (status === 'pre_employment') {
+      blockers.push('Staff has not been activated yet')
+    } else if (status === 'suspended') {
+      blockers.push('Staff is currently suspended')
+    } else if (status === 'terminated') {
+      blockers.push('Staff has been terminated')
+    } else {
+      blockers.push('Staff is not active')
+    }
     score -= 40
   }
 
