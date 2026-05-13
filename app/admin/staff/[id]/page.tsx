@@ -27,6 +27,7 @@ import { requireAdmin }        from '@/lib/auth/requireAdmin'
 import { adminClient }         from '@/lib/supabase/admin'
 import { canManageRoles }      from '@/lib/rbac/can'
 import AdminAccessButton    from './AdminAccessButton'
+import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -594,6 +595,19 @@ export default async function StaffDetailPage({
 
   return (
     <div>
+      {/* ── Mobile View (hidden on desktop) ──────────────────────────────── */}
+      <div className="block lg:hidden -mx-4 -mt-4">
+        <StaffProfileMobile
+          staffProfile={sp}
+          documents={documents}
+          availability={availability}
+          recentShifts={recentShifts}
+          recentNotes={recentNotes}
+        />
+      </div>
+
+      {/* ── Desktop View (hidden on mobile) ──────────────────────────────── */}
+      <div className="hidden lg:block">
       {/* Back link */}
       <Link
         href="/admin/staff"
@@ -1269,7 +1283,8 @@ export default async function StaffDetailPage({
           )}
         </SectionBox>
 
-      </div>
+      </div>{/* end desktop section */}
+      </div>{/* end lg:block wrapper */}
     </div>
   )
 }
