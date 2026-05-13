@@ -54,7 +54,7 @@ function StageBadge({ stage }: { stage: string }) {
 function GapBadge({ label, urgent }: { label: string; urgent?: boolean }) {
   return (
     <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium ${
-      urgent ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'
+      urgent ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-on-surface-variant'
     }`}>
       {label}
     </span>
@@ -70,7 +70,7 @@ function ProgressBar({ pct }: { pct: number }) {
       <div className="h-1.5 flex-1 rounded-full bg-gray-100 overflow-hidden">
         <div className={`h-full rounded-full transition-all ${cls}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-gray-500 w-8 text-right tabular-nums">{pct}%</span>
+      <span className="text-xs text-on-surface-variant w-8 text-right tabular-nums">{pct}%</span>
     </div>
   )
 }
@@ -100,7 +100,7 @@ function SendReminderButton({ staffId }: { staffId: string }) {
         'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
         state === 'done'    ? 'bg-green-50 text-green-700 ring-green-600/20'  : '',
         state === 'error'   ? 'bg-red-50   text-red-700   ring-red-600/20'    : '',
-        state === 'sending' ? 'opacity-60 cursor-not-allowed bg-gray-50 text-gray-500 ring-gray-400/20' : '',
+        state === 'sending' ? 'opacity-60 cursor-not-allowed bg-gray-50 text-on-surface-variant ring-gray-400/20' : '',
         state === 'idle'    ? 'bg-white text-gray-600 ring-gray-300/60 hover:bg-gray-50' : '',
       ].join(' ')}
     >
@@ -145,7 +145,7 @@ function OnboardingCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <p className="text-sm font-semibold text-gray-900 group-hover:text-indigo-700 truncate">{name}</p>
+              <p className="text-sm font-semibold text-primary group-hover:text-indigo-700 truncate">{name}</p>
               {row.is_urgent && (
                 <span className="flex-shrink-0 inline-flex items-center rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600 ring-1 ring-red-200">
                   Urgent
@@ -157,7 +157,7 @@ function OnboardingCard({
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 truncate">{row.job_role ?? '—'}</p>
+            <p className="text-xs text-on-surface-variant truncate">{row.job_role ?? '—'}</p>
 
             <div className="mt-2">
               <ProgressBar pct={row.progress} />
@@ -363,9 +363,9 @@ export default function OnboardingQueuePage() {
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Onboarding Queue</h1>
+          <h1 className="text-xl font-semibold text-primary">Onboarding Queue</h1>
           {summary && (
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-on-surface-variant mt-0.5">
               {summary.total} staff · {summary.awaiting_review} awaiting review · {summary.complete} complete
               {summary.stalled_count > 0 && (
                 <span className="ml-2 text-amber-600 font-medium">· {summary.stalled_count} stalled</span>
@@ -407,14 +407,14 @@ export default function OnboardingQueuePage() {
             count={summary.total}
             active={stage === 'all'}
             onClick={() => switchStage('all')}
-            cls="bg-white border-gray-200 text-gray-900"
+            cls="bg-white border-gray-200 text-primary"
           />
           <SummaryCard
             label="Not started"
             count={summary.not_started}
             active={stage === 'not_started'}
             onClick={() => switchStage('not_started')}
-            cls="bg-gray-50 border-gray-200 text-gray-900"
+            cls="bg-gray-50 border-gray-200 text-primary"
           />
           <SummaryCard
             label="In progress"
@@ -428,7 +428,7 @@ export default function OnboardingQueuePage() {
             count={summary.awaiting_review}
             active={stage === 'awaiting_review'}
             onClick={() => switchStage('awaiting_review')}
-            cls={summary.awaiting_review > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-white border-gray-200 text-gray-900'}
+            cls={summary.awaiting_review > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-white border-gray-200 text-primary'}
           />
           <SummaryCard
             label="Complete"
@@ -516,7 +516,7 @@ export default function OnboardingQueuePage() {
             <div className="space-y-2">
               {/* Select all row */}
               <div className="flex items-center gap-2 px-1">
-                <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none">
+                <label className="flex items-center gap-2 text-xs text-on-surface-variant cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={allSelected}

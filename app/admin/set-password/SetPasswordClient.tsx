@@ -82,7 +82,7 @@ export default function SetPasswordClient() {
     return (
       <div className="flex flex-col items-center justify-center py-10 space-y-4">
         <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-gray-900 animate-spin" />
-        <p className="text-sm text-gray-500">Verifying your invitation…</p>
+        <p className="text-sm text-on-surface-variant">Verifying your invitation…</p>
       </div>
     )
   }
@@ -94,8 +94,8 @@ export default function SetPasswordClient() {
           ✓
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Password set</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-lg font-semibold text-primary">Password set</h2>
+          <p className="text-sm text-on-surface-variant mt-1">
             Your admin account is ready. Redirecting you to the dashboard…
           </p>
         </div>
@@ -106,10 +106,10 @@ export default function SetPasswordClient() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">
           Create Password
         </h2>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-on-surface-variant">
           Choose a secure password for your admin portal access.
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function SetPasswordClient() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
             placeholder="••••••••"
             disabled={submitting}
           />
@@ -143,7 +143,7 @@ export default function SetPasswordClient() {
             autoComplete="new-password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
             placeholder="••••••••"
             disabled={submitting}
           />

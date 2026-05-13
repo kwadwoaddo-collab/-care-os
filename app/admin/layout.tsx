@@ -84,7 +84,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminHeader />
 
         {/* pb-24 on mobile clears the fixed bottom nav; removed on lg+ */}
-        <main className="flex-1 p-margin-mobile lg:p-margin-desktop pb-24 lg:pb-8">
+        <main className="flex-1 p-4 lg:p-6 pb-24 lg:pb-8">
           <div className="max-w-container-max mx-auto">
             {children}
           </div>

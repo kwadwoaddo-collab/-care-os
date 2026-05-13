@@ -9,7 +9,7 @@ function SkeletonBar({ w = 'w-full', h = 'h-4' }: { w?: string; h?: string }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 px-4 py-4 space-y-3">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4 space-y-3">
       <SkeletonBar w="w-1/3" h="h-3" />
       <SkeletonBar w="w-2/3" h="h-4" />
       <SkeletonBar w="w-1/2" h="h-3" />
@@ -45,7 +45,7 @@ export default function AdminLoading() {
       {/* Stats cards skeleton */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 px-4 py-4 space-y-2">
+          <div key={i} className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4 space-y-2">
             <SkeletonBar w="w-3/4" h="h-3" />
             <SkeletonBar w="w-1/2" h="h-7" />
           </div>
@@ -60,7 +60,7 @@ export default function AdminLoading() {
       </div>
 
       {/* Table skeleton */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         {/* Table header */}
         <div className="flex gap-4 px-4 py-3 bg-gray-50 border-b border-gray-200">
           {[40, 32, 24, 24, 20].map((w, i) => (

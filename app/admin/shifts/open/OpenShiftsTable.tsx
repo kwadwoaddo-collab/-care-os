@@ -37,7 +37,7 @@ const URGENCY_CLS: Record<Urgency, string> = {
   critical: 'bg-red-50    text-red-700    ring-red-600/20',
   high:     'bg-orange-50 text-orange-700 ring-orange-600/20',
   medium:   'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-  normal:   'bg-gray-50   text-gray-500   ring-gray-400/20',
+  normal:   'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
 }
 
 const URGENCY_LABEL: Record<Urgency, string> = {
@@ -71,7 +71,7 @@ export default function OpenShiftsTable({ shifts }: { shifts: OpenShiftRow[] }) 
 
   if (shifts.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
         No open shifts — all shifts are assigned.
       </div>
     )
@@ -87,19 +87,19 @@ export default function OpenShiftsTable({ shifts }: { shifts: OpenShiftRow[] }) 
         />
       )}
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urgency</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Package</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Urgency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -114,10 +114,10 @@ export default function OpenShiftsTable({ shifts }: { shifts: OpenShiftRow[] }) 
                         {shift.client_name ?? '—'}
                       </a>
                     ) : (
-                      <span className="text-gray-500">{shift.client_name ?? '—'}</span>
+                      <span className="text-on-surface-variant">{shift.client_name ?? '—'}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-4 py-3 text-on-surface-variant whitespace-nowrap">
                     {shift.care_package_title ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
@@ -129,7 +129,7 @@ export default function OpenShiftsTable({ shifts }: { shifts: OpenShiftRow[] }) 
                       <span className="ml-1.5 text-xs text-indigo-500">overnight</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 max-w-[160px] truncate">
+                  <td className="px-4 py-3 text-on-surface-variant max-w-[160px] truncate">
                     {shift.location ?? '—'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">

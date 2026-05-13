@@ -127,7 +127,7 @@ export default function StaffAvailabilitySection({ staffProfileId, initial }: Pr
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
         <h2 className="text-sm font-semibold text-gray-700">Availability &amp; Shift Readiness</h2>
       </div>
@@ -136,16 +136,16 @@ export default function StaffAvailabilitySection({ staffProfileId, initial }: Pr
 
         {/* ── Day-by-day availability ────────────────────────────────────── */}
         <div>
-          <p className="text-xs font-medium text-gray-500 mb-2">Weekly availability</p>
+          <p className="text-xs font-medium text-on-surface-variant mb-2">Weekly availability</p>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm border border-gray-200 rounded-md overflow-hidden">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 w-28">Day</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 w-24">Available</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 w-28">Start</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 w-28">End</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Notes</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-on-surface-variant w-28">Day</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-on-surface-variant w-24">Available</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-on-surface-variant w-28">Start</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-on-surface-variant w-28">End</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-on-surface-variant">Notes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

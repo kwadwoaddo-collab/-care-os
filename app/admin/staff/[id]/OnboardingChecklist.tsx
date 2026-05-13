@@ -30,9 +30,9 @@ function CheckRow({
         {done ? '✓' : '✕'}
       </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${done ? 'text-gray-800' : 'text-gray-900'}`}>{label}</p>
+        <p className={`text-sm font-medium ${done ? 'text-gray-800' : 'text-primary'}`}>{label}</p>
         {!done && description && (
-          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+          <p className="text-xs text-on-surface-variant mt-0.5">{description}</p>
         )}
       </div>
       <span className={`flex-shrink-0 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
@@ -94,7 +94,7 @@ export default function OnboardingChecklist({ staffProfileId, staff }: Props) {
           <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
             status.payroll_ready
               ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-              : 'bg-gray-50 text-gray-500 ring-gray-400/20'
+              : 'bg-gray-50 text-on-surface-variant ring-gray-400/20'
           }`}>
             {status.payroll_ready ? '💷 Payroll Ready' : '💷 Not Payroll Ready'}
           </span>
@@ -103,7 +103,7 @@ export default function OnboardingChecklist({ staffProfileId, staff }: Props) {
 
       {/* ── Progress bar ──────────────────────────────────────────────────── */}
       <div>
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
+        <div className="flex justify-between text-xs text-on-surface-variant mb-1">
           <span>Onboarding progress</span>
           <span className="font-medium tabular-nums">{status.progress}%</span>
         </div>
@@ -190,7 +190,7 @@ export default function OnboardingChecklist({ staffProfileId, staff }: Props) {
       {/* ── Next Actions ──────────────────────────────────────────────────── */}
       {actions.length > 0 && (
         <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-2">
             Next Actions
           </p>
           <ol className="space-y-2">

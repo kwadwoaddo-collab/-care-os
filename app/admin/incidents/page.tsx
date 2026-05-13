@@ -40,7 +40,7 @@ const STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700    ring-red-600/20',
   investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
   resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
+  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
 }
 
 function Badge({ value, map }: { value: string; map: Record<string, string> }) {
@@ -138,28 +138,28 @@ export default async function IncidentsPage({
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Incidents</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{meta.total} incident{meta.total !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-semibold text-primary">Incidents</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">{meta.total} incident{meta.total !== 1 ? 's' : ''}</p>
         </div>
         <CreateIncidentButton />
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Open</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-red-700' : 'text-gray-900'}`}>{openCount}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Open</p>
+          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-red-700' : 'text-primary'}`}>{openCount}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">High / Critical</p>
-          <p className={`text-2xl font-semibold tabular-nums ${highCritical > 0 ? 'text-orange-700' : 'text-gray-900'}`}>{highCritical}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">High / Critical</p>
+          <p className={`text-2xl font-semibold tabular-nums ${highCritical > 0 ? 'text-orange-700' : 'text-primary'}`}>{highCritical}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Investigating</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Investigating</p>
           <p className="text-2xl font-semibold tabular-nums text-blue-700">{investigating}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Resolved this month</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Resolved this month</p>
           <p className="text-2xl font-semibold tabular-nums text-green-700">{resolvedThisMonth}</p>
         </div>
       </div>
@@ -193,16 +193,16 @@ export default async function IncidentsPage({
       ]} />
 
       {incidents.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
           {hasFilters ? (
             <>
-              <p className="text-sm font-medium text-gray-900">No incidents match your filters</p>
+              <p className="text-sm font-medium text-primary">No incidents match your filters</p>
               <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
               <a href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
             </>
           ) : (
             <>
-              <p className="text-sm font-medium text-gray-900">No incidents recorded yet</p>
+              <p className="text-sm font-medium text-primary">No incidents recorded yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
                 Incidents are created automatically when a carer flags an issue on a visit note, or log one manually.
               </p>
@@ -218,7 +218,7 @@ export default async function IncidentsPage({
               <Link
                 key={inc.id}
                 href={`/admin/incidents/${inc.id}`}
-                className={`flex gap-0 bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)] overflow-hidden active:scale-[0.99] transition-all duration-150 border-l-4 ${MOBILE_SEVERITY_BORDER[inc.severity] ?? 'border-l-gray-200'}`}
+                className={`flex gap-0 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] shadow-[0_1px_4px_rgba(0,0,0,0.05)] overflow-hidden active:scale-[0.99] transition-all duration-150 border-l-4 ${MOBILE_SEVERITY_BORDER[inc.severity] ?? 'border-l-gray-200'}`}
               >
                 <div className="flex-1 px-4 py-3.5 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -229,7 +229,7 @@ export default async function IncidentsPage({
                       <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Escalation</span>
                     )}
                   </div>
-                  <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+                  <p className="text-sm font-medium text-primary line-clamp-2 leading-snug">
                     {inc.description.length > 90 ? `${inc.description.slice(0, 90)}…` : inc.description}
                   </p>
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
@@ -250,19 +250,19 @@ export default async function IncidentsPage({
 
           {/* ── Desktop table (hidden on mobile) ────────────────────── */}
           <div className="hidden lg:block">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escalation</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Description</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Severity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Escalation</th>
                       <th className="px-4 py-3"></th>
                     </tr>
                   </thead>

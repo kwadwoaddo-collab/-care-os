@@ -62,10 +62,10 @@ export default function ResendInviteButton({ applicantId }: { applicantId: strin
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Resend Invite</h2>
+            <h2 className="text-base font-semibold text-primary mb-4">Resend Invite</h2>
 
             {loading && (
-              <p className="text-sm text-gray-500">Sending invite…</p>
+              <p className="text-sm text-on-surface-variant">Sending invite…</p>
             )}
 
             {!loading && error && (
@@ -89,7 +89,7 @@ export default function ResendInviteButton({ applicantId }: { applicantId: strin
 
                 <dl className="space-y-2 text-sm">
                   <div>
-                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Expires</dt>
+                    <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">Expires</dt>
                     <dd className="mt-0.5 text-gray-800">
                       {new Date(result.expires_at).toLocaleDateString('en-GB', {
                         day: '2-digit',
@@ -101,7 +101,7 @@ export default function ResendInviteButton({ applicantId }: { applicantId: strin
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Magic Link</dt>
+                    <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">Magic Link</dt>
                     <dd className="mt-0.5 break-all font-mono text-xs text-gray-700 bg-gray-50 rounded p-2">
                       {result.magic_link}
                     </dd>

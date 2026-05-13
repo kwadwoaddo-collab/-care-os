@@ -164,11 +164,11 @@ export default function CreateIncidentForm({
       <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px]" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl border border-gray-200 shadow-xl w-full max-w-xl max-h-[80vh] overflow-y-auto">
+      <div className="relative bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] shadow-xl w-full max-w-xl max-h-[80vh] overflow-y-auto">
 
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-xl z-10">
-          <h2 className="text-base font-semibold text-gray-900">Create Incident</h2>
+          <h2 className="text-base font-semibold text-primary">Create Incident</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"

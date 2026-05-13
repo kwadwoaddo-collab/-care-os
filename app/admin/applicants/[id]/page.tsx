@@ -73,7 +73,7 @@ function Field({ label, value }: { label: string; value: unknown }) {
   if (value === null || value === undefined || value === '') {
     return (
       <div>
-        <dt className="text-xs font-medium text-gray-500">{label}</dt>
+        <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
         <dd className="mt-0.5 text-sm text-gray-400">—</dd>
       </div>
     )
@@ -81,15 +81,15 @@ function Field({ label, value }: { label: string; value: unknown }) {
   if (typeof value === 'boolean') {
     return (
       <div>
-        <dt className="text-xs font-medium text-gray-500">{label}</dt>
-        <dd className="mt-0.5 text-sm text-gray-900">{value ? 'Yes' : 'No'}</dd>
+        <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
+        <dd className="mt-0.5 text-sm text-primary">{value ? 'Yes' : 'No'}</dd>
       </div>
     )
   }
   if (typeof value === 'object') {
     return (
       <div className="col-span-full">
-        <dt className="text-xs font-medium text-gray-500 mb-1">{label}</dt>
+        <dt className="text-xs font-medium text-on-surface-variant mb-1">{label}</dt>
         <dd>
           <pre className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-700 overflow-auto whitespace-pre-wrap">
             {JSON.stringify(value, null, 2)}
@@ -100,15 +100,15 @@ function Field({ label, value }: { label: string; value: unknown }) {
   }
   return (
     <div>
-      <dt className="text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-900">{String(value)}</dd>
+      <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
+      <dd className="mt-0.5 text-sm text-primary">{String(value)}</dd>
     </div>
   )
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
         <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
       </div>
@@ -152,7 +152,7 @@ function EmploymentHistory({ entries }: { entries: unknown }) {
       {(entries as EmploymentEntry[]).map((entry, i) => (
         <div key={i} className="border border-gray-200 rounded p-3 text-sm">
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-medium text-gray-900">{entry.employer ?? '—'}</span>
+            <span className="font-medium text-primary">{entry.employer ?? '—'}</span>
             {entry.type && (
               <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">{entry.type}</span>
             )}
@@ -161,10 +161,10 @@ function EmploymentHistory({ entries }: { entries: unknown }) {
             )}
           </div>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-            {entry.jobTitle && <><dt className="text-gray-500">Job Title</dt><dd className="text-gray-900">{entry.jobTitle}</dd></>}
-            {entry.startDate && <><dt className="text-gray-500">Start</dt><dd className="text-gray-900">{entry.startDate}</dd></>}
-            {(entry.endDate || entry.current) && <><dt className="text-gray-500">End</dt><dd className="text-gray-900">{entry.current ? 'Present' : entry.endDate}</dd></>}
-            {entry.reasonForLeaving && <><dt className="text-gray-500">Reason for leaving</dt><dd className="text-gray-900">{entry.reasonForLeaving}</dd></>}
+            {entry.jobTitle && <><dt className="text-on-surface-variant">Job Title</dt><dd className="text-primary">{entry.jobTitle}</dd></>}
+            {entry.startDate && <><dt className="text-on-surface-variant">Start</dt><dd className="text-primary">{entry.startDate}</dd></>}
+            {(entry.endDate || entry.current) && <><dt className="text-on-surface-variant">End</dt><dd className="text-primary">{entry.current ? 'Present' : entry.endDate}</dd></>}
+            {entry.reasonForLeaving && <><dt className="text-on-surface-variant">Reason for leaving</dt><dd className="text-primary">{entry.reasonForLeaving}</dd></>}
           </dl>
           {entry.description && (
             <p className="mt-2 text-xs text-gray-600">{entry.description}</p>
@@ -195,14 +195,14 @@ function References({ entries }: { entries: unknown }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {(entries as Reference[]).map((ref, i) => (
         <div key={i} className="border border-gray-200 rounded p-3 text-sm space-y-1">
-          <p className="font-medium text-gray-900">{ref.name ?? '—'}</p>
-          {ref.jobTitle && <p className="text-xs text-gray-500">{ref.jobTitle}</p>}
+          <p className="font-medium text-primary">{ref.name ?? '—'}</p>
+          {ref.jobTitle && <p className="text-xs text-on-surface-variant">{ref.jobTitle}</p>}
           {ref.organisation && <p className="text-xs text-gray-600">{ref.organisation}</p>}
-          {ref.relationship && <p className="text-xs text-gray-500">Relationship: {ref.relationship}</p>}
+          {ref.relationship && <p className="text-xs text-on-surface-variant">Relationship: {ref.relationship}</p>}
           {ref.email && <p className="text-xs text-gray-600">{ref.email}</p>}
           {ref.phone && <p className="text-xs text-gray-600">{ref.phone}</p>}
           {ref.canContact !== undefined && (
-            <p className="text-xs text-gray-500">Can contact: {ref.canContact ? 'Yes' : 'No'}</p>
+            <p className="text-xs text-on-surface-variant">Can contact: {ref.canContact ? 'Yes' : 'No'}</p>
           )}
         </div>
       ))}
@@ -239,8 +239,8 @@ function TrainingQualifications({ data }: { data: unknown }) {
     <div className="space-y-1">
       {allItems.map((item, i) => (
         <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
-          <span className="text-gray-900">{item.name ?? '—'}</span>
-          <span className="text-xs text-gray-500">{item.completionDate ?? (item.completed ? 'Completed' : 'Not completed')}</span>
+          <span className="text-primary">{item.name ?? '—'}</span>
+          <span className="text-xs text-on-surface-variant">{item.completionDate ?? (item.completed ? 'Completed' : 'Not completed')}</span>
         </div>
       ))}
     </div>
@@ -265,26 +265,26 @@ function CriminalRecordSection({ data }: { data: unknown }) {
   return (
     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
       <div>
-        <dt className="text-xs font-medium text-gray-500">Has criminal record</dt>
-        <dd className="mt-0.5 text-gray-900">{cr.hasCriminalRecord === true ? 'Yes' : cr.hasCriminalRecord === false ? 'No' : '—'}</dd>
+        <dt className="text-xs font-medium text-on-surface-variant">Has criminal record</dt>
+        <dd className="mt-0.5 text-primary">{cr.hasCriminalRecord === true ? 'Yes' : cr.hasCriminalRecord === false ? 'No' : '—'}</dd>
       </div>
       {cr.hasCriminalRecord && cr.details && (
         <div className="col-span-full">
-          <dt className="text-xs font-medium text-gray-500">Details</dt>
-          <dd className="mt-0.5 text-gray-900">{cr.details}</dd>
+          <dt className="text-xs font-medium text-on-surface-variant">Details</dt>
+          <dd className="mt-0.5 text-primary">{cr.details}</dd>
         </div>
       )}
       <div>
-        <dt className="text-xs font-medium text-gray-500">On DBS barred list</dt>
-        <dd className="mt-0.5 text-gray-900">{cr.hasDbsBarred === true ? 'Yes' : cr.hasDbsBarred === false ? 'No' : '—'}</dd>
+        <dt className="text-xs font-medium text-on-surface-variant">On DBS barred list</dt>
+        <dd className="mt-0.5 text-primary">{cr.hasDbsBarred === true ? 'Yes' : cr.hasDbsBarred === false ? 'No' : '—'}</dd>
       </div>
       <div>
-        <dt className="text-xs font-medium text-gray-500">Consents to DBS check</dt>
-        <dd className="mt-0.5 text-gray-900">{cr.consentToDbsCheck === true ? 'Yes' : cr.consentToDbsCheck === false ? 'No' : '—'}</dd>
+        <dt className="text-xs font-medium text-on-surface-variant">Consents to DBS check</dt>
+        <dd className="mt-0.5 text-primary">{cr.consentToDbsCheck === true ? 'Yes' : cr.consentToDbsCheck === false ? 'No' : '—'}</dd>
       </div>
       <div>
-        <dt className="text-xs font-medium text-gray-500">Declaration accepted</dt>
-        <dd className="mt-0.5 text-gray-900">{cr.declarationAccepted === true ? 'Yes' : cr.declarationAccepted === false ? 'No' : '—'}</dd>
+        <dt className="text-xs font-medium text-on-surface-variant">Declaration accepted</dt>
+        <dd className="mt-0.5 text-primary">{cr.declarationAccepted === true ? 'Yes' : cr.declarationAccepted === false ? 'No' : '—'}</dd>
       </div>
     </dl>
   )
@@ -297,7 +297,7 @@ function JsonBlock({ data }: { data: unknown }) {
     return <p className="text-sm text-gray-400">—</p>
   }
   if (typeof data !== 'object') {
-    return <p className="text-sm text-gray-900">{String(data)}</p>
+    return <p className="text-sm text-primary">{String(data)}</p>
   }
   return (
     <pre className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-700 overflow-auto whitespace-pre-wrap">
@@ -337,18 +337,18 @@ export default async function ApplicantDetailPage({
       {/* Back link */}
       <Link
         href="/admin/applicants"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary mb-4 transition-colors"
       >
         ← Back to applicants
       </Link>
 
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-xl font-semibold text-primary">
           {applicant.first_name ?? ''} {applicant.last_name ?? ''}
           {!applicant.first_name && !applicant.last_name && applicant.email}
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">{applicant.email}</p>
+        <p className="text-sm text-on-surface-variant mt-0.5">{applicant.email}</p>
       </div>
 
       {/* Action bar — status display + pipeline buttons */}
@@ -378,7 +378,7 @@ export default async function ApplicantDetailPage({
         </Section>
 
         {/* ── Employment / Education History ────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Employment / Education History</h2>
           </div>
@@ -388,7 +388,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── References ───────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">References</h2>
           </div>
@@ -407,7 +407,7 @@ export default async function ApplicantDetailPage({
         </Section>
 
         {/* ── Criminal Record & DBS ─────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Criminal Record & DBS Declaration</h2>
           </div>
@@ -425,7 +425,7 @@ export default async function ApplicantDetailPage({
         </Section>
 
         {/* ── Training & Qualifications ─────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Training & Qualifications</h2>
           </div>
@@ -435,7 +435,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Professional Qualifications ───────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Professional Qualifications</h2>
           </div>
@@ -445,7 +445,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Professional Registration ─────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Professional Registration</h2>
           </div>
@@ -455,7 +455,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Work Availability ─────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Work Availability</h2>
           </div>
@@ -465,7 +465,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Medical History ───────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Medical History</h2>
           </div>
@@ -483,7 +483,7 @@ export default async function ApplicantDetailPage({
         </Section>
 
         {/* ── Application Source ────────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Application Source</h2>
           </div>
@@ -493,7 +493,7 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Declarations & Consent ────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Declaration & Consent</h2>
           </div>

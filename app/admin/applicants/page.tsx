@@ -61,10 +61,10 @@ function StatusBadge({ status }: { status: string }) {
 function FormStatusBadge({ status }: { status: string | null }) {
   if (!status) return <span className="text-gray-400 text-xs">—</span>
   const map: Record<string, string> = {
-    draft:     'bg-gray-50 text-gray-500 ring-gray-500/20',
+    draft:     'bg-gray-50 text-on-surface-variant ring-gray-500/20',
     submitted: 'bg-green-50 text-green-700 ring-green-600/20',
   }
-  const cls = map[status] ?? 'bg-gray-50 text-gray-500 ring-gray-500/20'
+  const cls = map[status] ?? 'bg-gray-50 text-on-surface-variant ring-gray-500/20'
   return (
     <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}`}>
       {status}
@@ -110,7 +110,7 @@ export default async function ApplicantsPage({
     rejected:            'bg-red-50 text-red-700',
     interview_scheduled: 'bg-purple-50 text-purple-700',
     hired:               'bg-green-50 text-green-700',
-    withdrawn:           'bg-gray-100 text-gray-500',
+    withdrawn:           'bg-gray-100 text-on-surface-variant',
   }
 
   return (
@@ -125,8 +125,8 @@ export default async function ApplicantsPage({
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Applicants</h1>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <h1 className="text-xl font-semibold text-primary">Applicants</h1>
+          <p className="mt-0.5 text-sm text-on-surface-variant">
             {meta.total} applicant{meta.total !== 1 ? 's' : ''}
           </p>
         </div>
@@ -151,7 +151,7 @@ export default async function ApplicantsPage({
       ]} />
 
       {applicants.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           {hasFilters ? 'No results found. Try changing your filters.' : 'No applicants yet.'}
         </div>
       ) : (
@@ -163,7 +163,7 @@ export default async function ApplicantsPage({
               <Link
                 key={a.id}
                 href={`/admin/applicants/${a.id}`}
-                className="flex items-center gap-3.5 bg-white rounded-xl border border-gray-100 px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-[0.99] transition-all duration-150"
+                className="flex items-center gap-3.5 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-[0.99] transition-all duration-150"
               >
                 {/* Initials avatar */}
                 <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-700 flex-shrink-0 flex items-center justify-center text-sm font-semibold">
@@ -171,7 +171,7 @@ export default async function ApplicantsPage({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-primary truncate">
                     {[a.first_name, a.last_name].filter(Boolean).join(' ') || <span className="text-gray-400">No name</span>}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5 truncate">
@@ -180,7 +180,7 @@ export default async function ApplicantsPage({
                 </div>
 
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_MAP[a.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_MAP[a.status] ?? 'bg-gray-100 text-on-surface-variant'}`}>
                     {a.status.replace(/_/g, ' ')}
                   </span>
                   {a.form_status && (
@@ -201,23 +201,23 @@ export default async function ApplicantsPage({
 
           {/* ── Desktop table (hidden on mobile) ────────────────────── */}
           <div className="hidden lg:block">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job Role</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Form</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Job Role</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Form</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Applied</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {applicants.map((a) => (
                     <tr key={a.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                      <td className="px-4 py-3 text-sm font-medium text-primary whitespace-nowrap">
                         <Link href={`/admin/applicants/${a.id}`} className="block w-full">
                           {a.first_name ?? ''} {a.last_name ?? ''}
                           {!a.first_name && !a.last_name && <span className="text-gray-400">—</span>}
@@ -241,7 +241,7 @@ export default async function ApplicantsPage({
                           <FormStatusBadge status={a.form_status} />
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
+                      <td className="px-4 py-3 text-sm text-on-surface-variant whitespace-nowrap">
                         <Link href={`/admin/applicants/${a.id}`} className="block w-full">{formatDate(a.created_at)}</Link>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">

@@ -26,7 +26,7 @@ function formatDate(iso: string | null | undefined): string {
 const STATUS_CLS: Record<string, string> = {
   approved: 'bg-green-50 text-green-700 ring-green-600/20',
   rejected: 'bg-red-50 text-red-700 ring-red-600/20',
-  pending:  'bg-gray-50 text-gray-500 ring-gray-400/20',
+  pending:  'bg-gray-50 text-on-surface-variant ring-gray-400/20',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -111,7 +111,7 @@ export default function DocumentApprovalButton({
           </span>
         )}
         {notes && (
-          <span className="text-xs text-gray-500 italic">"{notes}"</span>
+          <span className="text-xs text-on-surface-variant italic">"{notes}"</span>
         )}
       </div>
 

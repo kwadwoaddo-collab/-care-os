@@ -108,8 +108,8 @@ export default async function OpenShiftsPage() {
             <span>/</span>
             <span className="text-gray-700">Open Queue</span>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900">Open Shifts</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-primary">Open Shifts</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             {shifts.length} unassigned shift{shifts.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -117,25 +117,25 @@ export default async function OpenShiftsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Open Today</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openToday > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Open Today</p>
+          <p className={`text-2xl font-semibold tabular-nums ${openToday > 0 ? 'text-red-600' : 'text-primary'}`}>
             {openToday}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Open This Week</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{openThisWeek}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Open This Week</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{openThisWeek}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Overnight</p>
-          <p className={`text-2xl font-semibold tabular-nums ${overnight > 0 ? 'text-indigo-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Overnight</p>
+          <p className={`text-2xl font-semibold tabular-nums ${overnight > 0 ? 'text-indigo-600' : 'text-primary'}`}>
             {overnight}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Urgent (&lt;24h)</p>
-          <p className={`text-2xl font-semibold tabular-nums ${urgent > 0 ? 'text-orange-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Urgent (&lt;24h)</p>
+          <p className={`text-2xl font-semibold tabular-nums ${urgent > 0 ? 'text-orange-600' : 'text-primary'}`}>
             {urgent}
           </p>
         </div>

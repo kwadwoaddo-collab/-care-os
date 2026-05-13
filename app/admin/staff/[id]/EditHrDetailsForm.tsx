@@ -65,7 +65,7 @@ function TextInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900 focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600"
+        className="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600"
       />
     </div>
   )
@@ -84,7 +84,7 @@ function SelectInput({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900 focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600"
+        className="block w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:border-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-600"
       >
         <option value="">— select —</option>
         {options.map((o) => (
@@ -107,7 +107,7 @@ function CheckboxInput({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-600"
+        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-gray-600"
       />
       <label htmlFor={id} className="text-sm text-gray-700">{label}</label>
     </div>
@@ -232,7 +232,7 @@ export default function EditHrDetailsForm({ staff }: { staff: HrProfile }) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Edit HR &amp; Payroll Details</h2>
         <button
@@ -340,7 +340,7 @@ export default function EditHrDetailsForm({ staff }: { staff: HrProfile }) {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-on-surface-variant hover:text-gray-700"
           >
             Cancel
           </button>

@@ -52,7 +52,7 @@ export default function OnboardingTimeline({ staffProfileId }: { staffProfileId:
   const visible = expanded ? events : events.slice(0, 5)
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Onboarding Activity</h2>
         {events.length > 0 && (

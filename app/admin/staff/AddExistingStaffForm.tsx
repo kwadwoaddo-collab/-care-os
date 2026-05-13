@@ -106,8 +106,8 @@ export default function AddExistingStaffForm() {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Add Existing Staff</h2>
-            <p className="text-xs text-gray-500 mb-4">
+            <h2 className="text-base font-semibold text-primary mb-1">Add Existing Staff</h2>
+            <p className="text-xs text-on-surface-variant mb-4">
               Creates a staff profile directly — no application or invite required.
             </p>
 
@@ -119,11 +119,11 @@ export default function AddExistingStaffForm() {
 
                 <dl className="space-y-2 text-sm">
                   <div>
-                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Staff ID</dt>
+                    <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">Staff ID</dt>
                     <dd className="mt-0.5 font-mono text-gray-800 break-all">{result.id}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</dt>
+                    <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wide">Status</dt>
                     <dd className="mt-0.5 text-gray-800">{result.status.replace(/_/g, ' ')}</dd>
                   </div>
                 </dl>

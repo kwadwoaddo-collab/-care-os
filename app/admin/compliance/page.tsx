@@ -24,8 +24,8 @@ export default function CompliancePage() {
       {/* Desktop header */}
       <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Compliance</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-primary">Compliance</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             Monitor mandatory training, document expiry, and activation blockers across your team.
           </p>
         </div>

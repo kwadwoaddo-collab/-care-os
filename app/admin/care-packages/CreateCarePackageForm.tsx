@@ -149,7 +149,7 @@ export default function CreateCarePackageForm({ clients }: { clients: ClientOpti
     })
   }
 
-  const inputCls = 'w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500'
+  const inputCls = 'w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500'
 
   return (
     <>
@@ -180,7 +180,7 @@ export default function CreateCarePackageForm({ clients }: { clients: ClientOpti
 
               {/* Package details */}
               <fieldset className="space-y-3">
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Package details</legend>
+                <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Package details</legend>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Client *</label>
@@ -240,7 +240,7 @@ export default function CreateCarePackageForm({ clients }: { clients: ClientOpti
               {/* Visit builder */}
               <fieldset className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
                     Recurring visits{visits.length > 0 && ` (${visits.length})`}
                   </legend>
                   <button
@@ -363,7 +363,7 @@ export default function CreateCarePackageForm({ clients }: { clients: ClientOpti
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-primary transition-colors"
                 >
                   Cancel
                 </button>

@@ -110,7 +110,7 @@ export default function ComplianceTimeline({ staffProfileId }: Props) {
                 </time>
               </div>
               {event.detail && (
-                <p className="mt-0.5 text-xs text-gray-500 ml-6 truncate">{event.detail}</p>
+                <p className="mt-0.5 text-xs text-on-surface-variant ml-6 truncate">{event.detail}</p>
               )}
             </div>
           </li>

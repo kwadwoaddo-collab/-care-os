@@ -45,7 +45,7 @@ const STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700    ring-red-600/20',
   investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
   resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
+  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
 }
 
 function Badge({ value, map }: { value: string; map: Record<string, string> }) {
@@ -77,8 +77,8 @@ function formatDateTime(iso: string | null): string {
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex gap-4 py-2 border-b border-gray-100 last:border-0">
-      <dt className="w-44 shrink-0 text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="text-sm text-gray-900">{value ?? <span className="text-gray-400">—</span>}</dd>
+      <dt className="w-44 shrink-0 text-xs font-medium text-on-surface-variant">{label}</dt>
+      <dd className="text-sm text-primary">{value ?? <span className="text-gray-400">—</span>}</dd>
     </div>
   )
 }
@@ -116,19 +116,19 @@ export default async function IncidentDetailPage({
       <div>
         <Link
           href="/admin/incidents"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary transition-colors"
         >
           ← Back to incidents
         </Link>
 
         <div className="flex items-center gap-3 mt-2">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-primary">
             Incident · {incident.incident_type.replace(/_/g, ' ')}
           </h1>
           <Badge value={incident.severity} map={SEVERITY_CLS} />
           <Badge value={incident.status}   map={STATUS_CLS} />
         </div>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <p className="text-sm text-on-surface-variant mt-0.5">
           Created {formatDateTime(incident.created_at)}
           {incident.occurred_at && ` · Occurred ${formatDateTime(incident.occurred_at)}`}
         </p>
@@ -138,7 +138,7 @@ export default async function IncidentDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Incident summary */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Summary</h2>
           <dl>
             <DetailRow label="Type"       value={incident.incident_type.replace(/_/g, ' ')} />
@@ -153,7 +153,7 @@ export default async function IncidentDetailPage({
         </section>
 
         {/* Linked entities */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Linked Records</h2>
           <dl>
             <DetailRow
@@ -203,7 +203,7 @@ export default async function IncidentDetailPage({
       </div>
 
       {/* Description */}
-      <section className="bg-white rounded-lg border border-gray-200 p-5">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
         <h2 className="text-sm font-semibold text-gray-800 mb-2">Description</h2>
         <p className="text-sm text-gray-700 whitespace-pre-wrap">
           {incident.description || <span className="text-gray-400">No description provided.</span>}
@@ -214,13 +214,13 @@ export default async function IncidentDetailPage({
       {(incident.immediate_action_taken || incident.escalated_to || incident.follow_up_notes || incident.resolution_notes) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {incident.immediate_action_taken && (
-            <section className="bg-white rounded-lg border border-gray-200 p-5">
+            <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
               <h2 className="text-sm font-semibold text-gray-800 mb-2">Immediate Action Taken</h2>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{incident.immediate_action_taken}</p>
             </section>
           )}
           {incident.escalation_required && (
-            <section className="bg-white rounded-lg border border-gray-200 p-5">
+            <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
               <h2 className="text-sm font-semibold text-gray-800 mb-2">Escalation</h2>
               <p className="text-sm text-gray-700">
                 <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20 mr-2">
@@ -231,13 +231,13 @@ export default async function IncidentDetailPage({
             </section>
           )}
           {incident.follow_up_notes && (
-            <section className="bg-white rounded-lg border border-gray-200 p-5">
+            <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
               <h2 className="text-sm font-semibold text-gray-800 mb-2">Follow-up Notes</h2>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{incident.follow_up_notes}</p>
             </section>
           )}
           {incident.resolution_notes && (
-            <section className="bg-white rounded-lg border border-gray-200 p-5">
+            <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
               <h2 className="text-sm font-semibold text-gray-800 mb-2">Resolution Notes</h2>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{incident.resolution_notes}</p>
             </section>

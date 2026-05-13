@@ -31,7 +31,7 @@ const STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700',
   investigating: 'bg-blue-50    text-blue-700',
   resolved:      'bg-green-50   text-green-700',
-  closed:        'bg-gray-50    text-gray-500',
+  closed:        'bg-gray-50    text-on-surface-variant',
 }
 
 const INPUT = 'w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
@@ -82,7 +82,7 @@ export default function IncidentEditForm({ incidentId, initial }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5 space-y-5">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5 space-y-5">
       <h2 className="text-sm font-semibold text-gray-800">Update Incident</h2>
 
       {error && (

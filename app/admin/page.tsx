@@ -69,7 +69,7 @@ function staffName(p: { first_name: string | null; last_name: string | null } | 
 const SHIFT_STATUS_CLS: Record<string, string> = {
   scheduled: 'bg-blue-50   text-blue-700',
   confirmed: 'bg-green-50  text-green-700',
-  completed: 'bg-gray-50   text-gray-500',
+  completed: 'bg-gray-50   text-on-surface-variant',
   cancelled: 'bg-red-50    text-red-600',
   no_show:   'bg-orange-50 text-orange-700',
 }
@@ -80,11 +80,7 @@ const NOTE_STATUS_CLS: Record<string, string> = {
   locked:    'text-indigo-600',
 }
 
-const SEVERITY_CLS: Record<string, string> = {
-  expired: 'bg-red-50    text-red-700    border-red-200',
-  warning: 'bg-orange-50 text-orange-700 border-orange-200',
-  notice:  'bg-yellow-50 text-yellow-700 border-yellow-200',
-}
+
 
 const AUDIT_ACTION_CLS: Record<string, string> = {
   staff:        'bg-indigo-50 text-indigo-700',
@@ -107,7 +103,7 @@ const INCIDENT_STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700',
   investigating: 'bg-blue-50    text-blue-700',
   resolved:      'bg-green-50   text-green-700',
-  closed:        'bg-gray-50    text-gray-500',
+  closed:        'bg-gray-50    text-on-surface-variant',
 }
 
 function auditActionCls(action: string) {
@@ -129,7 +125,7 @@ function SectionBox({ title, children, action }: {
   action?:  React.ReactNode
 }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
         {action}
@@ -159,10 +155,10 @@ function SummaryCard({ label, count, sub, href, urgent }: {
         'rounded-lg border px-4 py-3 block hover:shadow-sm transition-shadow',
         urgent && count > 0
           ? 'bg-red-50 border-red-200 text-red-900'
-          : 'bg-white border-gray-200 text-gray-900',
+          : 'bg-white border-gray-200 text-primary',
       ].join(' ')}
     >
-      <p className="text-xs font-medium text-gray-500">{label}</p>
+      <p className="text-xs font-medium text-on-surface-variant">{label}</p>
       <p className={`text-2xl font-bold tabular-nums mt-0.5 ${urgent && count > 0 ? 'text-red-700' : ''}`}>
         {count}
       </p>
@@ -355,21 +351,15 @@ export default async function AdminDashboard() {
   const activeStaff   = allStaff.filter((s) => s.status === 'active').length
   const openShifts    = openShiftsCountResult.count ?? 0
   const activeClients = clientCountResult.count     ?? 0
-  const activePkgs    = pkgCountResult.count         ?? 0
   const draftNotes    = draftNotesCountResult.count  ?? 0
   const hrIncomplete      = hrIncompleteResult.count      ?? 0
   const declinedShifts    = declinedShiftsResult.count    ?? 0
   const runningLate       = runningLateResult.count       ?? 0
   const unacknowledged    = unacknowledgedResult.count    ?? 0
   const opsAlerts         = declinedShifts + runningLate
-  const notifFailed       = notifFailedResult.count  ?? 0
-  const notifToday        = notifTodayResult.count   ?? 0
 
   const nonCompliant    = compliance?.summary.nonCompliantCount ?? 0
-  const expiredCount    = compliance?.summary.expiredCount      ?? 0
-  const expiringSoon    = compliance?.summary.expiringWithin30  ?? 0
   const pendingCerts    = pendingCertsResult.count              ?? 0
-  const recentlyApproved = recentlyApprovedResult.count         ?? 0
   const expiring7d      = expiring7dResult.count                ?? 0
 
   // Top 5 compliance alerts (expired first, then expiring soon)
@@ -507,13 +497,13 @@ export default async function AdminDashboard() {
                         {fmtTime(shift.start_time)}–{fmtTime(shift.end_time)}
                       </span>
                       <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                        SHIFT_STATUS_CLS[shift.status] ?? 'bg-gray-50 text-gray-500'
+                        SHIFT_STATUS_CLS[shift.status] ?? 'bg-gray-50 text-on-surface-variant'
                       }`}>
                         {shift.status.replace(/_/g, ' ')}
                       </span>
                     </div>
                     <div className="px-4 py-2.5">
-                      <p className="text-sm font-medium text-gray-900 truncate">{shift.title}</p>
+                      <p className="text-sm font-medium text-primary truncate">{shift.title}</p>
                       <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                         <span className="truncate">
                           {shift.clients
@@ -574,109 +564,51 @@ export default async function AdminDashboard() {
       {/* ── Desktop header (hidden on mobile) ─────────────────────────────── */}
       <div className="hidden lg:flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{fmt(today)} · Care OS Operations</p>
+          <h1 className="text-xl font-semibold text-primary">Dashboard</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">{fmt(today)} · Care OS Operations</p>
         </div>
       </div>
 
-      {/* ── Desktop-only summary grids (hidden on mobile) ─────────────────── */}
-      <div className="hidden lg:block space-y-5">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <SummaryCard
-          label="Non-compliant staff"
-          count={nonCompliant}
-          sub="Missing or expired docs"
-          href="/admin/compliance?filter=non_compliant"
-          urgent
-        />
-        <SummaryCard
-          label="Expired documents"
-          count={expiredCount}
-          sub="Require immediate action"
-          href="/admin/compliance"
-          urgent
-        />
-        <SummaryCard
-          label="Expiring within 30 days"
-          count={expiringSoon}
-          sub="Needs renewal soon"
-          href="/admin/compliance?filter=expiring30d"
-          urgent={expiringSoon > 0}
-        />
-        <SummaryCard
-          label="Active staff"
-          count={activeStaff}
-          sub="Currently employed"
-          href="/admin/staff"
-        />
-      </div>
+      {/* ── Desktop-only Triage Hero (hidden on mobile) ─────────────────── */}
+      <div className="hidden lg:grid grid-cols-3 gap-6 mb-8">
+        {/* Urgent Incidents */}
+        <a href="/admin/incidents" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${incidents.length > 0 ? 'border-error border-l-[3px]' : 'border-outline-variant'}`}>
+          <div className="flex items-center justify-between">
+            <span className={`material-symbols-outlined text-[24px] ${incidents.length > 0 ? 'text-error' : 'text-on-surface-variant'}`}>warning</span>
+            {incidents.length > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-error bg-error-container px-2 py-1 rounded-sm">IMMEDIATE ACTION</span>}
+          </div>
+          <div>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${incidents.length > 0 ? 'text-error' : 'text-on-surface'}`}>{incidents.length}</span>
+            <h3 className="text-xl font-bold text-on-surface mt-2">Urgent Incidents</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Require safety sign-off</p>
+          </div>
+        </a>
 
-      {/* ── Compliance widgets row 2 ──────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <SummaryCard
-          label="Expiring this week"
-          count={expiring7d}
-          sub="Documents expiring ≤7 days"
-          href="/admin/compliance?filter=expiring7d"
-          urgent={expiring7d > 0}
-        />
-        <SummaryCard
-          label="Pending cert reviews"
-          count={pendingCerts}
-          sub="Training certs awaiting approval"
-          href="/admin/staff"
-          urgent={pendingCerts > 0}
-        />
-        <SummaryCard
-          label="Approved this week"
-          count={recentlyApproved}
-          sub="Training certs approved last 7d"
-          href="/admin/compliance"
-        />
-        <SummaryCard
-          label="HR incomplete"
-          count={hrIncomplete}
-          sub="Missing payroll or personal info"
-          href="/admin/onboarding"
-          urgent={hrIncomplete > 0}
-        />
-      </div>
+        {/* Compliance Gaps */}
+        <a href="/admin/compliance" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${nonCompliant > 0 ? 'border-secondary border-l-[3px]' : 'border-outline-variant'}`}>
+          <div className="flex items-center justify-between">
+            <span className={`material-symbols-outlined text-[24px] ${nonCompliant > 0 ? 'text-secondary' : 'text-on-surface-variant'}`}>verified_user</span>
+            {nonCompliant > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-secondary bg-secondary-fixed px-2 py-1 rounded-sm">VERIFICATION PENDING</span>}
+          </div>
+          <div>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${nonCompliant > 0 ? 'text-secondary' : 'text-on-surface'}`}>{nonCompliant}</span>
+            <h3 className="text-xl font-bold text-on-surface mt-2">Compliance Gaps</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Training certs expired today</p>
+          </div>
+        </a>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <SummaryCard
-          label="Open shifts"
-          count={openShifts}
-          sub="Unassigned, need staff"
-          href="/admin/shifts/open"
-          urgent
-        />
-        <SummaryCard
-          label="Active clients"
-          count={activeClients}
-          sub="Receiving care"
-          href="/admin/clients"
-        />
-        <SummaryCard
-          label="Active care packages"
-          count={activePkgs}
-          sub="In service"
-          href="/admin/care-packages"
-        />
-        <SummaryCard
-          label="Draft visit notes"
-          count={draftNotes}
-          sub="Awaiting submission"
-          href="/admin/visit-notes"
-          urgent={draftNotes > 0}
-        />
-        <SummaryCard
-          label="Notifications today"
-          count={notifToday}
-          sub={notifFailed > 0 ? `${notifFailed} failed — check logs` : 'Sent successfully'}
-          href="/admin/notifications"
-          urgent={notifFailed > 0}
-        />
-      </div>
+        {/* Unassigned Shifts */}
+        <a href="/admin/shifts/open" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${openShifts > 0 ? 'border-on-surface border-l-[3px]' : 'border-outline-variant'}`}>
+          <div className="flex items-center justify-between">
+            <span className={`material-symbols-outlined text-[24px] ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface-variant'}`}>calendar_month</span>
+            {openShifts > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-on-surface bg-surface-variant px-2 py-1 rounded-sm">CRITICAL COVERAGE</span>}
+          </div>
+          <div>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface-variant'}`}>{openShifts}</span>
+            <h3 className="text-xl font-bold text-on-surface mt-2">Unassigned Shifts</h3>
+            <p className="text-sm text-on-surface-variant mt-1">Next 48 hours in London zone</p>
+          </div>
+        </a>
       </div>
 
       {/* ── Desktop: onboarding overview ──────────────────────────────────── */}
@@ -790,7 +722,7 @@ export default async function AdminDashboard() {
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm divide-y divide-gray-100">
                   <thead>
-                    <tr className="text-xs text-gray-500 font-medium bg-gray-50">
+                    <tr className="text-xs text-on-surface-variant font-medium bg-gray-50">
                       <th className="px-4 py-2 text-left">Time</th>
                       <th className="px-4 py-2 text-left">Client</th>
                       <th className="px-4 py-2 text-left">Staff</th>
@@ -834,7 +766,7 @@ export default async function AdminDashboard() {
                               <span className="text-gray-700">{staffName(shift.staff_profiles)}</span>
                             )}
                           </td>
-                          <td className="px-4 py-2.5 whitespace-nowrap text-xs text-gray-500 max-w-[120px] truncate">
+                          <td className="px-4 py-2.5 whitespace-nowrap text-xs text-on-surface-variant max-w-[120px] truncate">
                             {shift.care_packages?.title ?? '—'}
                           </td>
                           <td className="px-4 py-2.5 whitespace-nowrap">
@@ -887,7 +819,7 @@ export default async function AdminDashboard() {
                 {incidents.map((inc) => (
                   <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                         <span className={`inline-flex rounded-md px-1.5 py-0.5 text-xs font-medium ${INCIDENT_SEVERITY_CLS[inc.severity] ?? 'bg-gray-50 text-gray-600'}`}>
                           {inc.severity}
                         </span>
@@ -903,7 +835,7 @@ export default async function AdminDashboard() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${INCIDENT_STATUS_CLS[inc.status] ?? 'bg-gray-50 text-gray-500'}`}>
+                      <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-medium ${INCIDENT_STATUS_CLS[inc.status] ?? 'bg-gray-50 text-on-surface-variant'}`}>
                         {inc.status.replace(/_/g, ' ')}
                       </span>
                       <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
@@ -972,7 +904,7 @@ export default async function AdminDashboard() {
                   >
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-gray-800 truncate">{alert.staffName}</p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-on-surface-variant truncate">
                         {alert.documentType.replace(/_/g, ' ')}
                         {alert.expiryDate ? ` · ${fmt(alert.expiryDate)}` : ''}
                       </p>
@@ -1009,7 +941,7 @@ export default async function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="min-w-full text-xs divide-y divide-gray-100">
               <thead className="bg-gray-50">
-                <tr className="text-gray-500 font-medium">
+                <tr className="text-on-surface-variant font-medium">
                   <th className="px-4 py-2 text-left whitespace-nowrap">Time</th>
                   <th className="px-4 py-2 text-left">Event</th>
                   <th className="px-4 py-2 text-left">Entity</th>
@@ -1027,7 +959,7 @@ export default async function AdminDashboard() {
                         {e.action}
                       </span>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-gray-500">
+                    <td className="px-4 py-2 whitespace-nowrap text-on-surface-variant">
                       {e.entity_type ?? '—'}
                     </td>
                     <td className="px-4 py-2 text-gray-400 max-w-[260px] truncate hidden md:table-cell">
@@ -1058,7 +990,7 @@ export default async function AdminDashboard() {
             { label: 'Shift completion rate',  value: `${completionPct}%`,   sub: `${pilotCompleted} of ${pilotTotalAssigned} assigned`,     colour: completionPct   >=  80 ? 'text-green-600' : completionPct   > 50 ? 'text-amber-600' : 'text-red-600' },
           ] as { label: string; value: string; sub: string; colour: string }[]).map(({ label, value, sub, colour }) => (
             <div key={label} className="bg-white px-4 py-4">
-              <p className="text-xs font-medium text-gray-500">{label}</p>
+              <p className="text-xs font-medium text-on-surface-variant">{label}</p>
               <p className={`text-2xl font-bold tabular-nums mt-0.5 ${colour}`}>{value}</p>
               <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
             </div>

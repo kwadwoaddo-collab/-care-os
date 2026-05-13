@@ -146,7 +146,7 @@ function UploadForm({ applicantId, onUploaded, onCancel }: UploadFormProps) {
     }
   }
 
-  const inputCls = 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+  const inputCls = 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-3 space-y-3">
@@ -155,7 +155,7 @@ function UploadForm({ applicantId, onUploaded, onCancel }: UploadFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Document type */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="doc-type">Document Type</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="doc-type">Document Type</label>
           <select
             id="doc-type"
             className={inputCls}
@@ -171,7 +171,7 @@ function UploadForm({ applicantId, onUploaded, onCancel }: UploadFormProps) {
 
         {/* Expiry date */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="doc-expiry">
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="doc-expiry">
             Expiry Date <span className="text-gray-400">(optional)</span>
           </label>
           <input
@@ -185,7 +185,7 @@ function UploadForm({ applicantId, onUploaded, onCancel }: UploadFormProps) {
 
         {/* File picker */}
         <div className="sm:col-span-2">
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="doc-file">
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="doc-file">
             File <span className="text-gray-400">(PDF, JPG, PNG, DOC, DOCX · max 10 MB)</span>
           </label>
           <input
@@ -232,7 +232,7 @@ function DocumentsTable({ documents }: { documents: Document[] }) {
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-100 text-sm">
         <thead>
-          <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <tr className="text-left text-xs font-medium text-on-surface-variant uppercase tracking-wide">
             <th className="pb-2 pr-4">File</th>
             <th className="pb-2 pr-4">Type</th>
             <th className="pb-2 pr-4">Size</th>
@@ -244,16 +244,16 @@ function DocumentsTable({ documents }: { documents: Document[] }) {
         <tbody className="divide-y divide-gray-50">
           {documents.map((doc) => (
             <tr key={doc.id} className="hover:bg-gray-50 transition-colors">
-              <td className="py-2 pr-4 font-medium text-gray-900 max-w-[180px] truncate" title={doc.file_name}>
+              <td className="py-2 pr-4 font-medium text-primary max-w-[180px] truncate" title={doc.file_name}>
                 {doc.file_name}
               </td>
               <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">
                 {DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
               </td>
-              <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">
+              <td className="py-2 pr-4 text-on-surface-variant whitespace-nowrap">
                 {formatBytes(doc.file_size)}
               </td>
-              <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">
+              <td className="py-2 pr-4 text-on-surface-variant whitespace-nowrap">
                 {formatDate(doc.created_at)}
               </td>
               <td className="py-2 pr-4 whitespace-nowrap">
@@ -327,7 +327,7 @@ export default function DocumentsSection({ applicantId, initialDocuments }: Prop
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       {/* Section header */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">

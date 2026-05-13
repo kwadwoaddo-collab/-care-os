@@ -24,31 +24,31 @@ export default async function VisitNotesPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Visit Notes</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-xl font-semibold text-primary">Visit Notes</h1>
+        <p className="text-sm text-on-surface-variant mt-0.5">
           {notes.length} note{notes.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Total</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{notes.length}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Total</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{notes.length}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Draft</p>
-          <p className={`text-2xl font-semibold tabular-nums ${draftCount > 0 ? 'text-amber-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Draft</p>
+          <p className={`text-2xl font-semibold tabular-nums ${draftCount > 0 ? 'text-amber-600' : 'text-primary'}`}>
             {draftCount}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Submitted</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{submittedCount}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Submitted</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{submittedCount}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Incidents</p>
-          <p className={`text-2xl font-semibold tabular-nums ${incidentCount > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Incidents</p>
+          <p className={`text-2xl font-semibold tabular-nums ${incidentCount > 0 ? 'text-red-600' : 'text-primary'}`}>
             {incidentCount}
           </p>
         </div>
@@ -56,7 +56,7 @@ export default async function VisitNotesPage() {
 
       {/* Table */}
       {notes.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           No visit notes yet. Create one from the Shifts page.
         </div>
       ) : (

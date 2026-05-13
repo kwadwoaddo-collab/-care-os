@@ -74,7 +74,7 @@ function ActivationPreflightModal({
           ) : (
             <span className="text-2xl">🚫</span>
           )}
-          <h3 className="text-base font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-primary">
             {allClear
               ? 'All checks passed — ready to activate'
               : check.can_activate
@@ -248,7 +248,7 @@ export default function StaffStatusControl({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
         <h2 className="text-sm font-semibold text-gray-700">Staff Status</h2>
       </div>
@@ -330,7 +330,7 @@ export default function StaffStatusControl({
       {shiftWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-xl bg-white shadow-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900">Future shifts assigned</h3>
+            <h3 className="text-sm font-semibold text-primary">Future shifts assigned</h3>
             <p className="text-sm text-gray-600">
               This staff member has{' '}
               <span className="font-semibold text-orange-700">

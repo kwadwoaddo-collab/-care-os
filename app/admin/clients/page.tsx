@@ -29,12 +29,12 @@ export interface Client {
 const STATUS_CLS: Record<string, string> = {
   active:      'bg-green-50  text-green-700  ring-green-600/20',
   paused:      'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-  ended:       'bg-gray-50   text-gray-500   ring-gray-400/20',
+  ended:       'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   prospective: 'bg-blue-50   text-blue-700   ring-blue-600/20',
 }
 
 const RISK_CLS: Record<string, string> = {
-  low:      'bg-gray-50   text-gray-500   ring-gray-400/20',
+  low:      'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   standard: 'bg-blue-50   text-blue-700   ring-blue-600/20',
   high:     'bg-orange-50 text-orange-700 ring-orange-600/20',
   critical: 'bg-red-50    text-red-700    ring-red-600/20',
@@ -107,29 +107,29 @@ export default async function ClientsPage({
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Clients</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{total} client{total !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-semibold text-primary">Clients</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">{total} client{total !== 1 ? 's' : ''}</p>
         </div>
         <CreateClientForm />
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Total</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{total}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Total</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{total}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Active</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Active</p>
           <p className="text-2xl font-semibold tabular-nums text-green-700">{active}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Paused</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Paused</p>
           <p className="text-2xl font-semibold tabular-nums text-yellow-700">{paused}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">High / critical risk</p>
-          <p className={`text-2xl font-semibold tabular-nums ${highRisk > 0 ? 'text-red-700' : 'text-gray-900'}`}>{highRisk}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">High / critical risk</p>
+          <p className={`text-2xl font-semibold tabular-nums ${highRisk > 0 ? 'text-red-700' : 'text-primary'}`}>{highRisk}</p>
         </div>
       </div>
 
@@ -158,16 +158,16 @@ export default async function ClientsPage({
       ]} />
 
       {clients.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
           {hasFilters ? (
             <>
-              <p className="text-sm font-medium text-gray-900">No clients match your filters</p>
+              <p className="text-sm font-medium text-primary">No clients match your filters</p>
               <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
               <a href="/admin/clients" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
             </>
           ) : (
             <>
-              <p className="text-sm font-medium text-gray-900">No clients yet</p>
+              <p className="text-sm font-medium text-primary">No clients yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
                 Add your first client using the <span className="font-medium text-gray-600">+ New Client</span> button above.
               </p>
@@ -198,7 +198,7 @@ export default async function ClientsPage({
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                    <p className="text-sm font-semibold text-primary truncate">
                       {client.first_name} {client.last_name}
                       {client.preferred_name && (
                         <span className="ml-1.5 text-xs font-normal text-gray-400">({client.preferred_name})</span>
@@ -224,17 +224,17 @@ export default async function ClientsPage({
 
           {/* ── Desktop table (hidden on mobile) ───────────────────────── */}
           <div className="hidden lg:block">
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postcode</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Care start</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Postcode</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Funding</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Risk</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Care start</th>
                       <th className="px-4 py-3"></th>
                     </tr>
                   </thead>
@@ -242,7 +242,7 @@ export default async function ClientsPage({
                     {clients.map((client) => (
                       <tr key={client.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="font-medium text-gray-900">{client.first_name} {client.last_name}</span>
+                          <span className="font-medium text-primary">{client.first_name} {client.last_name}</span>
                           {client.preferred_name && (
                             <span className="ml-1.5 text-xs text-gray-400">({client.preferred_name})</span>
                           )}

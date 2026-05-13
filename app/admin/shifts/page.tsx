@@ -106,7 +106,7 @@ export default async function ShiftsPage({
     offered:     'bg-blue-50   text-blue-700',
     accepted:    'bg-indigo-50 text-indigo-700',
     in_progress: 'bg-green-50  text-green-700',
-    completed:   'bg-gray-100  text-gray-500',
+    completed:   'bg-gray-100  text-on-surface-variant',
     declined:    'bg-red-50    text-red-700',
     cancelled:   'bg-gray-100  text-gray-400',
     missed:      'bg-red-50    text-red-700',
@@ -124,8 +124,8 @@ export default async function ShiftsPage({
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Shifts</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-primary">Shifts</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             {meta.total} shift{meta.total !== 1 ? 's' : ''}
           </p>
         </div>
@@ -134,25 +134,25 @@ export default async function ShiftsPage({
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Total</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{meta.total}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Total</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{meta.total}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Today</p>
-          <p className={`text-2xl font-semibold tabular-nums ${todayCount > 0 ? 'text-blue-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Today</p>
+          <p className={`text-2xl font-semibold tabular-nums ${todayCount > 0 ? 'text-blue-600' : 'text-primary'}`}>
             {todayCount}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">In Progress</p>
-          <p className={`text-2xl font-semibold tabular-nums ${inProgressCount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">In Progress</p>
+          <p className={`text-2xl font-semibold tabular-nums ${inProgressCount > 0 ? 'text-green-600' : 'text-primary'}`}>
             {inProgressCount}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Missing Coverage</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Missing Coverage</p>
+          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-primary'}`}>
             {openCount}
           </p>
         </div>
@@ -205,10 +205,10 @@ export default async function ShiftsPage({
       ]} />
 
       {shifts.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
           {hasFilters ? (
             <>
-              <p className="text-sm font-medium text-gray-900">No shifts match your filters</p>
+              <p className="text-sm font-medium text-primary">No shifts match your filters</p>
               <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
               <a href="/admin/shifts" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
             </>
@@ -219,7 +219,7 @@ export default async function ShiftsPage({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-900">No shifts yet</p>
+              <p className="text-sm font-medium text-primary">No shifts yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
                 Create a shift manually above, or generate shifts automatically from a{' '}
                 <a href="/admin/care-packages" className="text-indigo-600 hover:underline">care package</a>.
@@ -248,7 +248,7 @@ export default async function ShiftsPage({
                       {isDateToday ? 'Today' : formatted}
                     </span>
                     <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                      isDateToday ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-500'
+                      isDateToday ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-on-surface-variant'
                     }`}>
                       {dateShifts.length} shift{dateShifts.length !== 1 ? 's' : ''}
                     </span>
@@ -263,12 +263,12 @@ export default async function ShiftsPage({
                       const clientName = shift.clients
                         ? `${shift.clients.first_name} ${shift.clients.last_name}`
                         : (shift.client_name ?? null)
-                      const statusCls = MOBILE_STATUS[shift.status] ?? 'bg-gray-100 text-gray-500'
+                      const statusCls = MOBILE_STATUS[shift.status] ?? 'bg-gray-100 text-on-surface-variant'
 
                       return (
                         <div
                           key={shift.id}
-                          className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden"
+                          className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden"
                         >
                           {/* Time bar */}
                           <div className={`flex items-center justify-between px-4 py-2.5 border-b border-gray-50 ${
@@ -283,7 +283,7 @@ export default async function ShiftsPage({
                           </div>
                           {/* Body */}
                           <div className="px-4 py-3">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{shift.title}</p>
+                            <p className="text-sm font-semibold text-primary truncate">{shift.title}</p>
                             <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
                               <span className="truncate">
                                 {clientName ? `👤 ${clientName}` : 'No client'}

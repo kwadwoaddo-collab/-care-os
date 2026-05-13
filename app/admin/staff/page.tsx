@@ -37,10 +37,10 @@ async function getAlerts(): Promise<AlertsResponse | null> {
 function SummaryCard({ label, value, accent = 'none' }: {
   label: string; value: string | number; accent?: 'red' | 'amber' | 'green' | 'none'
 }) {
-  const valCls = accent === 'red' ? 'text-red-600' : accent === 'amber' ? 'text-yellow-600' : accent === 'green' ? 'text-green-600' : 'text-gray-900'
+  const valCls = accent === 'red' ? 'text-red-600' : accent === 'amber' ? 'text-yellow-600' : accent === 'green' ? 'text-green-600' : 'text-primary'
   return (
-    <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-      <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+      <p className="text-xs font-medium text-on-surface-variant mb-1">{label}</p>
       <p className={`text-2xl font-semibold tabular-nums ${valCls}`}>{value}</p>
     </div>
   )
@@ -67,7 +67,7 @@ function ComplianceAlertsSection({ alerts }: { alerts: AlertsResponse }) {
   const rows: AlertItem[] = [...alerts.expired, ...alerts.expiringSoon]
   if (rows.length === 0) return null
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
         <h2 className="text-sm font-semibold text-gray-700">
           Compliance Alerts
@@ -79,7 +79,7 @@ function ComplianceAlertsSection({ alerts }: { alerts: AlertsResponse }) {
           <thead className="bg-gray-50">
             <tr>
               {['Staff', 'Issue', 'Document', 'Expiry date', 'Severity'].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{h}</th>
+                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
@@ -136,8 +136,8 @@ export default async function StaffPage({
       {/* Desktop header (hidden on mobile) */}
       <div className="hidden lg:flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Staff</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{meta.total} profile{meta.total !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-semibold text-primary">Staff</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">{meta.total} profile{meta.total !== 1 ? 's' : ''}</p>
         </div>
         <AddExistingStaffForm />
       </div>
@@ -177,7 +177,7 @@ export default async function StaffPage({
       ]} />
 
       {staff.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           {Object.keys(raw).length > 0
             ? 'No results found. Try changing your filters.'
             : 'No staff profiles yet. Convert a hired applicant to create one.'}

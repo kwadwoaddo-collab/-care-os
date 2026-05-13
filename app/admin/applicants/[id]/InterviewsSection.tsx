@@ -120,7 +120,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
     }
   }
 
-  const inputCls = 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+  const inputCls = 'w-full rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-3 space-y-3">
@@ -128,7 +128,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="sched-at">Date &amp; Time</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="sched-at">Date &amp; Time</label>
           <input
             id="sched-at"
             type="datetime-local"
@@ -138,7 +138,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="sched-type">Interview Type</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="sched-type">Interview Type</label>
           <input
             id="sched-type"
             type="text"
@@ -149,7 +149,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="sched-interviewer">Interviewer Name</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="sched-interviewer">Interviewer Name</label>
           <input
             id="sched-interviewer"
             type="text"
@@ -159,7 +159,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor="sched-location">Location</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor="sched-location">Location</label>
           <input
             id="sched-location"
             type="text"
@@ -238,17 +238,17 @@ function InterviewCard({ interview, onUpdated }: InterviewCardProps) {
     }
   }
 
-  const inputCls = 'rounded border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+  const inputCls = 'rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 
   return (
     <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-3">
       {/* Header row */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="space-y-0.5">
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-primary">
             {formatDateTime(interview.scheduled_at)}
           </p>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
             {interview.interview_type && <span>{interview.interview_type}</span>}
             {interview.interviewer_name && <><span>·</span><span>{interview.interviewer_name}</span></>}
             {interview.location && <><span>·</span><span>{interview.location}</span></>}
@@ -261,7 +261,7 @@ function InterviewCard({ interview, onUpdated }: InterviewCardProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Outcome */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor={`outcome-${interview.id}`}>Outcome</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor={`outcome-${interview.id}`}>Outcome</label>
           <select
             id={`outcome-${interview.id}`}
             className={`${inputCls} w-full`}
@@ -276,7 +276,7 @@ function InterviewCard({ interview, onUpdated }: InterviewCardProps) {
 
         {/* Score */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1" htmlFor={`score-${interview.id}`}>Score (1–10)</label>
+          <label className="block text-xs text-on-surface-variant mb-1" htmlFor={`score-${interview.id}`}>Score (1–10)</label>
           <input
             id={`score-${interview.id}`}
             type="number"
@@ -292,7 +292,7 @@ function InterviewCard({ interview, onUpdated }: InterviewCardProps) {
 
       {/* Notes */}
       <div>
-        <label className="block text-xs text-gray-500 mb-1" htmlFor={`notes-${interview.id}`}>Notes</label>
+        <label className="block text-xs text-on-surface-variant mb-1" htmlFor={`notes-${interview.id}`}>Notes</label>
         <textarea
           id={`notes-${interview.id}`}
           rows={3}
@@ -336,7 +336,7 @@ export default function InterviewsSection({ applicantId, initialInterviews }: Pr
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       {/* Section header */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">

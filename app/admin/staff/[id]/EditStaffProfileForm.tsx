@@ -120,7 +120,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
           <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
 
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <h2 className="text-base font-semibold text-gray-900">Edit Staff Profile</h2>
+              <h2 className="text-base font-semibold text-primary">Edit Staff Profile</h2>
               <button
                 onClick={() => setOpen(false)}
                 className="rounded-md p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -142,7 +142,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                     value={form.first_name}
                     onChange={handleChange}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -154,7 +154,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                     value={form.last_name}
                     onChange={handleChange}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -180,7 +180,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                   type="tel"
                   value={form.phone}
                   onChange={handleChange}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -190,7 +190,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                   name="job_role"
                   value={form.job_role}
                   onChange={handleChange}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
@@ -202,7 +202,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                     type="date"
                     value={form.start_date}
                     onChange={handleChange}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -211,7 +211,7 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
                     name="status"
                     value={form.status}
                     onChange={handleChange}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     {STATUSES.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>

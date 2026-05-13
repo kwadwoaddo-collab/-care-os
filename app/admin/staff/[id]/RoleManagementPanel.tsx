@@ -39,7 +39,7 @@ const ROLE_META: Record<string, { label: string; description: string; warning?: 
   unknown: {
     label:       'Unknown',
     description: 'Role not recognised.',
-    colour:      'bg-gray-100 text-gray-500 ring-gray-400/20',
+    colour:      'bg-gray-100 text-on-surface-variant ring-gray-400/20',
   },
 }
 
@@ -155,33 +155,33 @@ export default function RoleManagementPanel({
       {/* ── Status overview ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Worker Portal</dt>
+          <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Worker Portal</dt>
           <dd className="flex items-center gap-2">
             {portalTokenActive ? (
               <>
                 <span className="flex h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-sm font-semibold text-gray-900">Active</span>
+                <span className="text-sm font-semibold text-primary">Active</span>
               </>
             ) : (
               <>
                 <span className="flex h-2 w-2 rounded-full bg-gray-300" />
-                <span className="text-sm font-medium text-gray-500">Not configured</span>
+                <span className="text-sm font-medium text-on-surface-variant">Not configured</span>
               </>
             )}
           </dd>
         </div>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Admin Portal</dt>
+          <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Admin Portal</dt>
           <dd className="flex items-center gap-2">
             {profileId ? (
               <>
                 <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
-                <span className="text-sm font-semibold text-gray-900">Account Created</span>
+                <span className="text-sm font-semibold text-primary">Account Created</span>
               </>
             ) : (
               <>
                 <span className="flex h-2 w-2 rounded-full bg-gray-300" />
-                <span className="text-sm font-medium text-gray-500">No admin access</span>
+                <span className="text-sm font-medium text-on-surface-variant">No admin access</span>
               </>
             )}
           </dd>
@@ -191,7 +191,7 @@ export default function RoleManagementPanel({
       {/* ── Role detail ────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
         <div className="flex-1">
-          <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">System Permissions</h4>
+          <h4 className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-3">System Permissions</h4>
           {profileId ? (
             <div>
               <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${meta.colour}`}>
@@ -200,7 +200,7 @@ export default function RoleManagementPanel({
               <p className="mt-2 text-sm text-gray-600 leading-relaxed">{meta.description}</p>
             </div>
           ) : (
-            <p className="text-sm text-gray-500 italic">
+            <p className="text-sm text-on-surface-variant italic">
               {accessState === 'worker_only' 
                 ? 'Standard worker portal access. Promote to an operational role by creating admin portal access above.'
                 : 'No portal access configured. Use the header actions to invite this staff member.'}
@@ -234,7 +234,7 @@ export default function RoleManagementPanel({
             id="change-role-btn"
             type="button"
             onClick={openModal}
-            className="flex-shrink-0 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className="flex-shrink-0 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
           >
             Change role
           </button>

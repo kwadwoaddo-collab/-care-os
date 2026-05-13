@@ -70,7 +70,7 @@ export default function ComplianceActions() {
 
       {/* Inline result */}
       {result && (
-        <span className="text-xs text-gray-500 ml-1">
+        <span className="text-xs text-on-surface-variant ml-1">
           {result.error
             ? `Error: ${result.error}`
             : result.skipped

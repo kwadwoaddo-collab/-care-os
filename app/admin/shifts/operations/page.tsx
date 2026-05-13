@@ -53,12 +53,12 @@ function Badge({ value, cls }: { value: string; cls: string }) {
 function AckBadge({ status }: { status: string | null }) {
   if (!status) {
     return (
-      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-50 text-gray-500 ring-gray-300">
+      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-50 text-on-surface-variant ring-gray-300">
         Not responded
       </span>
     )
   }
-  const cls = ACK_CLS[status] ?? 'bg-gray-50 text-gray-500 ring-gray-300'
+  const cls = ACK_CLS[status] ?? 'bg-gray-50 text-on-surface-variant ring-gray-300'
   return <Badge value={status} cls={cls} />
 }
 
@@ -87,8 +87,8 @@ function SummaryCard({
             : 'bg-white border-gray-200',
       ].join(' ')}
     >
-      <p className="text-xs font-medium text-gray-500">{label}</p>
-      <p className={`text-2xl font-bold tabular-nums mt-0.5 ${urgent && count > 0 ? 'text-red-700' : 'text-gray-900'}`}>
+      <p className="text-xs font-medium text-on-surface-variant">{label}</p>
+      <p className={`text-2xl font-bold tabular-nums mt-0.5 ${urgent && count > 0 ? 'text-red-700' : 'text-primary'}`}>
         {count}
       </p>
       <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
@@ -198,8 +198,8 @@ export default function ShiftOperationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Shift Operations</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-primary">Shift Operations</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             Monitor worker responses and rota issues across upcoming shifts.
           </p>
         </div>
@@ -268,7 +268,7 @@ export default function ShiftOperationsPage() {
           ))}
         </div>
       ) : shifts.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center text-sm text-gray-400">
           {filter === 'declined'       && 'No declined shifts in the next 14 days. 👍'}
           {filter === 'running_late'   && 'No workers have reported running late.'}
           {filter === 'unacknowledged' && 'All assigned workers have responded to their shifts.'}
@@ -276,20 +276,20 @@ export default function ShiftOperationsPage() {
           {(filter === 'today' || filter === 'upcoming') && 'No shifts found for this period.'}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Response</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Shift status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Time</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Response</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Shift status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Reason</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -364,7 +364,7 @@ export default function ShiftOperationsPage() {
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 max-w-[160px] truncate">
+                      <td className="px-4 py-3 text-on-surface-variant max-w-[160px] truncate">
                         {shift.location ?? '—'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">

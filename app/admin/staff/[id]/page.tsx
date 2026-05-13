@@ -273,7 +273,7 @@ const SHIFT_STATUS_CLS: Record<string, string> = {
 }
 
 const TIMESHEET_STATUS_CLS: Record<string, string> = {
-  pending:    'bg-gray-50   text-gray-500   ring-gray-400/20',
+  pending:    'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   clocked_in: 'bg-blue-50   text-blue-700   ring-blue-600/20',
   completed:  'bg-green-50  text-green-700  ring-green-600/20',
   missed:     'bg-red-50    text-red-700    ring-red-600/20',
@@ -291,7 +291,7 @@ const INCIDENT_STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700    ring-red-600/20',
   investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
   resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
+  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
 }
 
 // Document expiry status badge
@@ -299,7 +299,7 @@ const DOC_STATUS_CLS: Record<string, string> = {
   expired:       'bg-red-50    text-red-700    ring-red-600/20',
   expiring_soon: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
   valid:         'bg-green-50  text-green-700  ring-green-600/20',
-  no_expiry:     'bg-gray-50   text-gray-500   ring-gray-400/20',
+  no_expiry:     'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
 }
 
 function docExpiryStatus(expiryDate: string | null): string {
@@ -339,15 +339,15 @@ function Badge({ status, map }: { status: string; map: Record<string, string> })
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="mt-0.5 text-sm text-gray-900">{value || '—'}</dd>
+      <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
+      <dd className="mt-0.5 text-sm text-primary">{value || '—'}</dd>
     </div>
   )
 }
 
 function SectionBox({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
         <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
       </div>
@@ -369,7 +369,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
     (TRAINING_CATEGORY_LABELS as Record<string, string>)[cat] ?? cat.replace(/_/g, ' ')
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Compliance</h2>
         <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}`}>
@@ -380,7 +380,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
 
         {/* Progress bar */}
         <div>
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
+          <div className="flex justify-between text-xs text-on-surface-variant mb-1">
             <span>Overall compliance</span>
             <span className="font-medium">{summary.percentage}%</span>
           </div>
@@ -401,7 +401,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
 
           {/* Missing documents */}
           <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Missing documents</p>
+            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Missing documents</p>
             {summary.missingDocuments.length === 0 ? (
               <p className="text-xs text-green-600">✓ None</p>
             ) : (
@@ -415,7 +415,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
 
           {/* Expired documents */}
           <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Expired</p>
+            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Expired</p>
             {summary.expiredDocuments.length === 0 ? (
               <p className="text-xs text-green-600">✓ None</p>
             ) : (
@@ -429,7 +429,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
 
           {/* Expiring soon */}
           <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Expiring within 30 days</p>
+            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Expiring within 30 days</p>
             {summary.expiringSoon.length === 0 ? (
               <p className="text-xs text-green-600">✓ None</p>
             ) : (
@@ -460,7 +460,7 @@ function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole
         {/* Satisfied training */}
         {summary.satisfiedTraining.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-gray-500 mb-1.5">Approved training</p>
+            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Approved training</p>
             <ul className="flex flex-wrap gap-1.5">
               {summary.satisfiedTraining.map((t) => (
                 <li key={t} className="text-xs bg-green-50 text-green-700 rounded px-1.5 py-0.5 ring-1 ring-inset ring-green-600/20">
@@ -489,7 +489,7 @@ function expiryTextCls(expiryDate: string | null): string {
   if (isExpired(expiryDate))     return 'text-red-600 font-medium'
   if (isExpiringSoon(expiryDate)) return 'text-yellow-700 font-medium'
   if (expiryDate)                 return 'text-green-700'
-  return 'text-gray-500'
+  return 'text-on-surface-variant'
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -597,7 +597,7 @@ export default async function StaffDetailPage({
       {/* Back link */}
       <Link
         href="/admin/staff"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary mb-4 transition-colors"
       >
         ← Back to staff
       </Link>
@@ -606,8 +606,8 @@ export default async function StaffDetailPage({
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">{displayName}</h1>
-            {sp.email && <p className="text-sm text-gray-500 mt-0.5">{sp.email}</p>}
+            <h1 className="text-xl font-semibold text-primary">{displayName}</h1>
+            {sp.email && <p className="text-sm text-on-surface-variant mt-0.5">{sp.email}</p>}
           </div>
           <Badge status={sp.status} map={STATUS_CLS} />
         </div>
@@ -643,7 +643,7 @@ export default async function StaffDetailPage({
       <div className="space-y-4">
 
         {/* ── Onboarding Checklist ────────────────────────────────────────── */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold text-gray-700">Operational Onboarding Checklist</h2>
@@ -692,7 +692,7 @@ export default async function StaffDetailPage({
                     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
                       obs.payroll_ready
                         ? 'bg-blue-50 text-blue-700 ring-blue-600/20'
-                        : 'bg-gray-50 text-gray-500 ring-gray-400/20'
+                        : 'bg-gray-50 text-on-surface-variant ring-gray-400/20'
                     }`}>
                       {obs.payroll_ready ? '💷 Payroll Ready' : '💷 Not Payroll Ready'}
                     </span>
@@ -795,7 +795,7 @@ export default async function StaffDetailPage({
         </SectionBox>
 
         {/* ── HR & Payroll ────────────────────────────────────────────────── */}
-        <div id="hr-section" className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div id="hr-section" className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-sm font-semibold text-gray-700">HR &amp; Payroll</h2>
@@ -893,7 +893,7 @@ export default async function StaffDetailPage({
               <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Compliance Checks</p>
               <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
                 <div>
-                  <dt className="text-xs font-medium text-gray-500">Right to work</dt>
+                  <dt className="text-xs font-medium text-on-surface-variant">Right to work</dt>
                   <dd className="mt-0.5">
                     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
                       sp.right_to_work_checked
@@ -905,7 +905,7 @@ export default async function StaffDetailPage({
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-medium text-gray-500">DBS check</dt>
+                  <dt className="text-xs font-medium text-on-surface-variant">DBS check</dt>
                   <dd className="mt-0.5">
                     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
                       sp.dbs_checked
@@ -919,7 +919,7 @@ export default async function StaffDetailPage({
                 <Field label="DBS number"      value={sp.dbs_number} />
                 <Field label="DBS expiry"      value={formatDate(sp.dbs_expiry_date ?? null)} />
                 <div>
-                  <dt className="text-xs font-medium text-gray-500">Policy acknowledged</dt>
+                  <dt className="text-xs font-medium text-on-surface-variant">Policy acknowledged</dt>
                   <dd className="mt-0.5">
                     <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${
                       sp.policy_acknowledged
@@ -948,7 +948,7 @@ export default async function StaffDetailPage({
           {applicant ? (
             <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
               <div>
-                <dt className="text-xs font-medium text-gray-500">Name</dt>
+                <dt className="text-xs font-medium text-on-surface-variant">Name</dt>
                 <dd className="mt-0.5 text-sm text-indigo-700">
                   <Link href={`/admin/applicants/${applicant.id}`} className="hover:underline">
                     {[applicant.first_name, applicant.last_name].filter(Boolean).join(' ') || applicant.email}
@@ -962,7 +962,7 @@ export default async function StaffDetailPage({
               <Field label="Applied"     value={formatDate(applicant.created_at)} />
             </dl>
           ) : sp.applicant_id === null ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-on-surface-variant">
               Created directly in workforce management.
             </p>
           ) : (
@@ -983,7 +983,7 @@ export default async function StaffDetailPage({
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                  <tr className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">
                       <th className="text-left pb-2 pr-4">File name</th>
                       <th className="text-left pb-2 pr-4">Type</th>
                       <th className="text-left pb-2 pr-4">Training category</th>
@@ -1006,11 +1006,11 @@ export default async function StaffDetailPage({
                       valid:    'bg-green-50  text-green-700  ring-green-600/20',
                       expired:  'bg-red-50    text-red-700    ring-red-600/20',
                       rejected: 'bg-red-50    text-red-700    ring-red-600/20',
-                      pending:  'bg-gray-50   text-gray-500   ring-gray-400/20',
+                      pending:  'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
                     }
                     return (
                       <tr key={doc.id} className={expiryRowCls(doc.expiry_date)}>
-                        <td className="py-2 pr-4 text-gray-900 truncate max-w-[200px]">{doc.file_name}</td>
+                        <td className="py-2 pr-4 text-primary truncate max-w-[200px]">{doc.file_name}</td>
                         <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">{doc.document_type.replace(/_/g, ' ')}</td>
                         <td className="py-2 pr-4 whitespace-nowrap">
                           {doc.document_type === 'training_certificate' && doc.training_category ? (
@@ -1040,7 +1040,7 @@ export default async function StaffDetailPage({
                             reviewNotes={doc.review_notes}
                           />
                         </td>
-                        <td className="py-2 pr-4 text-gray-500 whitespace-nowrap">{formatDate(doc.created_at)}</td>
+                        <td className="py-2 pr-4 text-on-surface-variant whitespace-nowrap">{formatDate(doc.created_at)}</td>
                         <td className="py-2">
                           {doc.file_path ? (
                             <a
@@ -1076,10 +1076,10 @@ export default async function StaffDetailPage({
                   className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
                 >
                   <div>
-                    <p className="text-sm text-gray-900 font-medium">{ci.item_type.replace(/_/g, ' ')}</p>
-                    {ci.notes && <p className="text-xs text-gray-500 mt-0.5">{ci.notes}</p>}
+                    <p className="text-sm text-primary font-medium">{ci.item_type.replace(/_/g, ' ')}</p>
+                    {ci.notes && <p className="text-xs text-on-surface-variant mt-0.5">{ci.notes}</p>}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-3 text-xs text-on-surface-variant">
                     {ci.expires_at && <span>Exp: {formatDate(ci.expires_at)}</span>}
                     <Badge status={ci.status} map={COMPLIANCE_CLS} />
                   </div>
@@ -1103,7 +1103,7 @@ export default async function StaffDetailPage({
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                  <tr className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">
                     <th className="text-left pb-2 pr-4">Date</th>
                     <th className="text-left pb-2 pr-4">Client</th>
                     <th className="text-left pb-2 pr-4">Status</th>
@@ -1173,7 +1173,7 @@ export default async function StaffDetailPage({
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                  <tr className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">
                     <th className="text-left pb-2 pr-4">Date</th>
                     <th className="text-left pb-2 pr-4">Client</th>
                     <th className="text-left pb-2 pr-4">Type</th>
@@ -1232,7 +1232,7 @@ export default async function StaffDetailPage({
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 text-sm">
                 <thead>
-                  <tr className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                  <tr className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">
                     <th className="text-left pb-2 pr-4">Title</th>
                     <th className="text-left pb-2 pr-4">Date</th>
                     <th className="text-left pb-2 pr-4">Time</th>
@@ -1243,14 +1243,14 @@ export default async function StaffDetailPage({
                 <tbody className="divide-y divide-gray-50">
                   {recentShifts.map((shift) => (
                     <tr key={shift.id}>
-                      <td className="py-2 pr-4 text-gray-900">{shift.title}</td>
+                      <td className="py-2 pr-4 text-primary">{shift.title}</td>
                       <td className="py-2 pr-4 text-gray-600 whitespace-nowrap">
                         {formatDate(shift.shift_date)}
                       </td>
                       <td className="py-2 pr-4 text-gray-600 whitespace-nowrap tabular-nums">
                         {shift.start_time.slice(0, 5)} – {shift.end_time.slice(0, 5)}
                       </td>
-                      <td className="py-2 pr-4 text-gray-500 max-w-[160px] truncate">
+                      <td className="py-2 pr-4 text-on-surface-variant max-w-[160px] truncate">
                         {shift.location ?? '—'}
                       </td>
                       <td className="py-2">

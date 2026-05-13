@@ -119,7 +119,7 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
       <div className="flex flex-wrap items-center gap-3">
         {/* Current status display */}
         <div className="flex items-center gap-1.5 mr-2">
-          <span className="text-xs text-gray-500 font-medium">Status:</span>
+          <span className="text-xs text-on-surface-variant font-medium">Status:</span>
           <StatusBadge status={status} />
         </div>
 

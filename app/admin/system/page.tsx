@@ -80,7 +80,7 @@ function StatusCard({
       <div className="min-w-0 flex-1">
         <p className={`text-sm font-medium ${text}`}>{label}</p>
         {detail && (
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{detail}</p>
+          <p className="text-xs text-on-surface-variant mt-0.5 truncate">{detail}</p>
         )}
       </div>
       <span
@@ -150,8 +150,8 @@ export default async function SystemPage() {
       {/* Desktop page header */}
       <div className="hidden lg:flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">System Health</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Operational status and environment checks</p>
+          <h1 className="text-xl font-semibold text-primary">System Health</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">Operational status and environment checks</p>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
@@ -232,7 +232,7 @@ export default async function SystemPage() {
       {/* Environment */}
       <div className="space-y-3">
         <SectionHeader title="Build Info" />
-        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 text-sm">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] divide-y divide-gray-100 text-sm">
           {[
             { label: 'NODE_ENV',       value: nodeEnv },
             { label: 'App URL',        value: appUrl },
@@ -240,8 +240,8 @@ export default async function SystemPage() {
             { label: 'Health checked', value: fetchedAt },
           ].map(({ label, value }) => (
             <div key={label} className="flex items-center justify-between px-4 py-3">
-              <span className="text-gray-500 font-medium">{label}</span>
-              <span className="text-gray-900 font-mono text-xs truncate max-w-xs text-right">{value}</span>
+              <span className="text-on-surface-variant font-medium">{label}</span>
+              <span className="text-primary font-mono text-xs truncate max-w-xs text-right">{value}</span>
             </div>
           ))}
         </div>
@@ -264,7 +264,7 @@ export default async function SystemPage() {
               href={href}
               target={external ? '_blank' : undefined}
               rel={external ? 'noopener noreferrer' : undefined}
-              className="flex items-center gap-2 px-4 py-3 bg-white rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 px-4 py-3 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
             >
               {label}
             </a>

@@ -54,7 +54,7 @@ const STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700    ring-red-600/20',
   investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
   resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
+  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -93,11 +93,11 @@ export default async function VisitNoteDetailPage({
 
       {/* Page title */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">
+        <h1 className="text-xl font-semibold text-primary">
           Visit Note{clientName ? ` — ${clientName}` : ''}
         </h1>
         {note.shifts && (
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-on-surface-variant mt-0.5">
             {note.shifts.shift_date} · {note.shifts.start_time.slice(0, 5)}–{note.shifts.end_time.slice(0, 5)}
           </p>
         )}

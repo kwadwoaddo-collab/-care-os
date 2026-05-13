@@ -41,7 +41,7 @@ function ScoreBadge({ score, eligible }: { score: number; eligible: boolean }) {
     ? 'bg-green-50 text-green-700 ring-green-600/20'
     : score >= 40
     ? 'bg-yellow-50 text-yellow-700 ring-yellow-600/20'
-    : 'bg-gray-50 text-gray-500 ring-gray-400/20'
+    : 'bg-gray-50 text-on-surface-variant ring-gray-400/20'
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset ${cls}`}>
       {score}%
@@ -108,8 +108,8 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Assign Shift</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-base font-semibold text-primary">Assign Shift</h2>
+            <p className="text-sm text-on-surface-variant mt-0.5">
               {shift.title}
               {shift.client_name && <> · {shift.client_name}</>}
               {' · '}{shift.shift_date} · {formatTime(shift.start_time)}–{formatTime(shift.end_time)}
@@ -163,7 +163,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
 
               {eligible.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">
                     Eligible · {eligible.length}
                   </p>
                   {eligible.map((rec) => (
@@ -174,7 +174,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <ScoreBadge score={rec.score} eligible={rec.eligible} />
-                          <span className="font-medium text-sm text-gray-900 truncate">
+                          <span className="font-medium text-sm text-primary truncate">
                             {rec.name}
                           </span>
                         </div>
@@ -205,7 +205,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
 
               {ineligible.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">
                     Not eligible · {ineligible.length}
                   </p>
                   {ineligible.map((rec) => (

@@ -11,10 +11,10 @@ export default function SetPasswordPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
             Care OS
           </p>
-          <h1 className="text-2xl font-semibold text-gray-900">Setup Admin Access</h1>
+          <h1 className="text-2xl font-semibold text-primary">Setup Admin Access</h1>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 px-6 py-8 shadow-sm">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-6 py-8 shadow-sm">
           <Suspense fallback={<div className="h-64 animate-pulse bg-gray-50 rounded-lg" />}>
             <SetPasswordClient />
           </Suspense>

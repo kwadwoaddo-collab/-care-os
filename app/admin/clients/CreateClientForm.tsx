@@ -133,7 +133,7 @@ export default function CreateClientForm() {
 
               {/* Personal */}
               <fieldset className="space-y-3">
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Personal details</legend>
+                <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Personal details</legend>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -144,7 +144,7 @@ export default function CreateClientForm() {
                       data-testid="create-client-first-name"
                       value={form.first_name}
                       onChange={(e) => set('first_name', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -155,7 +155,7 @@ export default function CreateClientForm() {
                       data-testid="create-client-last-name"
                       value={form.last_name}
                       onChange={(e) => set('last_name', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export default function CreateClientForm() {
                       type="text"
                       value={form.preferred_name}
                       onChange={(e) => set('preferred_name', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -176,7 +176,7 @@ export default function CreateClientForm() {
                       type="date"
                       value={form.date_of_birth}
                       onChange={(e) => set('date_of_birth', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -188,7 +188,7 @@ export default function CreateClientForm() {
                       type="tel"
                       value={form.phone}
                       onChange={(e) => set('phone', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -197,7 +197,7 @@ export default function CreateClientForm() {
                       type="email"
                       value={form.email}
                       onChange={(e) => set('email', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export default function CreateClientForm() {
 
               {/* Address */}
               <fieldset className="space-y-3">
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</legend>
+                <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Address</legend>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Address line 1</label>
@@ -213,7 +213,7 @@ export default function CreateClientForm() {
                     type="text"
                     value={form.address_line_1}
                     onChange={(e) => set('address_line_1', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -222,7 +222,7 @@ export default function CreateClientForm() {
                     type="text"
                     value={form.address_line_2}
                     onChange={(e) => set('address_line_2', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -232,7 +232,7 @@ export default function CreateClientForm() {
                       type="text"
                       value={form.town_city}
                       onChange={(e) => set('town_city', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -241,7 +241,7 @@ export default function CreateClientForm() {
                       type="text"
                       value={form.postcode}
                       onChange={(e) => set('postcode', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -249,7 +249,7 @@ export default function CreateClientForm() {
 
               {/* Care & funding */}
               <fieldset className="space-y-3">
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Care &amp; funding</legend>
+                <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Care &amp; funding</legend>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
@@ -257,7 +257,7 @@ export default function CreateClientForm() {
                     <select
                       value={form.status}
                       onChange={(e) => set('status', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       {STATUSES.map((s) => (
                         <option key={s.value} value={s.value}>{s.label}</option>
@@ -269,7 +269,7 @@ export default function CreateClientForm() {
                     <select
                       value={form.funding_type}
                       onChange={(e) => set('funding_type', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="">— Select —</option>
                       {FUNDING_TYPES.map((f) => (
@@ -282,7 +282,7 @@ export default function CreateClientForm() {
                     <select
                       value={form.risk_level}
                       onChange={(e) => set('risk_level', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       {RISK_LEVELS.map((r) => (
                         <option key={r.value} value={r.value}>{r.label}</option>
@@ -297,14 +297,14 @@ export default function CreateClientForm() {
                     type="date"
                     value={form.care_start_date}
                     onChange={(e) => set('care_start_date', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </fieldset>
 
               {/* Emergency contact */}
               <fieldset className="space-y-3">
-                <legend className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Emergency contact</legend>
+                <legend className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Emergency contact</legend>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -313,7 +313,7 @@ export default function CreateClientForm() {
                       type="text"
                       value={form.emergency_contact_name}
                       onChange={(e) => set('emergency_contact_name', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
@@ -322,7 +322,7 @@ export default function CreateClientForm() {
                       type="tel"
                       value={form.emergency_contact_phone}
                       onChange={(e) => set('emergency_contact_phone', e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export default function CreateClientForm() {
                     value={form.emergency_contact_relationship}
                     onChange={(e) => set('emergency_contact_relationship', e.target.value)}
                     placeholder="e.g. Daughter, Son, Spouse"
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </fieldset>
@@ -346,7 +346,7 @@ export default function CreateClientForm() {
                   rows={3}
                   value={form.notes}
                   onChange={(e) => set('notes', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
@@ -360,7 +360,7 @@ export default function CreateClientForm() {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-primary transition-colors"
                 >
                   Cancel
                 </button>

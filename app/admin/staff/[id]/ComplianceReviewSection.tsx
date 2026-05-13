@@ -56,7 +56,7 @@ export default function ComplianceReviewSection({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Last compliance review</h2>
         {!editing && (
@@ -73,16 +73,16 @@ export default function ComplianceReviewSection({
         {!editing ? (
           <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <dt className="text-xs font-medium text-gray-500">Reviewed at</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{formatDate(reviewedAt)}</dd>
+              <dt className="text-xs font-medium text-on-surface-variant">Reviewed at</dt>
+              <dd className="mt-0.5 text-sm text-primary">{formatDate(reviewedAt)}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-gray-500">Reviewed by</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{reviewedBy || '—'}</dd>
+              <dt className="text-xs font-medium text-on-surface-variant">Reviewed by</dt>
+              <dd className="mt-0.5 text-sm text-primary">{reviewedBy || '—'}</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-gray-500">Notes</dt>
-              <dd className="mt-0.5 text-sm text-gray-900">{notes || '—'}</dd>
+              <dt className="text-xs font-medium text-on-surface-variant">Notes</dt>
+              <dd className="mt-0.5 text-sm text-primary">{notes || '—'}</dd>
             </div>
           </dl>
         ) : (

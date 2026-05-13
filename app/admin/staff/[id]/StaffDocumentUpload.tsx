@@ -113,7 +113,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       {/* Header */}
       <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">Upload Document</h2>
@@ -150,7 +150,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                 id="doc-type"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {DOCUMENT_TYPES.map((dt) => (
                   <option key={dt.value} value={dt.value}>{dt.label}</option>
@@ -169,7 +169,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                     id="training-category"
                     value={trainingCategory}
                     onChange={(e) => setTrainingCategory(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">— Select category —</option>
                     {TRAINING_CATEGORIES.map((tc) => (
@@ -187,7 +187,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                     type="date"
                     value={issueDate}
                     onChange={(e) => setIssueDate(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -200,7 +200,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                     value={trainingName}
                     onChange={(e) => setTrainingName(e.target.value)}
                     placeholder="e.g. City &amp; Guilds Manual Handling"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   />
                 </div>
               </>
@@ -235,7 +235,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                 type="date"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
 
@@ -252,7 +252,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                 type="button"
                 onClick={reset}
                 disabled={isPending}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+                className="text-sm text-on-surface-variant hover:text-gray-700 transition-colors disabled:opacity-50"
               >
                 Clear
               </button>

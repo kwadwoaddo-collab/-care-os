@@ -35,7 +35,7 @@ export interface CarePackage {
 
 const STATUS_CLS: Record<string, string> = {
   active: 'bg-green-50  text-green-700  ring-green-600/20',
-  draft:  'bg-gray-50   text-gray-500   ring-gray-400/20',
+  draft:  'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   paused: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
   ended:  'bg-gray-50   text-gray-400   ring-gray-300/20',
 }
@@ -107,34 +107,34 @@ export default async function CarePackagesPage() {
       {/* Desktop header */}
       <div className="hidden lg:flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Care Packages</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{packages.length} package{packages.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-xl font-semibold text-primary">Care Packages</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">{packages.length} package{packages.length !== 1 ? 's' : ''}</p>
         </div>
         <CreateCarePackageForm clients={clients} />
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Active</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Active</p>
           <p className="text-2xl font-semibold tabular-nums text-green-700">{active}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Paused</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Paused</p>
           <p className="text-2xl font-semibold tabular-nums text-yellow-700">{paused}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Ended</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-500">{ended}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Ended</p>
+          <p className="text-2xl font-semibold tabular-nums text-on-surface-variant">{ended}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Weekly hrs (active)</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{weeklyHours}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Weekly hrs (active)</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{weeklyHours}</p>
         </div>
       </div>
 
       {packages.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           No care packages yet. Create one to get started.
         </div>
       ) : (
@@ -167,7 +167,7 @@ export default async function CarePackagesPage() {
                 </div>
                 {/* Body */}
                 <div className="px-4 py-3">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{pkg.title}</p>
+                  <p className="text-sm font-semibold text-primary truncate">{pkg.title}</p>
                   <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400 flex-wrap">
                     <span>{visitSummary(pkg.care_package_visits)}</span>
                     {pkg.weekly_hours && (
@@ -181,18 +181,18 @@ export default async function CarePackagesPage() {
           </div>
 
           {/* ── Desktop table (hidden on mobile) ──────────────────────── */}
-          <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="hidden lg:block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package title</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visits</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly hrs</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Package title</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Visits</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Weekly hrs</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Start date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">End date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -205,11 +205,11 @@ export default async function CarePackagesPage() {
                           </a>
                         ) : <span className="text-gray-400">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-gray-900 whitespace-nowrap font-medium">{pkg.title}</td>
+                      <td className="px-4 py-3 text-primary whitespace-nowrap font-medium">{pkg.title}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <CarePackageStatusControl packageId={pkg.id} currentStatus={pkg.status} />
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate">{visitSummary(pkg.care_package_visits)}</td>
+                      <td className="px-4 py-3 text-on-surface-variant text-xs max-w-[200px] truncate">{visitSummary(pkg.care_package_visits)}</td>
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">{pkg.weekly_hours ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.start_date)}</td>
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.end_date)}</td>

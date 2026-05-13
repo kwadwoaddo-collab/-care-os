@@ -70,7 +70,7 @@ function parseTasks(raw: unknown): string[] {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-5 py-3">
         <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
       </div>
@@ -94,7 +94,7 @@ function Textarea({
         disabled={disabled}
         rows={rows}
         placeholder={placeholder}
-        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500 resize-y"
+        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-on-surface-variant resize-y"
       />
     </div>
   )
@@ -115,7 +115,7 @@ function TextInput({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         placeholder={placeholder}
-        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
+        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-primary placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-on-surface-variant"
       />
     </div>
   )
@@ -256,13 +256,13 @@ export default function VisitNoteForm({ note }: { note: VisitNote }) {
       )}
 
       {/* Shift context */}
-      <div className="bg-white rounded-lg border border-gray-200 px-5 py-4">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-5 py-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="space-y-1">
             {note.shifts && (
               <>
-                <p className="text-sm font-semibold text-gray-900">{note.shifts.title}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-semibold text-primary">{note.shifts.title}</p>
+                <p className="text-xs text-on-surface-variant">
                   {note.shifts.shift_date} · {formatTime(note.shifts.start_time)}–{formatTime(note.shifts.end_time)}
                 </p>
               </>
@@ -276,7 +276,7 @@ export default function VisitNoteForm({ note }: { note: VisitNote }) {
               </a>
             )}
             {staffFullName && (
-              <p className="text-xs text-gray-500">Staff: {staffFullName}</p>
+              <p className="text-xs text-on-surface-variant">Staff: {staffFullName}</p>
             )}
           </div>
           <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${

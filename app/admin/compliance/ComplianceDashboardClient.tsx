@@ -195,25 +195,25 @@ export default function ComplianceDashboardClient() {
           <StatCard
             label="Warning"
             count={summary.warning}
-            cls={summary.warning > 0 ? 'bg-yellow-50 border-yellow-200 text-yellow-900' : 'bg-white border-gray-200 text-gray-900'}
+            cls={summary.warning > 0 ? 'bg-yellow-50 border-yellow-200 text-yellow-900' : 'bg-white border-gray-200 text-primary'}
             onClick={() => setFilter('warning')}
           />
           <StatCard
             label="Non-compliant"
             count={summary.non_compliant}
-            cls={summary.non_compliant > 0 ? 'bg-orange-50 border-orange-200 text-orange-900' : 'bg-white border-gray-200 text-gray-900'}
+            cls={summary.non_compliant > 0 ? 'bg-orange-50 border-orange-200 text-orange-900' : 'bg-white border-gray-200 text-primary'}
             onClick={() => setFilter('non_compliant')}
           />
           <StatCard
             label="Blocked"
             count={summary.blocked}
-            cls={summary.blocked > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-gray-200 text-gray-900'}
+            cls={summary.blocked > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-gray-200 text-primary'}
             onClick={() => setFilter('blocked')}
           />
           <StatCard
             label="Expiring 7 days"
             count={summary.expiring7d}
-            cls={summary.expiring7d > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-gray-200 text-gray-900'}
+            cls={summary.expiring7d > 0 ? 'bg-red-50 border-red-200 text-red-900' : 'bg-white border-gray-200 text-primary'}
             onClick={() => setFilter('expiring7d')}
           />
         </div>
@@ -265,7 +265,7 @@ export default function ComplianceDashboardClient() {
         <div className="flex items-center gap-2">
           {selected.size > 0 && (
             <>
-              <span className="text-xs text-gray-500">{selected.size} selected</span>
+              <span className="text-xs text-on-surface-variant">{selected.size} selected</span>
               <button
                 id="bulk-send-reminder"
                 onClick={bulkSendReminder}
@@ -294,7 +294,7 @@ export default function ComplianceDashboardClient() {
       )}
 
       {/* Staff compliance table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">
             {loading ? 'Loading…' : `${data.length} staff member${data.length !== 1 ? 's' : ''}`}
@@ -318,7 +318,7 @@ export default function ComplianceDashboardClient() {
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm divide-y divide-gray-100">
               <thead>
-                <tr className="text-xs text-gray-500 font-medium bg-gray-50/50">
+                <tr className="text-xs text-on-surface-variant font-medium bg-gray-50/50">
                   <th className="px-4 py-2 text-left w-8">
                     <input
                       type="checkbox"
@@ -366,7 +366,7 @@ export default function ComplianceDashboardClient() {
                         <span className="ml-2 text-xs text-gray-400">{row.status}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs hidden md:table-cell">
+                    <td className="px-4 py-3 text-on-surface-variant text-xs hidden md:table-cell">
                       {row.jobRole?.replace(/_/g, ' ') ?? '—'}
                     </td>
                     <td className="px-4 py-3">

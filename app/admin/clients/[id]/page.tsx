@@ -97,12 +97,12 @@ interface CarePackage {
 const STATUS_CLS: Record<string, string> = {
   active:      'bg-green-50  text-green-700  ring-green-600/20',
   paused:      'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-  ended:       'bg-gray-50   text-gray-500   ring-gray-400/20',
+  ended:       'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   prospective: 'bg-blue-50   text-blue-700   ring-blue-600/20',
 }
 
 const RISK_CLS: Record<string, string> = {
-  low:      'bg-gray-50   text-gray-500   ring-gray-400/20',
+  low:      'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
   standard: 'bg-blue-50   text-blue-700   ring-blue-600/20',
   high:     'bg-orange-50 text-orange-700 ring-orange-600/20',
   critical: 'bg-red-50    text-red-700    ring-red-600/20',
@@ -127,7 +127,7 @@ const INCIDENT_STATUS_CLS: Record<string, string> = {
   open:          'bg-red-50     text-red-700    ring-red-600/20',
   investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
   resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-gray-500   ring-gray-400/20',
+  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
 }
 
 function Badge({ value, map }: { value: string; map: Record<string, string> }) {
@@ -153,8 +153,8 @@ function formatTime(t: string): string {
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex gap-4 py-2 border-b border-gray-100 last:border-0">
-      <dt className="w-44 shrink-0 text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="text-sm text-gray-900">{value ?? <span className="text-gray-400">—</span>}</dd>
+      <dt className="w-44 shrink-0 text-xs font-medium text-on-surface-variant">{label}</dt>
+      <dd className="text-sm text-primary">{value ?? <span className="text-gray-400">—</span>}</dd>
     </div>
   )
 }
@@ -236,9 +236,9 @@ export default async function ClientDetailPage({
           <div className="flex items-center gap-3">
             <a href="/admin/clients" className="text-sm text-gray-400 hover:text-gray-600">← Clients</a>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 mt-1">{fullName}</h1>
+          <h1 className="text-xl font-semibold text-primary mt-1">{fullName}</h1>
           {client.preferred_name && (
-            <p className="text-sm text-gray-500">Known as {client.preferred_name}</p>
+            <p className="text-sm text-on-surface-variant">Known as {client.preferred_name}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export default async function ClientDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Personal details */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Personal details</h2>
           <dl>
             <DetailRow label="Date of birth"  value={formatDate(client.date_of_birth)} />
@@ -261,7 +261,7 @@ export default async function ClientDetailPage({
         </section>
 
         {/* Address */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Address</h2>
           <dl>
             <DetailRow label="Line 1"    value={client.address_line_1} />
@@ -272,7 +272,7 @@ export default async function ClientDetailPage({
         </section>
 
         {/* Care & funding */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Care &amp; funding</h2>
           <dl>
             <DetailRow label="Funding type"
@@ -284,7 +284,7 @@ export default async function ClientDetailPage({
         </section>
 
         {/* Emergency contact */}
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-3">Emergency contact</h2>
           <dl>
             <DetailRow label="Name"         value={client.emergency_contact_name} />
@@ -297,14 +297,14 @@ export default async function ClientDetailPage({
 
       {/* Notes */}
       {client.notes && (
-        <section className="bg-white rounded-lg border border-gray-200 p-5">
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
           <h2 className="text-sm font-semibold text-gray-800 mb-2">Notes</h2>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{client.notes}</p>
         </section>
       )}
 
       {/* Care packages */}
-      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Care packages</h2>
           <a href="/admin/care-packages" className="text-xs text-indigo-600 hover:underline">
@@ -322,7 +322,7 @@ export default async function ClientDetailPage({
               const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
               const PKG_STATUS_CLS: Record<string, string> = {
                 active: 'bg-green-50  text-green-700  ring-green-600/20',
-                draft:  'bg-gray-50   text-gray-500   ring-gray-400/20',
+                draft:  'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
                 paused: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
                 ended:  'bg-gray-50   text-gray-400   ring-gray-300/20',
               }
@@ -335,12 +335,12 @@ export default async function ClientDetailPage({
                 <div key={pkg.id} className="px-5 py-4 flex items-start justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-gray-900">{pkg.title}</span>
+                      <span className="text-sm font-medium text-primary">{pkg.title}</span>
                       <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${statusCls}`}>
                         {pkg.status}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{visitSummary}</p>
+                    <p className="text-xs text-on-surface-variant mt-0.5 truncate">{visitSummary}</p>
                   </div>
                   <div className="shrink-0 text-right">
                     {pkg.weekly_hours != null && (
@@ -358,7 +358,7 @@ export default async function ClientDetailPage({
       </section>
 
       {/* Recent shifts */}
-      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-800">Recent shifts</h2>
         </div>
@@ -372,11 +372,11 @@ export default async function ClientDetailPage({
             <table className="min-w-full divide-y divide-gray-100 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Time</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Title</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -389,7 +389,7 @@ export default async function ClientDetailPage({
                       {formatTime(shift.start_time)} – {formatTime(shift.end_time)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-gray-900">{shift.title}</span>
+                      <span className="text-primary">{shift.title}</span>
                       {shift.care_packages && (
                         <span className="ml-1.5 text-xs text-indigo-500">{shift.care_packages.title}</span>
                       )}
@@ -418,7 +418,7 @@ export default async function ClientDetailPage({
       </section>
 
       {/* Recent visit notes */}
-      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Recent visit notes</h2>
           <a href="/admin/visit-notes" className="text-xs text-indigo-600 hover:underline">
@@ -435,11 +435,11 @@ export default async function ClientDetailPage({
             <table className="min-w-full divide-y divide-gray-100 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Incident</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -488,7 +488,7 @@ export default async function ClientDetailPage({
       </section>
 
       {/* Recent incidents */}
-      <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Recent Incidents</h2>
           <a href={`/admin/incidents?client_id=${id}`} className="text-xs text-indigo-600 hover:underline">
@@ -505,10 +505,10 @@ export default async function ClientDetailPage({
             <table className="min-w-full divide-y divide-gray-100 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Severity</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>

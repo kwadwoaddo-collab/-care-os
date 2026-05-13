@@ -22,10 +22,10 @@ export default function AdminError({ error, reset }: Props) {
         </svg>
       </div>
 
-      <h1 className="text-lg font-semibold text-gray-900 mb-1">
+      <h1 className="text-lg font-semibold text-primary mb-1">
         Something went wrong
       </h1>
-      <p className="text-sm text-gray-500 max-w-sm mb-6">
+      <p className="text-sm text-on-surface-variant max-w-sm mb-6">
         An unexpected error occurred in the admin panel. The issue has been logged.
         You can try again or return to the dashboard.
       </p>

@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { globSync } from 'glob' // if glob is available, else we can use a simple recursive read
 
 function walk(dir, filelist = []) {
   const files = fs.readdirSync(dir)

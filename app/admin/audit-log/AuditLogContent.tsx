@@ -110,8 +110,8 @@ export default function AuditLogContent() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Audit Log</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h1 className="text-xl font-semibold text-primary">Audit Log</h1>
+        <p className="text-sm text-on-surface-variant mt-0.5">
           Last 200 events{hasFilter && ' (filtered)'}
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function AuditLogContent() {
             value={inputAction}
             onChange={(e) => setInputAction(e.target.value)}
             placeholder="e.g. staff.status_updated"
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 w-56 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary w-56 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
         <div>
@@ -135,7 +135,7 @@ export default function AuditLogContent() {
             value={inputEntityId}
             onChange={(e) => setInputEntityId(e.target.value)}
             placeholder="UUID"
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 w-64 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary w-64 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
         <button
@@ -168,7 +168,7 @@ export default function AuditLogContent() {
       {/* Results */}
       {!loading && !error && (
         entries.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
             No audit events found{hasFilter ? ' matching these filters' : ''}.
           </div>
         ) : (
@@ -179,7 +179,7 @@ export default function AuditLogContent() {
               {entries.map((e, i) => (
                 <div
                   key={e.id}
-                  className="flex items-start gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                  className="flex items-start gap-3 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
                 >
                   {/* Timeline dot */}
                   <div className="flex flex-col items-center flex-shrink-0 pt-1">
@@ -200,7 +200,7 @@ export default function AuditLogContent() {
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-400">
                       {e.entity_type && (
-                        <span className="font-medium text-gray-500">{e.entity_type}</span>
+                        <span className="font-medium text-on-surface-variant">{e.entity_type}</span>
                       )}
                       {e.entity_id && (
                         <span className="font-mono truncate max-w-[120px]">
@@ -214,23 +214,23 @@ export default function AuditLogContent() {
             </div>
 
             {/* ── Desktop table (hidden on mobile) ───────────────────────────── */}
-            <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="hidden lg:block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Timestamp</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider whitespace-nowrap">Timestamp</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Event</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Entity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Entity ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actor</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {entries.map((e) => (
                       <tr key={e.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap tabular-nums text-xs">
+                        <td className="px-4 py-3 text-on-surface-variant whitespace-nowrap tabular-nums text-xs">
                           {formatTs(e.created_at)}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -244,7 +244,7 @@ export default function AuditLogContent() {
                         <td className="px-4 py-3 text-gray-400 text-xs font-mono max-w-[140px] truncate">
                           {e.entity_id ?? '—'}
                         </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                        <td className="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">
                           {e.actor_id ?? 'system'}
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs max-w-[280px] truncate">

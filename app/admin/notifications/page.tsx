@@ -33,7 +33,7 @@ function formatDateTime(iso: string): string {
 const STATUS_CLS: Record<string, string> = {
   sent:    'bg-green-50  text-green-700  ring-green-600/20',
   failed:  'bg-red-50    text-red-700    ring-red-600/20',
-  skipped: 'bg-gray-50   text-gray-500   ring-gray-400/20',
+  skipped: 'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
 }
 
 const EVENT_CLS: Record<string, string> = {
@@ -91,8 +91,8 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Notification Log</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Recent email send attempts from Care OS.</p>
+          <h1 className="text-xl font-semibold text-primary">Notification Log</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">Recent email send attempts from Care OS.</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -133,8 +133,8 @@ export default function NotificationsPage() {
               key === 'failed' && counts.failed > 0 ? 'border-red-200 bg-red-50' : '',
             ].join(' ')}
           >
-            <p className="text-xs font-medium text-gray-500">{label}</p>
-            <p className={`text-2xl font-bold tabular-nums mt-0.5 ${key === 'failed' && counts.failed > 0 ? 'text-red-700' : 'text-gray-900'}`}>
+            <p className="text-xs font-medium text-on-surface-variant">{label}</p>
+            <p className={`text-2xl font-bold tabular-nums mt-0.5 ${key === 'failed' && counts.failed > 0 ? 'text-red-700' : 'text-primary'}`}>
               {counts[key]}
             </p>
           </button>
@@ -171,7 +171,7 @@ export default function NotificationsPage() {
       ) : error ? (
         <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-10 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center text-sm text-gray-400">
           No notifications found for this filter.
         </div>
       ) : (
@@ -199,7 +199,7 @@ export default function NotificationsPage() {
                   </span>
                 </div>
                 <div className="px-4 py-3">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-primary truncate">
                     {log.subject ?? 'No subject'}
                   </p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
@@ -215,24 +215,24 @@ export default function NotificationsPage() {
           </div>
 
           {/* ── Desktop table (hidden on mobile) ──────────────────────── */}
-          <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="hidden lg:block bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Time</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Event</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Recipient</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Subject</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Entity</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Error</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filtered.map((log) => (
                     <tr key={log.id} className={log.status === 'failed' ? 'bg-red-50/30' : 'hover:bg-gray-50'}>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-xs tabular-nums">{formatDateTime(log.created_at)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-on-surface-variant text-xs tabular-nums">{formatDateTime(log.created_at)}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${EVENT_CLS[log.event_type] ?? 'bg-gray-50 text-gray-600'}`}>
                           {log.event_type}
@@ -245,7 +245,7 @@ export default function NotificationsPage() {
                           {log.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{log.entity_type ?? '—'}</td>
+                      <td className="px-4 py-3 text-on-surface-variant text-xs whitespace-nowrap">{log.entity_type ?? '—'}</td>
                       <td className="px-4 py-3 text-red-600 text-xs max-w-[200px] truncate" title={log.error_message ?? ''}>{log.error_message ?? '—'}</td>
                     </tr>
                   ))}

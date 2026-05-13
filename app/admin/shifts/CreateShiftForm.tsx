@@ -158,7 +158,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   value={form.title}
                   onChange={(e) => set('title', e.target.value)}
                   placeholder="e.g. Morning care visit"
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -171,7 +171,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   data-testid="create-shift-date"
                   value={form.shift_date}
                   onChange={(e) => set('shift_date', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -185,7 +185,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                     data-testid="create-shift-start"
                     value={form.start_time}
                     onChange={(e) => set('start_time', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
@@ -196,7 +196,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                     data-testid="create-shift-end"
                     value={form.end_time}
                     onChange={(e) => set('end_time', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 <select
                   value={form.shift_type}
                   onChange={(e) => set('shift_type', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">— Select type —</option>
                   {SHIFT_TYPES.map((t) => (
@@ -232,7 +232,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 <select
                   value={form.assigned_staff_id}
                   onChange={(e) => set('assigned_staff_id', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">— Unassigned —</option>
                   {readyStaff.map((s) => (
@@ -256,7 +256,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   value={form.location}
                   onChange={(e) => set('location', e.target.value)}
                   placeholder="e.g. 12 Oak Street, Birmingham"
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -270,7 +270,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   <select
                     value={form.client_id}
                     onChange={(e) => set('client_id', e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="">— No client —</option>
                     {activeClients.map((c) => (
@@ -285,7 +285,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                     value={form.client_name}
                     onChange={(e) => set('client_name', e.target.value)}
                     placeholder="e.g. Mr. Smith"
-                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 )}
               </div>
@@ -297,7 +297,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                   rows={2}
                   value={form.notes}
                   onChange={(e) => set('notes', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:text-primary transition-colors"
                 >
                   Cancel
                 </button>

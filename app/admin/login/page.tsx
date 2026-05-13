@@ -11,10 +11,10 @@ export default function AdminLoginPage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
             Care OS
           </p>
-          <h1 className="text-2xl font-semibold text-gray-900">Admin Login</h1>
+          <h1 className="text-2xl font-semibold text-primary">Admin Login</h1>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 px-6 py-8 shadow-sm">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-6 py-8 shadow-sm">
           <Suspense fallback={<div className="h-48" />}>
             <LoginForm />
           </Suspense>

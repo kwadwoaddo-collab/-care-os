@@ -37,8 +37,8 @@ export default async function TimesheetsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Timesheets</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-semibold text-primary">Timesheets</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             {timesheets.length} record{timesheets.length !== 1 ? 's' : ''}
             {' '}·{' '}
             <span className="text-amber-600 font-medium">Infrastructure preview — not yet operational</span>
@@ -48,25 +48,25 @@ export default async function TimesheetsPage() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Total records</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{timesheets.length}</p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Total records</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">{timesheets.length}</p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Completed</p>
-          <p className={`text-2xl font-semibold tabular-nums ${completedCount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Completed</p>
+          <p className={`text-2xl font-semibold tabular-nums ${completedCount > 0 ? 'text-green-600' : 'text-primary'}`}>
             {completedCount}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Missed</p>
-          <p className={`text-2xl font-semibold tabular-nums ${missedCount > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Missed</p>
+          <p className={`text-2xl font-semibold tabular-nums ${missedCount > 0 ? 'text-red-600' : 'text-primary'}`}>
             {missedCount}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">Total worked</p>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
+          <p className="text-xs font-medium text-on-surface-variant mb-1">Total worked</p>
+          <p className="text-2xl font-semibold tabular-nums text-primary">
             {workedHours(totalWorked)}
           </p>
         </div>
@@ -74,7 +74,7 @@ export default async function TimesheetsPage() {
 
       {/* Table */}
       {timesheets.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           No timesheets recorded yet.
         </div>
       ) : (
