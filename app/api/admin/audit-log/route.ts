@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const action    = searchParams.get('action')    ?? ''
   const entityId  = searchParams.get('entity_id') ?? ''
+  const limitStr  = searchParams.get('limit')
+  const limit     = limitStr ? parseInt(limitStr, 10) : 200
 
   let query = adminClient
     .from('audit_logs')
     .select('id, created_at, action, actor_id, entity_type, entity_id, metadata')
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
-    .limit(200)
+    .limit(Math.min(limit, 1000))
 
   if (action)   query = query.ilike('action',    `%${action}%`)
   if (entityId) query = query.eq('entity_id', entityId)
