@@ -12,7 +12,7 @@ export default function AdminHeader() {
   if (isAuthPage) return null
 
   return (
-    <header className="h-16 w-full sticky top-0 z-40 bg-surface-container/90 backdrop-blur-md flex justify-between items-center px-6 transition-colors">
+    <header className="h-16 w-full sticky top-0 z-40 bg-surface-container flex justify-between items-center px-6 transition-colors">
       
       {/* Mobile Brand (Hidden on Desktop where Sidebar handles it) */}
       <div className="lg:hidden flex items-center gap-3">

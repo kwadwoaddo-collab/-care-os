@@ -603,7 +603,7 @@ export default async function AdminDashboard() {
         </a>
 
         {/* Unassigned Shifts */}
-        <a href="/admin/shifts/open" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${openShifts > 0 ? 'bg-surface-container-high' : 'bg-surface-container-lowest border border-outline-variant'}`}>
+        <a href="/admin/shifts/open" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md bg-surface-container-lowest border border-outline-variant`}>
           <div className="flex items-center justify-between">
             <span className={`material-symbols-outlined text-[24px] ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface-variant'}`}>calendar_month</span>
             {openShifts > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-surface-container-high bg-on-surface px-2 py-1 rounded-sm">CRITICAL COVERAGE</span>}
