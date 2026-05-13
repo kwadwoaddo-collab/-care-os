@@ -1,5 +1,7 @@
 import AddExistingStaffForm from './AddExistingStaffForm'
 import StaffTable, { type StaffProfileWithCompliance } from './StaffTable'
+import StaffMobileList from './StaffMobileList'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
@@ -123,8 +125,16 @@ export default async function StaffPage({
   const summary = alerts?.summary
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
+    <div className="space-y-5">
+      {/* Mobile page header (lg:hidden) */}
+      <MobilePageHeader
+        title="Staff"
+        subtitle={`${meta.total} profile${meta.total !== 1 ? 's' : ''}`}
+        action={<AddExistingStaffForm />}
+      />
+
+      {/* Desktop header (hidden on mobile) */}
+      <div className="hidden lg:flex items-start justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Staff</h1>
           <p className="text-sm text-gray-500 mt-0.5">{meta.total} profile{meta.total !== 1 ? 's' : ''}</p>
@@ -166,7 +176,6 @@ export default async function StaffPage({
         ]},
       ]} />
 
-      {/* Table */}
       {staff.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
           {Object.keys(raw).length > 0
@@ -175,7 +184,14 @@ export default async function StaffPage({
         </div>
       ) : (
         <div className="space-y-3">
-          <StaffTable staff={staff} />
+          {/* Mobile card list — hidden on lg+ */}
+          <div className="lg:hidden">
+            <StaffMobileList staff={staff} />
+          </div>
+          {/* Desktop table — hidden on mobile */}
+          <div className="hidden lg:block">
+            <StaffTable staff={staff} />
+          </div>
           <Pagination meta={meta} searchParams={raw} />
         </div>
       )}

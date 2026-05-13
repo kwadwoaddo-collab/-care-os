@@ -12,7 +12,8 @@ import {
   canManageRoles,
 } from '@/lib/rbac/can'
 import { can, type Permission } from '@/lib/rbac/permissions'
-import AdminHeader from '@/components/admin/AdminHeader'
+import AdminHeader    from '@/components/admin/AdminHeader'
+import AdminMobileNav from '@/components/admin/AdminMobileNav'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Fetch user profile once for: QA banner + nav permission filtering.
@@ -65,8 +66,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       )}
       
       <AdminHeader userRole={userRole} isQaEnvironment={isQaEnvironment} />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+
+      {/* pb-20 on mobile clears the fixed bottom nav; removed on lg+ */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 pb-24 lg:pb-8">
+        {children}
+      </main>
+
+      <AdminMobileNav userRole={userRole} />
     </div>
   )
 }
+

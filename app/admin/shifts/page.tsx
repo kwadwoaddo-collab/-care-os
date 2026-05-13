@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import ShiftsTable, { type Shift } from './ShiftsTable'
 import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
@@ -93,11 +94,35 @@ export default async function ShiftsPage({
   // TODO: derive from session when auth is restored
   const companyId = 'dev-company'
 
-  return (
-    <div className="space-y-6">
+  // Mobile: group shifts by date
+  const shiftsByDate = shifts.reduce<Record<string, Shift[]>>((acc, s) => {
+    ;(acc[s.shift_date] ??= []).push(s)
+    return acc
+  }, {})
+  const sortedDates = Object.keys(shiftsByDate).sort()
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+  const MOBILE_STATUS: Record<string, string> = {
+    open:        'bg-orange-50 text-orange-700',
+    offered:     'bg-blue-50   text-blue-700',
+    accepted:    'bg-indigo-50 text-indigo-700',
+    in_progress: 'bg-green-50  text-green-700',
+    completed:   'bg-gray-100  text-gray-500',
+    declined:    'bg-red-50    text-red-700',
+    cancelled:   'bg-gray-100  text-gray-400',
+    missed:      'bg-red-50    text-red-700',
+  }
+
+  return (
+    <div className="space-y-5">
+
+      {/* Mobile page header */}
+      <MobilePageHeader
+        title="Shifts"
+        subtitle={`${meta.total} shift${meta.total !== 1 ? 's' : ''}`}
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Shifts</h1>
           <p className="text-sm text-gray-500 mt-0.5">
@@ -179,7 +204,6 @@ export default async function ShiftsPage({
         { type: 'date',   name: 'date_to',    label: 'To date' },
       ]} />
 
-      {/* Table */}
       {shifts.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
           {hasFilters ? (
@@ -205,7 +229,89 @@ export default async function ShiftsPage({
         </div>
       ) : (
         <div className="space-y-3">
-          <ShiftsTable shifts={shifts} />
+
+          {/* ── Mobile agenda list (lg:hidden) ─────────────────────────── */}
+          <div className="lg:hidden space-y-5">
+            {sortedDates.map((date) => {
+              const dateShifts = shiftsByDate[date]!
+              const isDateToday = date === today
+              const formatted  = new Date(date + 'T00:00:00').toLocaleDateString('en-GB', {
+                weekday: 'short', day: 'numeric', month: 'short',
+              })
+              return (
+                <div key={date}>
+                  {/* Date group header */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${
+                      isDateToday ? 'text-indigo-600' : 'text-gray-400'
+                    }`}>
+                      {isDateToday ? 'Today' : formatted}
+                    </span>
+                    <span className={`ml-auto text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                      isDateToday ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {dateShifts.length} shift{dateShifts.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Shift cards */}
+                  <div className="space-y-2">
+                    {dateShifts.map((shift) => {
+                      const worker = shift.staff_profiles
+                        ? [shift.staff_profiles.first_name, shift.staff_profiles.last_name].filter(Boolean).join(' ')
+                        : null
+                      const clientName = shift.clients
+                        ? `${shift.clients.first_name} ${shift.clients.last_name}`
+                        : (shift.client_name ?? null)
+                      const statusCls = MOBILE_STATUS[shift.status] ?? 'bg-gray-100 text-gray-500'
+
+                      return (
+                        <div
+                          key={shift.id}
+                          className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden"
+                        >
+                          {/* Time bar */}
+                          <div className={`flex items-center justify-between px-4 py-2.5 border-b border-gray-50 ${
+                            isDateToday ? 'bg-blue-50/50' : 'bg-gray-50/60'
+                          }`}>
+                            <span className="text-xs font-semibold tabular-nums text-gray-700">
+                              {shift.start_time.slice(0,5)} – {shift.end_time.slice(0,5)}
+                            </span>
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusCls}`}>
+                              {shift.status.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                          {/* Body */}
+                          <div className="px-4 py-3">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{shift.title}</p>
+                            <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+                              <span className="truncate">
+                                {clientName ? `👤 ${clientName}` : 'No client'}
+                              </span>
+                              <span className="truncate">
+                                {worker ? `👷 ${worker}` : '⚠️ Unassigned'}
+                              </span>
+                            </div>
+                            {shift.location && (
+                              <p className="text-[11px] text-gray-400 mt-1 truncate">
+                                📍 {shift.location}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ── Desktop table (hidden on mobile) ────────────────────────── */}
+          <div className="hidden lg:block">
+            <ShiftsTable shifts={shifts} />
+          </div>
+
           <Pagination meta={meta} searchParams={raw} />
         </div>
       )}
