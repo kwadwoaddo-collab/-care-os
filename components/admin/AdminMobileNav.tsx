@@ -275,10 +275,10 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     <>
       {/* Bottom nav bar */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-[0_-4px_24px_-4px_rgba(0,0,0,0.08)] pb-safe"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-surface-container-highest shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.05)] rounded-t-xl pb-safe"
         aria-label="Mobile navigation"
       >
-        <div className="flex items-stretch h-16">
+        <div className="flex justify-around items-center h-20 px-margin-mobile">
           {primaryTabs.map((tab) => {
             const active = tab.match(pathname)
             return (
@@ -286,16 +286,13 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
                 key={tab.href}
                 href={tab.href}
                 className={[
-                  'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-all duration-150 active:scale-95 relative',
-                  active ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600',
+                  'flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-transform duration-150 active:scale-90 cursor-pointer',
+                  active ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:text-primary transition-colors',
                 ].join(' ')}
                 aria-current={active ? 'page' : undefined}
               >
-                {active && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-indigo-500" />
-                )}
                 {renderIcon(tab.icon, active)}
-                <span className="text-[10px] font-semibold tracking-tight leading-none mt-0.5">{tab.label}</span>
+                <span className="font-label-md text-label-md mt-0.5">{tab.label}</span>
               </Link>
             )
           })}
@@ -304,17 +301,14 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
           <button
             onClick={() => setOpen(!open)}
             className={[
-              'flex-1 flex flex-col items-center justify-center gap-0.5 py-2 transition-all duration-150 active:scale-95 relative',
-              open ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600',
+              'flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-transform duration-150 active:scale-90 cursor-pointer',
+              open ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:text-primary transition-colors',
             ].join(' ')}
             aria-expanded={open}
             aria-haspopup="true"
           >
-            {open && (
-              <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-indigo-500" />
-            )}
             <IconMore />
-            <span className="text-[10px] font-semibold tracking-tight leading-none mt-0.5">More</span>
+            <span className="font-label-md text-label-md mt-0.5">More</span>
           </button>
         </div>
       </nav>

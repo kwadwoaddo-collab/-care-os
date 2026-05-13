@@ -2,113 +2,48 @@
 
 import { usePathname } from 'next/navigation'
 import AdminNotificationBell from '@/components/shared/AdminNotificationBell'
-import { ENABLE_TIMESHEETS } from '@/lib/features'
-import { can } from '@/lib/rbac/permissions'
-import {
-  canViewCompliance,
-  canViewAuditLogs,
-  canViewNotifications,
-  canViewShifts,
-  canViewIncidents,
-  canManageStaff,
-  canViewSystemHealth,
-} from '@/lib/rbac/can'
+import ThemeToggle from './ThemeToggle'
 
-interface AdminHeaderProps {
-  userRole: string
-  isQaEnvironment: boolean
-}
-
-export default function AdminHeader({ userRole, isQaEnvironment }: AdminHeaderProps) {
+export default function AdminHeader() {
   const pathname = usePathname()
 
   // Hide header on login and set-password pages
   const isAuthPage = pathname === '/admin/login' || pathname === '/admin/set-password'
-  if (isAuthPage || !userRole) return null
-
-  // If role is unknown (unauthenticated or error), show all nav links.
-  const showAll = userRole === ''
-  function navCan(check: (role: string) => boolean): boolean {
-    return showAll || check(userRole)
-  }
+  if (isAuthPage) return null
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center gap-6">
-        <span className="font-semibold text-gray-900 text-sm tracking-tight whitespace-nowrap">Care OS — Admin</span>
-        
-        <nav className="hidden lg:flex items-center gap-4 text-sm text-gray-600 overflow-x-auto no-scrollbar">
-          {navCan((r) => can(r, 'applicants:read')) && (
-            <a href="/admin/applicants" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/applicants') ? 'text-gray-900 font-medium' : ''}`}>
-              Applicants
-            </a>
-          )}
-          {navCan(canManageStaff) && (
-            <a href="/admin/staff" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/staff') ? 'text-gray-900 font-medium' : ''}`}>
-              Staff
-            </a>
-          )}
-          {navCan(canManageStaff) && (
-            <a href="/admin/onboarding" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/onboarding') ? 'text-gray-900 font-medium' : ''}`}>
-              Onboarding
-            </a>
-          )}
-          {navCan(canViewCompliance) && (
-            <a href="/admin/compliance" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/compliance') ? 'text-gray-900 font-medium' : ''}`}>
-              Compliance
-            </a>
-          )}
-          {navCan(canViewAuditLogs) && (
-            <a href="/admin/audit-log" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/audit-log') ? 'text-gray-900 font-medium' : ''}`}>
-              Audit Log
-            </a>
-          )}
-          {navCan(canViewNotifications) && (
-            <a href="/admin/notifications" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/notifications') ? 'text-gray-900 font-medium' : ''}`}>
-              Notifications
-            </a>
-          )}
-          {navCan((r) => can(r, 'clients:read')) && (
-            <a href="/admin/clients" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/clients') ? 'text-gray-900 font-medium' : ''}`}>
-              Clients
-            </a>
-          )}
-          {navCan((r) => can(r, 'care_packages:read')) && (
-            <a href="/admin/care-packages" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/care-packages') ? 'text-gray-900 font-medium' : ''}`}>
-              Care Packages
-            </a>
-          )}
-          {navCan(canViewShifts) && (
-            <a href="/admin/shifts" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/shifts') ? 'text-gray-900 font-medium' : ''}`}>
-              Shifts
-            </a>
-          )}
-          {navCan(canViewIncidents) && (
-            <a href="/admin/incidents" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/incidents') ? 'text-gray-900 font-medium' : ''}`}>
-              Incidents
-            </a>
-          )}
-          {navCan(canViewSystemHealth) && (
-            <a href="/admin/system" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/system') ? 'text-gray-900 font-medium' : ''}`}>
-              System
-            </a>
-          )}
-          {ENABLE_TIMESHEETS && navCan((r) => can(r, 'timesheets:read')) && (
-            <a href="/admin/timesheets" className={`hover:text-gray-900 transition-colors ${pathname.startsWith('/admin/timesheets') ? 'text-gray-900 font-medium' : ''}`}>
-              Timesheets
-            </a>
-          )}
-        </nav>
+    <header className="h-16 w-full sticky top-0 z-40 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline shadow-sm flex justify-between items-center px-gutter">
+      
+      {/* Mobile Brand (Hidden on Desktop where Sidebar handles it) */}
+      <div className="lg:hidden flex items-center gap-3">
+        <span className="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary tracking-tight">Care OS</span>
+      </div>
 
-        <div className="ml-auto flex items-center gap-3">
-          <AdminNotificationBell />
-          <a
-            href="/admin/logout"
-            className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Logout
-          </a>
+      {/* Desktop Search (Visual Placeholder) */}
+      <div className="hidden lg:flex items-center gap-4 flex-1">
+        <div className="relative">
+          <span className="absolute inset-y-0 left-3 flex items-center text-on-surface-variant pointer-events-none">
+            <span className="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+          </span>
+          <input 
+            type="text" 
+            placeholder="Search system components..." 
+            className="bg-surface-container-low dark:bg-inverse-surface border-none rounded-full py-2 pl-10 pr-4 text-body-md w-64 focus:ring-2 focus:ring-secondary transition-all placeholder:text-on-surface-variant dark:text-on-surface"
+          />
         </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 shrink-0">
+        <ThemeToggle />
+        <AdminNotificationBell />
+        <div className="h-8 w-[1px] bg-outline-variant dark:bg-outline mx-2 hidden sm:block"></div>
+        <a
+          href="/admin/logout"
+          className="text-sm font-medium text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors ml-1"
+        >
+          Logout
+        </a>
       </div>
     </header>
   )

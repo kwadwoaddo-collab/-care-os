@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Care OS: Mobile Transformation Master Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#d8e3fb",
+                      "on-secondary-fixed": "#0f0069",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#4b41e1",
+                      "on-surface": "#1b1b1d",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#111c2d",
+                      "primary-container": "#1e293b",
+                      "surface-bright": "#fbf8fa",
+                      "outline": "#75777d",
+                      "inverse-surface": "#303032",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#fadfb8",
+                      "secondary-fixed": "#e2dfff",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#8590a6",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#35260c",
+                      "surface-tint": "#545f73",
+                      "surface-container-highest": "#e4e2e3",
+                      "surface-container": "#f0edef",
+                      "tertiary": "#1e1200",
+                      "background": "#fbf8fa",
+                      "primary": "#091426",
+                      "surface-dim": "#dcd9db",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-surface-variant": "#45474c",
+                      "secondary-container": "#645efb",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "inverse-primary": "#bcc7de",
+                      "tertiary-fixed-dim": "#ddc39d",
+                      "outline-variant": "#c5c6cd",
+                      "surface-container-high": "#eae7e9",
+                      "on-tertiary-fixed": "#271902",
+                      "on-background": "#1b1b1d",
+                      "on-tertiary-fixed-variant": "#564427",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "on-secondary-container": "#fffbff",
+                      "inverse-on-surface": "#f3f0f2",
+                      "surface-variant": "#e4e2e3",
+                      "surface": "#fbf8fa",
+                      "on-primary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f5f3f4",
+                      "on-tertiary-container": "#a38c6a",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "container-max": "1440px",
+                      "margin-mobile": "16px",
+                      "unit": "8px",
+                      "card-padding": "24px",
+                      "margin-desktop": "40px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Plus Jakarta Sans"]
+              },
+              "fontSize": {
+                      "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf8fa;
+            color: #1b1b1d;
+        }
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .screen-preview-box {
+            aspect-ratio: 9/16;
+            max-height: 280px;
+            overflow: hidden;
+            border: 1px solid #c5c6cd;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-background">
+<!-- Top AppBar Component -->
+<header class="bg-surface-container-low shadow-sm flex justify-between items-center h-16 px-margin-mobile w-full z-50 sticky top-0">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-headline-md">architecture</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Care OS</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center gap-6 mr-6">
+<span class="font-label-md text-label-md text-primary font-bold">Design Spec</span>
+<span class="font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-colors px-2 py-1 rounded">Asset Library</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAonvN_fZiiJ2voCalsOo1YokzPxtYRdh5m2aEfeG0Fryu5OCw0CY2F_ZJ4osa2M_-NdDG3cRy2S2AZ-YRYn9MXcLnfFe5OclzqPsD6Dkj5PllrrqEU2G4lV927nIlOt_HFbuQR9fEas7RbR2bmuBh-smW2sTJ4U6QpShBQFlKY3T0SSU2UP4wmaCptNqlfsOVE23My-5IdF13YB495M7Vve6RgXdqkAYgUe9Ci6KVEEDuQpCxwj-YTI2ScV84ywOB7dP2pk8jXPnNR"/>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-12">
+<header class="mb-12 border-l-4 border-secondary pl-6">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Mobile Transformation Master Gallery</h2>
+<p class="text-on-surface-variant font-body-lg max-w-2xl">A comprehensive overview of the Care OS mobile ecosystem. This spec sheet maps mobile-optimized views back to their primary desktop data sources, detailing technical pivots and layout adaptations.</p>
+</header>
+<!-- Section: The Hub -->
+<section class="mb-16">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">grid_view</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">The Hub</h3>
+</div>
+<div class="spec-grid">
+<!-- Dashboard -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container flex items-center justify-center">
+<img alt="Dashboard Mobile" class="w-full h-full object-cover" data-alt="A sophisticated mobile UI dashboard showing high-level healthcare metrics and data visualizations. The design follows a professional light-mode aesthetic with deep indigo accents and clean whitespace. Circular progress charts and summary cards are displayed in a clean vertical stack. The lighting is crisp and the atmosphere is high-tech clinical precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_-ibednrxb0OheyKuqmauZQ1HRkLG7qXC7yuTMJnyy9cSnnh8yoZbqkVNXEY-M7U2249BQwEVOlej5ryEyHwZYP-QitWacL6DGqwIhrkDlJcPfSH3vXOM-cHEGoWeCc0UI7-mLqJjEa0miOKk9ZMtMs6n3oYIx6aPLNt1RhwUFbIpbv-uB-oHOhRHnU_XGKMCrIGCIjR-raesBKRTFVoRMIkAMVACVjCMdQX0EzIAEUOox_G9xuYxdj3lD8b4kjM-oj2ap9r1CwLb"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_30}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Global Dashboard</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-01</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Conversion of multi-column grid to vertical widget stack. Priority given to immediate status alerts and active shift counters.</p>
+</div>
+<!-- Incidents -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container flex items-center justify-center">
+<img alt="Incidents Mobile" class="w-full h-full object-cover" data-alt="A mobile application screen for incident reporting in a clinical setting. It features a clean list of urgent alerts and reported events with status badges like pending or resolved. The palette is dominated by professional greys and crisp whites with subtle red warning tints. High information density is maintained through refined typography and icons." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCoTZNjUMfRIn9CJV1FZe70b0lC2--c1SyvIJko8kkrHyD_u0E0FaPC5QIsZdCmyhDhMVuwICYChP0o9qakcf9aLilUsFfccW6Nh2VgtgpLwJbzrrCu7Mtc79y1QZBCq1Zot2ePREs7tzsKlBc4akFWwl5EiQ6PPgUOefMNSh6xSI2fuH6ZYTcwjbdrP8APWUjfepK5L0uPfvBGynB2mJq_cgtU2fBZNPO02SMvH__K10Keo4BSfsjlgcZ552KYT2_QnqQ2LdPkGx9T"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_21}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Incident Feed</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-09</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Table-based incident log transformed into a swipeable card-action list with real-time severity filtering.</p>
+</div>
+</div>
+</section>
+<!-- Section: Staff & Recruitment -->
+<section class="mb-16">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">group</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">Staff &amp; Recruitment</h3>
+</div>
+<div class="spec-grid">
+<!-- Staff -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Staff List Mobile" class="w-full h-full object-cover" data-alt="A mobile staff management interface displaying worker profiles in a compact list. Each entry includes a small round avatar, name, and availability status. The design is modern, professional, and utilizes a light-mode color scheme with subtle blue dividers. The layout is optimized for one-handed thumb navigation in a fast-paced environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi6t6JKXzKh2Vmrmd1kPW_jolXkoF4Tyoa6vOxD_lZEknNNK3VjKgNL8fOw2JoUDsZ4R0AoUP4GoaqoR2skfRO7rN6DHc9J_HbQ4HF3OTGPSU3yfVp0TWSBxgKv-Ve1kvQcfVQAljFxqHS2Z4gskXjGXW4VUSbqLP8Fs6lm_MwslVsajCQRVfAs_TMi0MDetMGK_GRNBPEKN_aoTrMIk1lhX7d_vTFcAtal5xmcQgh7K7WWzhV-cTtxI12mkOzQ2zu_OnAefQoYmtc"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_29}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Staff Directory</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-04</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Transition from dense tabular staff data to profile-centric cards with immediate 'Call' and 'Message' actions.</p>
+</div>
+<!-- Applicants -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Applicants Mobile" class="w-full h-full object-cover" data-alt="A professional recruitment mobile view showing candidate applications. It uses a Kanban-style swipe interface adapted for vertical scrolling. Status indicators show interview stages. The palette is clinical and clean, featuring soft whites and professional indigo accents. High-contrast typography ensures readability of candidate names and roles." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaEhWnPZ3fiJxHURYNRjc9O24yJqO0Za6IaX3hWH81cWd7CHfvO1OSZfqUoNWdk1tUrN-jnFg8iq9IJVDR9L1qENNDK95ZjdUjQzNk4pwo7uM2rp0Cvu1rWn6gWQyiysfehaul_hBTRETdn_OCZU-Dh29GCi2iQLKI0gYlYPBAqeP03n9f9ujtiAxMyi4oyMDGVNgjdUqyaTdicdPdz-sEwJEn1pl1aUpdBxnYrCBmuZaQSi5QArZ1V6l_G3fhWb5BiHNbjsrpg1Me"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_20}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Applicant Pipeline</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-05</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Desktop funnel view distilled into a stage-based filtering system. Kanban stages moved to horizontal chip navigation.</p>
+</div>
+<!-- Onboarding -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Onboarding Mobile" class="w-full h-full object-cover" data-alt="A mobile onboarding progress tracker for new clinical staff. The screen shows a checklist of documents and training modules with completion percentages. The aesthetic is clean and instructional, with high-quality spacing and a soft color palette of light greys and primary blues. The mood is supportive and organized." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAatWZvsxQqk8jYHf7v9L80THe-Io8ryKpaVdPYgVVP1TAgdk-8aqiimq57tod10F3ohfBaB4aoqBt616F5jxZ2-KZZ7eh1oZyopubAc1aFew4EO1b7LhcHGYxexasoBdztsGX7rd8Tm9uzbn8gpfnqAUY_ct5Zk-hOEs5HMiAYUBv_QvBm4ERrbtu-rFev05XU2dG8KkvMhRUBBDN77VBmvkTgkp1RjPeR1Rh1GCjKGyp_K2rULcf5EOk0I_vTZ37KkPhpGA1n68pr"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_8}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Onboarding Tracker</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-08</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Checklist-driven interface replacing the wide document grid. Progress ring becomes the anchor focal point.</p>
+</div>
+</div>
+</section>
+<!-- Section: Compliance -->
+<section class="mb-16">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">Compliance</h3>
+</div>
+<div class="spec-grid">
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Compliance Mobile" class="w-full h-full object-cover" data-alt="A mobile compliance monitoring screen for a healthcare organization. The UI displays expiration alerts for certifications and regulatory audits. Visual cues include tinted status badges and a clean, high-density data layout. The style is modern corporate, using a light background with strong typographic hierarchy to convey authority and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhEbwEqBnJIAsPZ2K5ZZ0shmGBFyxkNfyMpo-yIF-FKq5ISuR1EzaV7l0CTlA6OXzxXrt1xvyGHz49FoFlZwH8Psu7rHaKE235tU7lzQwsHNWMVOprrRvXCPOl_5D7P63goa8Qpg1mdE8XzQ1uVsiLuXXjmAfpV17XejpJkqH6iCtTWq5TcyxvFiKoAO5Zg_OAZKJmdcykMK7_BZU7PHf7vWvbBr6byjRDNJr1-CqrqmVo1Wuiypy55Y3At-64intrzFj-h-Ku-f_X"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_22}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Compliance Command</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-11</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Consolidation of site-wide audits into an alert-first notification system. Critical expiry dates highlighted with tonal tints.</p>
+</div>
+</div>
+</section>
+<!-- Section: Operational Pulse -->
+<section class="mb-16">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">event_available</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">Operational Pulse</h3>
+</div>
+<div class="spec-grid">
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Shifts Mobile" class="w-full h-full object-cover" data-alt="A mobile scheduling interface showing a daily view of clinical shifts. The design features time-blocks that are easy to tap and manage on a mobile device. The palette is professional and calm, with high contrast for text. Soft shadows provide depth to active shift cards, ensuring clarity for a busy administrator on the move." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjUHQCm8iguJ_xjiNS9SOeA8QJp2IUikcK7mBEg64mbDwj4ZYNwO_M7PK5XPijyNsKFkZhyn-KxjImlSiOOlQgMtND8sYlehhhhJgvVc5b82UZVTsHKjN3tMxHN_G3ZCPZtHoUmPSoFn1aRelcYXhKCzo2u0PMcXyG6sLyesw8vI9XYFlweQVSFUm9_E3JX7SGwKwTvXPKK7WISheCZ3PIMn8zhxepECgaVyjORbcg5GKQQE6gv5L9yqG_U_J0ILuyDXIU-NM6O9Zm"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_28}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Shift Management</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-02</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Timeline-to-List pivot. Full calendar grid converted to a linear daily agenda with collapsible time slots.</p>
+</div>
+</div>
+</section>
+<!-- Section: Client Management -->
+<section class="mb-16">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">clinical_notes</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">Client Management</h3>
+</div>
+<div class="spec-grid">
+<!-- Clients -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Clients Mobile" class="w-full h-full object-cover" data-alt="A high-end mobile interface for managing patient or client profiles. Each profile features essential medical notes and contact details in a cleanly segmented card. The UI uses professional typography and a restrained color palette of white, grey, and deep blue to provide a sense of calm and competence. Minimalist icons guide navigation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8G8Gaq-_F1DZw81mIxu3fzIU5QAY3cpqgpUzXRUYqEGOB-snQ_KahsGsI5fgXCfJARmwXOgLm8pj1iOA-YE1gzn_njL-IzT-trrFsIT8o9Ldknwrg3zD2Q1r6vxk2AGieiEuon7AAAn9sNDvKI5Dj7TzNH0eyvydNZciamwI8lT-GN8dEaa6mRM5atsoeIgbAN7jBvAaMu5odsjiOz8iLE9SfD5EpKFbWUGome48tuzrfgzG00wx7w0qS8GAO9Yt6jQIPJP1xpUUs"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_27}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Client Index</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-03</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Desktop table to rich-card list. Information hierarchy focuses on care status and recent vital signs.</p>
+</div>
+<!-- Packages -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Packages Mobile" class="w-full h-full object-cover" data-alt="A mobile financial or service package configuration screen. It uses a structured accordion-style layout to show different tiers of care service plans. The design is airy and clean, with large touch targets for plan selection. The color scheme is professional light-mode with subtle branding through indigo accents and precise line-work." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf3v-8M6w9SNdos7cN44vV7zEotC0A-EVPxJWg-ZBfM95rcqRlldMydmTk3DOo0w3UXuRzK73CKJkujpsfilsSl9q3_pLbZvNMmsy95FIcNj6sP-pJQBDnwA2HuSJG7fcz3iGAzbaPrgYq6jdI2HRXePp0BZXt-Swja2-9s6UYuzn1uhNz45oA79A6ltDUm7eMH4j387FQyfw_5ay9ahVB1_N1nQWokezjPbsNkMJy6eFPJa4ZOg1t9L5WwtU_k-6dHbwLU-JABtgg"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_31}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Care Packages</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-06</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Complex pricing tables adapted into selection tiles. Service inclusions moved to expandable bottom sheets.</p>
+</div>
+</div>
+</section>
+<!-- Section: System Oversight -->
+<section class="mb-16 pb-20">
+<div class="flex items-center gap-3 mb-8">
+<span class="material-symbols-outlined text-secondary">analytics</span>
+<h3 class="font-headline-lg text-headline-lg text-primary">System Oversight</h3>
+</div>
+<div class="spec-grid">
+<!-- Health -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Health Check Mobile" class="w-full h-full object-cover" data-alt="A mobile system health monitor interface showing server status and performance metrics. Glowing status indicators and minimalist sparkline charts track uptime and responsiveness. The design is dark-mode inspired but fits within a clinical light-mode ecosystem with high-contrast data points. It feels professional, precise, and reliable for a technical administrator." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5zRS4QUjALhZylF_XpFWHm-U6YFc0_qnbijkSGif4bK_tvM1EvR3N6lclhYMsNV8Bk0MHnpCvaLz5HpwiMyvm0vA5uvO0zFdcXdUZnk3Rw2qUHoMy2N1XPklrgtZNoNj1bpnEa1dNZ_zWl1ggWN-Tb9GoCRyAHykhjZjxexNLDaPbeoUjpO5oLNr69haVqwwTpP3rdrMD9oH_6_0gdrAh4uGt3_LsUSC9tS4pc-2Q3qwLuynVInJWVyHK2DD_sTEeyLhU3W3atzFT"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_2}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">System Health</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-12</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Simplification of complex server graphs into status indicators. One-tap 'Reboot' or 'Sync' actions added for urgency.</p>
+</div>
+<!-- Audit -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant flex flex-col gap-4">
+<div class="screen-preview-box rounded-lg bg-surface-container">
+<img alt="Audit Logs Mobile" class="w-full h-full object-cover" data-alt="A mobile audit log screen showing a chronological record of system actions and user access. Each entry is timestamped and categorized by activity type. The design uses a sophisticated monospaced font for technical IDs and a clean Inter font for descriptions. The palette is neutral, prioritizing readability and speed of cognition for compliance officers." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrDmJ9ECx_6TLZIByHI6U3Wyxef4u0YctDMfjMC7vMhAlpIk6n3JfhexZ-R8VYiC24WZLfcmOrISTlNrkQJrZoJiuzbTQIh3xd9IYQzFxAqsFFcmZfbiEXBWB4bIx8Pze6VXq4n5uOlfh2PlvI-JfFzyaCuCSZYMeXQnXSLysbFn0DiqtxjMuyA17eqGB71Oj5Cgw1sDZfe1iUhxA4QQAlTdgrtlSn4C2OIR6oomJMi4cLBOqiLctJAtyV0FMnVcGjGLU8i7iY_EdS"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label-md text-[10px] text-secondary-container bg-secondary-fixed px-2 py-0.5 rounded-full uppercase tracking-widest mb-1 block w-fit">Ref: {{DATA:SCREEN:SCREEN_26}}</span>
+<h4 class="font-headline-md text-headline-md text-primary">Audit Log</h4>
+</div>
+<span class="text-on-surface-variant font-label-md bg-surface-container px-2 py-1 rounded">Desktop ID: DS-10</span>
+</div>
+<p class="text-on-surface-variant text-body-md">Linear event stream with intelligent time-grouping. Search and filter anchored to a persistent header bar.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom NavBar Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-margin-mobile pb-safe bg-surface border-t border-surface-container-highest shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.05)] rounded-t-xl">
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+<span class="font-label-md text-label-md">Applicants</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1.5 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="font-label-md text-label-md">Staff</span>
+</div>
+</nav>
+</body></html>
