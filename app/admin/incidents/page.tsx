@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
-import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
-import CreateIncidentButton from './CreateIncidentButton'
+import IncidentsDashboardDesktop from '@/components/admin/IncidentsDashboardDesktop'
 import type { PaginationMeta } from '@/lib/pagination'
 import { sp } from '@/lib/pagination'
 import { adminFetch } from '@/lib/admin/serverFetch'
@@ -64,10 +63,7 @@ function staffName(s: { first_name: string | null; last_name: string | null } | 
   return [s.first_name, s.last_name].filter(Boolean).join(' ') || '—'
 }
 
-function clientName(c: { first_name: string; last_name: string } | null): string {
-  if (!c) return '—'
-  return `${c.first_name} ${c.last_name}`
-}
+
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -135,80 +131,38 @@ export default async function IncidentsPage({
         subtitle={`${meta.total} incident${meta.total !== 1 ? 's' : ''}`}
       />
 
-      {/* Desktop header */}
-      <div className="hidden lg:flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-primary">Incidents</h1>
-          <p className="text-sm text-on-surface-variant mt-0.5">{meta.total} incident{meta.total !== 1 ? 's' : ''}</p>
-        </div>
-        <CreateIncidentButton />
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Open</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-red-700' : 'text-primary'}`}>{openCount}</p>
-        </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">High / Critical</p>
-          <p className={`text-2xl font-semibold tabular-nums ${highCritical > 0 ? 'text-orange-700' : 'text-primary'}`}>{highCritical}</p>
-        </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Investigating</p>
-          <p className="text-2xl font-semibold tabular-nums text-blue-700">{investigating}</p>
-        </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Resolved this month</p>
-          <p className="text-2xl font-semibold tabular-nums text-green-700">{resolvedThisMonth}</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <ListFilters fields={[
-        { type: 'text',   name: 'search',        placeholder: 'Search description…', label: 'Search' },
-        { type: 'select', name: 'status',        label: 'Status', options: [
-            { value: 'open',          label: 'Open' },
-            { value: 'investigating', label: 'Investigating' },
-            { value: 'resolved',      label: 'Resolved' },
-            { value: 'closed',        label: 'Closed' },
-        ]},
-        { type: 'select', name: 'severity',      label: 'Severity', options: [
-            { value: 'low',      label: 'Low' },
-            { value: 'medium',   label: 'Medium' },
-            { value: 'high',     label: 'High' },
-            { value: 'critical', label: 'Critical' },
-        ]},
-        { type: 'select', name: 'incident_type', label: 'Type', options: [
-            { value: 'fall',             label: 'Fall' },
-            { value: 'medication_error', label: 'Medication error' },
-            { value: 'safeguarding',     label: 'Safeguarding' },
-            { value: 'injury',           label: 'Injury' },
-            { value: 'behaviour',        label: 'Behaviour' },
-            { value: 'missed_visit',     label: 'Missed visit' },
-            { value: 'property_damage',  label: 'Property damage' },
-            { value: 'complaint',        label: 'Complaint' },
-            { value: 'other',            label: 'Other' },
-        ]},
-      ]} />
-
       {incidents.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
-          {hasFilters ? (
-            <>
-              <p className="text-sm font-medium text-primary">No incidents match your filters</p>
-              <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
-              <a href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-primary">No incidents recorded yet</p>
-              <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
-                Incidents are created automatically when a carer flags an issue on a visit note, or log one manually.
-              </p>
-            </>
-          )}
-        </div>
+        <>
+          {/* Mobile empty state */}
+          <div className="lg:hidden bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
+            {hasFilters ? (
+              <>
+                <p className="text-sm font-medium text-primary">No incidents match your filters</p>
+                <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
+                <a href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-primary">No incidents recorded yet</p>
+                <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+                  Incidents are created automatically when a carer flags an issue on a visit note, or log one manually.
+                </p>
+              </>
+            )}
+          </div>
+          {/* Desktop empty state */}
+          <div className="hidden lg:block">
+            <IncidentsDashboardDesktop
+              incidents={[]}
+              meta={meta}
+              searchParams={raw}
+              openCount={0}
+              resolvedCount={0}
+              investigatingCount={0}
+              highCriticalCount={0}
+            />
+          </div>
+        </>
       ) : (
         <div className="space-y-3">
 
@@ -248,69 +202,23 @@ export default async function IncidentsPage({
             ))}
           </div>
 
-          {/* ── Desktop table (hidden on mobile) ────────────────────── */}
+          {/* ── Desktop split-column dashboard (hidden on mobile) ── */}
           <div className="hidden lg:block">
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Severity</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Escalation</th>
-                      <th className="px-4 py-3"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {incidents.map((inc) => (
-                      <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(inc.occurred_at ?? inc.created_at)}</td>
-                        <td className="px-4 py-3 max-w-[220px]">
-                          <span className="text-xs text-gray-700 line-clamp-2 leading-snug">
-                            {inc.description.length > 80 ? `${inc.description.slice(0, 80)}…` : inc.description}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {inc.clients ? (
-                            <Link href={`/admin/clients/${inc.clients.id}`} className="text-indigo-700 hover:underline text-sm font-medium">
-                              {clientName(inc.clients)}
-                            </Link>
-                          ) : <span className="text-gray-400">—</span>}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                          {inc.staff_profiles ? (
-                            <Link href={`/admin/staff/${inc.staff_profiles.id}`} className="text-indigo-700 hover:underline">
-                              {staffName(inc.staff_profiles)}
-                            </Link>
-                          ) : <span className="text-gray-400">—</span>}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-xs text-gray-700">{inc.incident_type.replace(/_/g, ' ')}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={inc.severity} map={SEVERITY_CLS} /></td>
-                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={inc.status} map={STATUS_CLS} /></td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          {inc.escalation_required ? (
-                            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">Yes</span>
-                          ) : <span className="text-xs text-gray-400">—</span>}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-right">
-                          <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">View →</Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <IncidentsDashboardDesktop
+              incidents={incidents}
+              meta={meta}
+              searchParams={raw}
+              openCount={openCount}
+              resolvedCount={resolvedThisMonth}
+              investigatingCount={investigating}
+              highCriticalCount={highCritical}
+            />
           </div>
 
-          <Pagination meta={meta} searchParams={raw} />
+          {/* Mobile-only pagination */}
+          <div className="lg:hidden">
+            <Pagination meta={meta} searchParams={raw} />
+          </div>
         </div>
       )}
     </div>

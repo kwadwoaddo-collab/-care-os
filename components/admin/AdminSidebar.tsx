@@ -53,47 +53,58 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container z-50">
-      <div className="flex flex-col h-full p-4 space-y-2 overflow-y-auto no-scrollbar">
+    <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant z-50">
+      <div className="flex flex-col h-full overflow-y-auto no-scrollbar">
         
         {/* Brand */}
-        <div className="mb-6 px-4 py-2 mt-2">
+        <div className="mb-6 px-6 py-6 shrink-0">
           <Link href="/admin" className="block">
-            <span className="font-headline-lg text-headline-lg font-bold text-primary">Care OS</span>
-            <p className="font-label-md text-label-md text-on-surface-variant">Healthcare Admin</p>
+            <span className="text-xl font-bold text-slate-800" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>Care OS</span>
+            <p className="text-xs text-slate-500 font-medium">Healthcare Admin</p>
           </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 flex flex-col space-y-1">
           {navItems.filter((i) => i.show).map((item) => {
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                className={`relative flex items-center gap-3 px-6 py-3 transition-colors duration-200 ${
                   isActive
-                    ? 'bg-secondary-container text-on-secondary-container font-bold'
-                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                    ? 'bg-slate-100 text-slate-800'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
+                style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
-                <span className="material-symbols-outlined text-[20px]" data-icon={item.icon}>{item.icon}</span>
-                <span className="font-label-md text-label-md">{item.label}</span>
+                {/* Active Indicator Bar */}
+                {isActive && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-slate-800" />
+                )}
+                
+                <span className="material-symbols-outlined text-[24px] w-[24px] h-[24px] shrink-0" style={{ fontSize: '24px' }}>
+                  {item.icon}
+                </span>
+                
+                <span className="text-sm font-medium normal-case truncate">
+                  {item.label}
+                </span>
               </Link>
             )
           })}
         </nav>
 
         {/* Footer: User Info */}
-        <div className="pt-4 mt-auto shrink-0">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm shrink-0">
+        <div className="mt-auto pt-8 shrink-0">
+          <div className="flex items-center gap-3 px-6 py-4 bg-surface-container-low border-t border-outline-variant/50">
+            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-800 font-bold text-sm shrink-0">
               {userInitials}
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-on-surface truncate">{userFullName}</p>
-              <p className="text-[10px] text-on-surface-variant truncate capitalize">{userRole.replace(/_/g, ' ') || 'Admin'}</p>
+              <p className="text-sm font-bold text-slate-800 truncate" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>{userFullName}</p>
+              <p className="text-[10px] text-slate-500 font-medium truncate capitalize">{userRole.replace(/_/g, ' ') || 'Admin'}</p>
             </div>
           </div>
         </div>
