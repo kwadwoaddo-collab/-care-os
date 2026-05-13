@@ -104,7 +104,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 )}
                 
                 <span 
-                  className="material-symbols-outlined shrink-0" 
+                  className="material-symbols-outlined shrink-0 overflow-hidden flex items-center justify-center" 
                   style={{ 
                     fontSize: '24px', 
                     width: '24px', 
@@ -143,7 +143,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
                 <span 
-                  className="material-symbols-outlined shrink-0" 
+                  className="material-symbols-outlined shrink-0 overflow-hidden flex items-center justify-center" 
                   style={{ 
                     fontSize: '24px', 
                     width: '24px', 
