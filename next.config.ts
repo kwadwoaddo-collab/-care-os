@@ -15,12 +15,12 @@ const cspDirectives = [
   // Scripts: Next.js requires 'unsafe-inline' for hydration chunks in dev;
   // in production, nonce-based CSP would be stricter but requires custom server.
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  // Styles: Tailwind inlines critical CSS
-  "style-src 'self' 'unsafe-inline'",
+  // Styles: Tailwind inlines critical CSS, allow Google Fonts
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   // Images: allow data URIs and Supabase storage
   `img-src 'self' data: blob: https://${SUPABASE_HOSTS[0]}`,
-  // Fonts: local only (no Google Fonts)
-  "font-src 'self'",
+  // Fonts: allow Google Fonts
+  "font-src 'self' https://fonts.gstatic.com",
   // Supabase API calls and Resend webhooks
   `connect-src 'self' https://${SUPABASE_HOSTS[0]} wss://${SUPABASE_HOSTS[0]}`,
   // File uploads via form
