@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
 import CreateIncidentButton from './CreateIncidentButton'
@@ -118,16 +119,27 @@ export default async function IncidentsPage({
       new Date(i.created_at) >= monthStart,
   ).length
 
-  return (
-    <div className="space-y-6">
+  const MOBILE_SEVERITY_BORDER: Record<string, string> = {
+    low:      'border-l-gray-300',
+    medium:   'border-l-yellow-400',
+    high:     'border-l-orange-500',
+    critical: 'border-l-red-600',
+  }
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+  return (
+    <div className="space-y-5">
+
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="Incidents"
+        subtitle={`${meta.total} incident${meta.total !== 1 ? 's' : ''}`}
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Incidents</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {meta.total} incident{meta.total !== 1 ? 's' : ''}
-          </p>
+          <p className="text-sm text-gray-500 mt-0.5">{meta.total} incident{meta.total !== 1 ? 's' : ''}</p>
         </div>
         <CreateIncidentButton />
       </div>
@@ -136,15 +148,11 @@ export default async function IncidentsPage({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">Open</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-red-700' : 'text-gray-900'}`}>
-            {openCount}
-          </p>
+          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-red-700' : 'text-gray-900'}`}>{openCount}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">High / Critical</p>
-          <p className={`text-2xl font-semibold tabular-nums ${highCritical > 0 ? 'text-orange-700' : 'text-gray-900'}`}>
-            {highCritical}
-          </p>
+          <p className={`text-2xl font-semibold tabular-nums ${highCritical > 0 ? 'text-orange-700' : 'text-gray-900'}`}>{highCritical}</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">Investigating</p>
@@ -184,7 +192,6 @@ export default async function IncidentsPage({
         ]},
       ]} />
 
-      {/* Table */}
       {incidents.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
           {hasFilters ? (
@@ -195,105 +202,114 @@ export default async function IncidentsPage({
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                </svg>
-              </div>
               <p className="text-sm font-medium text-gray-900">No incidents recorded yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
-                Incidents are created automatically when a carer flags an issue on a visit note, or log one manually using the button above.
+                Incidents are created automatically when a carer flags an issue on a visit note, or log one manually.
               </p>
             </>
           )}
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escalation</th>
-                    <th className="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {incidents.map((inc) => (
-                    <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {formatDate(inc.occurred_at ?? inc.created_at)}
-                      </td>
-                      <td className="px-4 py-3 max-w-[220px]">
-                        <span className="text-xs text-gray-700 line-clamp-2 leading-snug">
-                          {inc.description.length > 80
-                            ? `${inc.description.slice(0, 80)}…`
-                            : inc.description}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {inc.clients ? (
-                          <Link
-                            href={`/admin/clients/${inc.clients.id}`}
-                            className="text-indigo-700 hover:underline text-sm font-medium"
-                          >
-                            {clientName(inc.clients)}
-                          </Link>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {inc.staff_profiles ? (
-                          <Link
-                            href={`/admin/staff/${inc.staff_profiles.id}`}
-                            className="text-indigo-700 hover:underline"
-                          >
-                            {staffName(inc.staff_profiles)}
-                          </Link>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-xs text-gray-700">{inc.incident_type.replace(/_/g, ' ')}</span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <Badge value={inc.severity} map={SEVERITY_CLS} />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <Badge value={inc.status} map={STATUS_CLS} />
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {inc.escalation_required ? (
-                          <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <Link
-                          href={`/admin/incidents/${inc.id}`}
-                          className="text-xs text-indigo-600 hover:underline"
-                        >
-                          View →
-                        </Link>
-                      </td>
+
+          {/* ── Mobile card list (lg:hidden) ──────────────────────── */}
+          <div className="lg:hidden space-y-2">
+            {incidents.map((inc) => (
+              <Link
+                key={inc.id}
+                href={`/admin/incidents/${inc.id}`}
+                className={`flex gap-0 bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)] overflow-hidden active:scale-[0.99] transition-all duration-150 border-l-4 ${MOBILE_SEVERITY_BORDER[inc.severity] ?? 'border-l-gray-200'}`}
+              >
+                <div className="flex-1 px-4 py-3.5 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+                      {inc.incident_type.replace(/_/g, ' ')}
+                    </span>
+                    {inc.escalation_required && (
+                      <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Escalation</span>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+                    {inc.description.length > 90 ? `${inc.description.slice(0, 90)}…` : inc.description}
+                  </p>
+                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                    {inc.clients && <span>{inc.clients.first_name} {inc.clients.last_name}</span>}
+                    {inc.staff_profiles && (
+                      <span>{staffName(inc.staff_profiles)}</span>
+                    )}
+                    <span className="ml-auto">{formatDate(inc.occurred_at ?? inc.created_at)}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end justify-between px-3 py-3.5 gap-2 flex-shrink-0">
+                  <Badge value={inc.severity} map={SEVERITY_CLS} />
+                  <Badge value={inc.status}   map={STATUS_CLS} />
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* ── Desktop table (hidden on mobile) ────────────────────── */}
+          <div className="hidden lg:block">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escalation</th>
+                      <th className="px-4 py-3"></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {incidents.map((inc) => (
+                      <tr key={inc.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(inc.occurred_at ?? inc.created_at)}</td>
+                        <td className="px-4 py-3 max-w-[220px]">
+                          <span className="text-xs text-gray-700 line-clamp-2 leading-snug">
+                            {inc.description.length > 80 ? `${inc.description.slice(0, 80)}…` : inc.description}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {inc.clients ? (
+                            <Link href={`/admin/clients/${inc.clients.id}`} className="text-indigo-700 hover:underline text-sm font-medium">
+                              {clientName(inc.clients)}
+                            </Link>
+                          ) : <span className="text-gray-400">—</span>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                          {inc.staff_profiles ? (
+                            <Link href={`/admin/staff/${inc.staff_profiles.id}`} className="text-indigo-700 hover:underline">
+                              {staffName(inc.staff_profiles)}
+                            </Link>
+                          ) : <span className="text-gray-400">—</span>}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="text-xs text-gray-700">{inc.incident_type.replace(/_/g, ' ')}</span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={inc.severity} map={SEVERITY_CLS} /></td>
+                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={inc.status} map={STATUS_CLS} /></td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {inc.escalation_required ? (
+                            <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-red-50 text-red-700 ring-red-600/20">Yes</span>
+                          ) : <span className="text-xs text-gray-400">—</span>}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">View →</Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+
           <Pagination meta={meta} searchParams={raw} />
         </div>
       )}

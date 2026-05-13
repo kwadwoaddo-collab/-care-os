@@ -25,6 +25,12 @@ function formatTs(iso: string): string {
   }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
+function formatTsMobile(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' ' +
+    d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+}
+
 function metaSummary(meta: Record<string, unknown> | null): string {
   if (!meta) return '—'
   const keys = Object.keys(meta).slice(0, 3)
@@ -157,58 +163,100 @@ export default function AuditLogContent() {
       )}
 
       {/* Loading */}
-      {loading && (
-        <p className="text-sm text-gray-400">Loading…</p>
-      )}
+      {loading && <p className="text-sm text-gray-400">Loading…</p>}
 
-      {/* Table */}
+      {/* Results */}
       {!loading && !error && (
         entries.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
             No audit events found{hasFilter ? ' matching these filters' : ''}.
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Timestamp</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {entries.map((e) => (
-                    <tr key={e.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap tabular-nums text-xs">
-                        {formatTs(e.created_at)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${actionBadgeCls(e.action)}`}>
-                          {e.action}
+          <div className="space-y-3">
+
+            {/* ── Mobile timeline stream (lg:hidden) ───────────────────────── */}
+            <div className="lg:hidden space-y-1">
+              {entries.map((e, i) => (
+                <div
+                  key={e.id}
+                  className="flex items-start gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                >
+                  {/* Timeline dot */}
+                  <div className="flex flex-col items-center flex-shrink-0 pt-1">
+                    <span className="w-2 h-2 rounded-full bg-indigo-300 flex-shrink-0" />
+                    {i < entries.length - 1 && (
+                      <span className="w-px bg-gray-100 mt-1" style={{ minHeight: 16 }} />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-medium leading-snug ${actionBadgeCls(e.action)}`}>
+                        {e.action}
+                      </span>
+                      <span className="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0">
+                        {formatTsMobile(e.created_at)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-400">
+                      {e.entity_type && (
+                        <span className="font-medium text-gray-500">{e.entity_type}</span>
+                      )}
+                      {e.entity_id && (
+                        <span className="font-mono truncate max-w-[120px]">
+                          {e.entity_id.slice(0, 8)}…
                         </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap text-xs">
-                        {e.entity_type ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs font-mono max-w-[140px] truncate">
-                        {e.entity_id ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                        {e.actor_id ?? 'system'}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs max-w-[280px] truncate">
-                        {metaSummary(e.metadata)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+
+            {/* ── Desktop table (hidden on mobile) ───────────────────────────── */}
+            <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Timestamp</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actor</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {entries.map((e) => (
+                      <tr key={e.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-gray-500 whitespace-nowrap tabular-nums text-xs">
+                          {formatTs(e.created_at)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${actionBadgeCls(e.action)}`}>
+                            {e.action}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap text-xs">
+                          {e.entity_type ?? '—'}
+                        </td>
+                        <td className="px-4 py-3 text-gray-400 text-xs font-mono max-w-[140px] truncate">
+                          {e.entity_id ?? '—'}
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                          {e.actor_id ?? 'system'}
+                        </td>
+                        <td className="px-4 py-3 text-gray-400 text-xs max-w-[280px] truncate">
+                          {metaSummary(e.metadata)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         )
       )}

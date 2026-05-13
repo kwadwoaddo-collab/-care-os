@@ -9,6 +9,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import type { OnboardingRow, OnboardingResponse, OnboardingSummary } from '@/app/api/admin/onboarding/route'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -353,8 +354,14 @@ export default function OnboardingQueuePage() {
   return (
     <div className="space-y-5">
 
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="Onboarding"
+        subtitle={summary ? `${summary.total} staff · ${summary.awaiting_review} awaiting review` : undefined}
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Onboarding Queue</h1>
           {summary && (

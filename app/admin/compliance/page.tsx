@@ -1,4 +1,5 @@
 import { Suspense }  from 'react'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ComplianceDashboardClient from './ComplianceDashboardClient'
 
 // ── GET /admin/compliance ─────────────────────────────────────────────────────
@@ -14,8 +15,14 @@ export const metadata = {
 export default function CompliancePage() {
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="Compliance"
+        subtitle="Docs, training & activation status"
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Compliance</h1>
           <p className="text-sm text-gray-500 mt-0.5">

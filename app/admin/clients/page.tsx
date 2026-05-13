@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import CreateClientForm from './CreateClientForm'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
 import type { PaginationMeta } from '@/lib/pagination'
@@ -93,15 +95,20 @@ export default async function ClientsPage({
   const highRisk = clients.filter((c) => c.risk_level === 'high' || c.risk_level === 'critical').length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="Clients"
+        subtitle={`${total} client${total !== 1 ? 's' : ''}`}
+        action={<CreateClientForm />}
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Clients</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {total} client{total !== 1 ? 's' : ''}
-          </p>
+          <p className="text-sm text-gray-500 mt-0.5">{total} client{total !== 1 ? 's' : ''}</p>
         </div>
         <CreateClientForm />
       </div>
@@ -122,9 +129,7 @@ export default async function ClientsPage({
         </div>
         <div className="bg-white rounded-lg border border-gray-200 px-4 py-4">
           <p className="text-xs font-medium text-gray-500 mb-1">High / critical risk</p>
-          <p className={`text-2xl font-semibold tabular-nums ${highRisk > 0 ? 'text-red-700' : 'text-gray-900'}`}>
-            {highRisk}
-          </p>
+          <p className={`text-2xl font-semibold tabular-nums ${highRisk > 0 ? 'text-red-700' : 'text-gray-900'}`}>{highRisk}</p>
         </div>
       </div>
 
@@ -152,7 +157,6 @@ export default async function ClientsPage({
         ]},
       ]} />
 
-      {/* Table */}
       {clients.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-10 text-center">
           {hasFilters ? (
@@ -163,75 +167,104 @@ export default async function ClientsPage({
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              </div>
               <p className="text-sm font-medium text-gray-900">No clients yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
-                Add your first client using the{' '}
-                <span className="font-medium text-gray-600">+ New Client</span> button above.
+                Add your first client using the <span className="font-medium text-gray-600">+ New Client</span> button above.
               </p>
             </>
           )}
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postcode</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Care start</th>
-                    <th className="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {clients.map((client) => (
-                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="font-medium text-gray-900">
-                          {client.first_name} {client.last_name}
-                        </span>
-                        {client.preferred_name && (
-                          <span className="ml-1.5 text-xs text-gray-400">({client.preferred_name})</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {client.postcode ?? '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <Badge value={client.status} map={STATUS_CLS} />
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {client.funding_type ? client.funding_type.replace(/_/g, ' ') : '—'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <Badge value={client.risk_level} map={RISK_CLS} />
-                      </td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        {formatDate(client.care_start_date)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <a
-                          href={`/admin/clients/${client.id}`}
-                          className="text-xs text-indigo-600 hover:underline"
-                        >
-                          View →
-                        </a>
-                      </td>
+
+          {/* ── Mobile card list (lg:hidden) ───────────────────────── */}
+          <div className="lg:hidden space-y-2">
+            {clients.map((client) => {
+              const initials = [client.first_name.charAt(0), client.last_name.charAt(0)].join('').toUpperCase()
+              const isHighRisk = client.risk_level === 'high' || client.risk_level === 'critical'
+              return (
+                <Link
+                  key={client.id}
+                  href={`/admin/clients/${client.id}`}
+                  className={`flex items-center gap-3.5 bg-white rounded-xl border px-4 py-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-[0.99] transition-all duration-150 ${
+                    isHighRisk ? 'border-orange-200 ring-1 ring-orange-100' : 'border-gray-100'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-semibold ${
+                    isHighRisk ? 'bg-orange-50 text-orange-700' : 'bg-indigo-50 text-indigo-700'
+                  }`}>
+                    {initials}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {client.first_name} {client.last_name}
+                      {client.preferred_name && (
+                        <span className="ml-1.5 text-xs font-normal text-gray-400">({client.preferred_name})</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5 truncate">
+                      {[client.postcode, client.funding_type?.replace(/_/g, ' ')].filter(Boolean).join(' · ')}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    <Badge value={client.status}     map={STATUS_CLS} />
+                    <Badge value={client.risk_level} map={RISK_CLS} />
+                  </div>
+
+                  <svg className="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              )
+            })}
+          </div>
+
+          {/* ── Desktop table (hidden on mobile) ───────────────────────── */}
+          <div className="hidden lg:block">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Postcode</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Funding</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Care start</th>
+                      <th className="px-4 py-3"></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {clients.map((client) => (
+                      <tr key={client.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className="font-medium text-gray-900">{client.first_name} {client.last_name}</span>
+                          {client.preferred_name && (
+                            <span className="ml-1.5 text-xs text-gray-400">({client.preferred_name})</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{client.postcode ?? '—'}</td>
+                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={client.status} map={STATUS_CLS} /></td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                          {client.funding_type ? client.funding_type.replace(/_/g, ' ') : '—'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap"><Badge value={client.risk_level} map={RISK_CLS} /></td>
+                        <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(client.care_start_date)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <a href={`/admin/clients/${client.id}`} className="text-xs text-indigo-600 hover:underline">View →</a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
+
           <Pagination meta={meta} searchParams={raw} />
         </div>
       )}
