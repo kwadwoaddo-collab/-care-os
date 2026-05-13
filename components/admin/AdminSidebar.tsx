@@ -53,13 +53,13 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container/90 dark:bg-surface-container-high/90 backdrop-blur-md z-50">
+    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container/90 backdrop-blur-md z-50">
       <div className="flex flex-col h-full p-4 space-y-2 overflow-y-auto no-scrollbar">
         
         {/* Brand */}
         <div className="mb-6 px-4 py-2 mt-2">
           <Link href="/admin" className="block">
-            <span className="font-headline-lg text-headline-lg font-bold text-primary dark:text-inverse-primary">Care OS</span>
+            <span className="font-headline-lg text-headline-lg font-bold text-primary">Care OS</span>
             <p className="font-label-md text-label-md text-on-surface-variant">Healthcare Admin</p>
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
                     ? 'bg-secondary-container text-on-secondary-container font-bold'
-                    : 'text-on-surface-variant dark:text-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
                 }`}
               >
                 <span className="material-symbols-outlined text-[20px]" data-icon={item.icon}>{item.icon}</span>

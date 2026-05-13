@@ -592,13 +592,13 @@ export default async function AdminDashboard() {
         {/* Compliance Gaps */}
         <a href="/admin/compliance" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${nonCompliant > 0 ? 'bg-primary-container' : 'bg-surface-container-lowest border border-outline-variant'}`}>
           <div className="flex items-center justify-between">
-            <span className={`material-symbols-outlined text-[24px] ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>verified_user</span>
-            {nonCompliant > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-primary-container bg-on-primary-container px-2 py-1 rounded-sm">VERIFICATION PENDING</span>}
+            <span className={`material-symbols-outlined text-[24px] ${nonCompliant > 0 ? 'text-on-primary' : 'text-on-surface-variant'}`}>verified_user</span>
+            {nonCompliant > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-primary-container bg-on-primary px-2 py-1 rounded-sm">VERIFICATION PENDING</span>}
           </div>
           <div>
-            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface'}`}>{nonCompliant}</span>
-            <h3 className={`text-xl font-bold mt-2 ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface'}`}>Compliance Gaps</h3>
-            <p className={`text-sm mt-1 ${nonCompliant > 0 ? 'text-on-primary-container/80' : 'text-on-surface-variant'}`}>Training certs expired today</p>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${nonCompliant > 0 ? 'text-on-primary' : 'text-on-surface'}`}>{nonCompliant}</span>
+            <h3 className={`text-xl font-bold mt-2 ${nonCompliant > 0 ? 'text-on-primary' : 'text-on-surface'}`}>Compliance Gaps</h3>
+            <p className={`text-sm mt-1 ${nonCompliant > 0 ? 'text-on-primary/80' : 'text-on-surface-variant'}`}>Training certs expired today</p>
           </div>
         </a>
 
