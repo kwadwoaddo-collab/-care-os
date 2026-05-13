@@ -125,7 +125,7 @@ function SectionBox({ title, children, action }: {
   action?:  React.ReactNode
 }) {
   return (
-    <div className="bg-surface-container-lowest rounded-2xl shadow-sm dark:shadow-none overflow-hidden">
+    <div className="bg-surface-container-lowest rounded-lg shadow-sm dark:shadow-none overflow-hidden">
       <div className="px-6 py-5 flex items-center justify-between">
         <h2 className="text-base font-semibold text-on-surface tracking-tight">{title}</h2>
         {action}
@@ -409,17 +409,17 @@ export default async function AdminDashboard() {
   const completionPct   = pilotTotalAssigned  > 0 ? Math.round((pilotCompleted  / pilotTotalAssigned)   * 100) : 0
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* ── Mobile hero (lg:hidden) ────────────────────────────────────────── */}
-      <div className="lg:hidden space-y-5">
+      <div className="lg:hidden space-y-6">
         <div className="flex items-center gap-3">
           <span className="material-symbols-outlined text-secondary">grid_view</span>
           <h3 className="font-headline-lg text-headline-lg text-primary">The Hub</h3>
         </div>
 
         {/* Hero triage card */}
-        <div className="bg-surface-container-lowest rounded-xl p-0 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant overflow-hidden flex flex-col gap-0">
+        <div className="bg-surface-container-lowest rounded-lg p-0 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant overflow-hidden flex flex-col gap-0">
           <div className="grid grid-cols-3 divide-x divide-gray-100">
             <a href="/admin/shifts/open" className={`flex flex-col items-center py-4 ${openShifts > 0 ? 'bg-orange-50' : ''}`}>
               <span className={`text-3xl font-extrabold tabular-nums ${openShifts > 0 ? 'text-orange-600' : 'text-gray-800'}`}>{openShifts}</span>
@@ -460,7 +460,7 @@ export default async function AdminDashboard() {
             <a
               key={label}
               href={href}
-              className={`flex-shrink-0 rounded-xl border p-card-padding min-w-[120px] text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] ${
+              className={`flex-shrink-0 rounded-lg border p-card-padding min-w-[120px] text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] ${
                 tint || 'bg-surface-container-lowest border-outline-variant text-primary'
               }`}
             >
@@ -477,7 +477,7 @@ export default async function AdminDashboard() {
             <a href="/admin/shifts" className="text-body-md font-body-md text-secondary hover:underline">View all →</a>
           </div>
           {todayShifts.length === 0 ? (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-card-padding text-center text-body-md text-on-surface-variant">
+            <div className="bg-surface-container-lowest rounded-lg border border-outline-variant p-card-padding text-center text-body-md text-on-surface-variant">
               No shifts today.
             </div>
           ) : (
@@ -488,7 +488,7 @@ export default async function AdminDashboard() {
                 return (
                   <div
                     key={shift.id}
-                    className={`bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border overflow-hidden ${
+                    className={`bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border overflow-hidden ${
                       isUnassigned ? 'border-amber-300' : 'border-outline-variant'
                     }`}
                   >
@@ -533,7 +533,7 @@ export default async function AdminDashboard() {
 
         {/* Onboarding stall alert */}
         {onboarding && onboarding.summary.stalled_count > 0 && (
-          <div className="rounded-xl bg-error-container px-4 py-3 flex items-center justify-between">
+          <div className="rounded-lg bg-error-container px-4 py-3 flex items-center justify-between">
             <p className="text-xs font-semibold text-on-error-container">
               {onboarding.summary.stalled_count} stalled in onboarding
             </p>
@@ -542,7 +542,7 @@ export default async function AdminDashboard() {
         )}
 
         {/* Pilot analytics mini strip */}
-        <details className="group mt-8 bg-surface-container-low rounded-2xl">
+        <details className="group mt-8 bg-surface-container-low rounded-lg">
           <summary className="flex items-center justify-between px-4 py-4 cursor-pointer list-none">
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-secondary">analytics</span>
@@ -557,7 +557,7 @@ export default async function AdminDashboard() {
               { label: 'Acceptance',   value: `${acceptancePct}%`,    colour: acceptancePct >= 80 ? 'text-green-600' : 'text-amber-600' },
               { label: 'Completion',   value: `${completionPct}%`,    colour: completionPct >= 80 ? 'text-green-600' : 'text-amber-600' },
             ] as { label: string; value: string; colour: string }[]).map(({ label, value, colour }) => (
-              <div key={label} className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-card-padding">
+              <div key={label} className="bg-surface-container-lowest rounded-lg shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-card-padding">
                 <p className={`font-headline-lg text-headline-lg tabular-nums ${colour}`}>{value}</p>
                 <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">{label}</p>
               </div>
@@ -575,43 +575,43 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Desktop-only Triage Hero (hidden on mobile) ─────────────────── */}
-      <div className="hidden lg:grid grid-cols-3 gap-6 mb-8">
+      <div className="hidden lg:grid grid-cols-3 gap-6 mb-6">
         {/* Urgent Incidents */}
-        <a href="/admin/incidents" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${incidents.length > 0 ? 'border-error border-l-[3px]' : 'border-outline-variant'}`}>
+        <a href="/admin/incidents" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${incidents.length > 0 ? 'bg-error-container' : 'bg-surface-container-lowest border border-outline-variant'}`}>
           <div className="flex items-center justify-between">
-            <span className={`material-symbols-outlined text-[24px] ${incidents.length > 0 ? 'text-error' : 'text-on-surface-variant'}`}>warning</span>
-            {incidents.length > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-error bg-error-container px-2 py-1 rounded-sm">IMMEDIATE ACTION</span>}
+            <span className={`material-symbols-outlined text-[24px] ${incidents.length > 0 ? 'text-on-error-container' : 'text-on-surface-variant'}`}>warning</span>
+            {incidents.length > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-error-container bg-on-error-container px-2 py-1 rounded-sm">IMMEDIATE ACTION</span>}
           </div>
           <div>
-            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${incidents.length > 0 ? 'text-error' : 'text-on-surface'}`}>{incidents.length}</span>
-            <h3 className="text-xl font-bold text-on-surface mt-2">Urgent Incidents</h3>
-            <p className="text-sm text-on-surface-variant mt-1">Require safety sign-off</p>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${incidents.length > 0 ? 'text-on-error-container' : 'text-on-surface'}`}>{incidents.length}</span>
+            <h3 className={`text-xl font-bold mt-2 ${incidents.length > 0 ? 'text-on-error-container' : 'text-on-surface'}`}>Urgent Incidents</h3>
+            <p className={`text-sm mt-1 ${incidents.length > 0 ? 'text-on-error-container/80' : 'text-on-surface-variant'}`}>Require safety sign-off</p>
           </div>
         </a>
 
         {/* Compliance Gaps */}
-        <a href="/admin/compliance" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${nonCompliant > 0 ? 'border-secondary border-l-[3px]' : 'border-outline-variant'}`}>
+        <a href="/admin/compliance" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${nonCompliant > 0 ? 'bg-primary-container' : 'bg-surface-container-lowest border border-outline-variant'}`}>
           <div className="flex items-center justify-between">
-            <span className={`material-symbols-outlined text-[24px] ${nonCompliant > 0 ? 'text-secondary' : 'text-on-surface-variant'}`}>verified_user</span>
-            {nonCompliant > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-secondary bg-secondary-fixed px-2 py-1 rounded-sm">VERIFICATION PENDING</span>}
+            <span className={`material-symbols-outlined text-[24px] ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface-variant'}`}>verified_user</span>
+            {nonCompliant > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-primary-container bg-on-primary-container px-2 py-1 rounded-sm">VERIFICATION PENDING</span>}
           </div>
           <div>
-            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${nonCompliant > 0 ? 'text-secondary' : 'text-on-surface'}`}>{nonCompliant}</span>
-            <h3 className="text-xl font-bold text-on-surface mt-2">Compliance Gaps</h3>
-            <p className="text-sm text-on-surface-variant mt-1">Training certs expired today</p>
+            <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface'}`}>{nonCompliant}</span>
+            <h3 className={`text-xl font-bold mt-2 ${nonCompliant > 0 ? 'text-on-primary-container' : 'text-on-surface'}`}>Compliance Gaps</h3>
+            <p className={`text-sm mt-1 ${nonCompliant > 0 ? 'text-on-primary-container/80' : 'text-on-surface-variant'}`}>Training certs expired today</p>
           </div>
         </a>
 
         {/* Unassigned Shifts */}
-        <a href="/admin/shifts/open" className={`bg-surface-container-lowest border rounded-2xl p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${openShifts > 0 ? 'border-on-surface border-l-[3px]' : 'border-outline-variant'}`}>
+        <a href="/admin/shifts/open" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${openShifts > 0 ? 'bg-surface-container-high' : 'bg-surface-container-lowest border border-outline-variant'}`}>
           <div className="flex items-center justify-between">
             <span className={`material-symbols-outlined text-[24px] ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface-variant'}`}>calendar_month</span>
-            {openShifts > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-on-surface bg-surface-variant px-2 py-1 rounded-sm">CRITICAL COVERAGE</span>}
+            {openShifts > 0 && <span className="text-[10px] font-bold tracking-wider uppercase text-surface-container-high bg-on-surface px-2 py-1 rounded-sm">CRITICAL COVERAGE</span>}
           </div>
           <div>
             <span className={`text-5xl font-extrabold tracking-tight tabular-nums ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface-variant'}`}>{openShifts}</span>
-            <h3 className="text-xl font-bold text-on-surface mt-2">Unassigned Shifts</h3>
-            <p className="text-sm text-on-surface-variant mt-1">Next 48 hours in London zone</p>
+            <h3 className={`text-xl font-bold mt-2 ${openShifts > 0 ? 'text-on-surface' : 'text-on-surface'}`}>Unassigned Shifts</h3>
+            <p className={`text-sm mt-1 ${openShifts > 0 ? 'text-on-surface-variant' : 'text-on-surface-variant'}`}>Next 48 hours in London zone</p>
           </div>
         </a>
       </div>
@@ -620,7 +620,7 @@ export default async function AdminDashboard() {
       <div className="hidden lg:block mb-6">
       {onboarding && (
         <details className="group">
-          <summary className="flex items-center justify-between cursor-pointer list-none bg-surface-container-low hover:bg-surface-container transition-colors rounded-2xl px-6 py-4">
+          <summary className="flex items-center justify-between cursor-pointer list-none bg-surface-container-low hover:bg-surface-container transition-colors rounded-lg px-6 py-4">
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-primary">how_to_reg</span>
               <h2 className="text-base font-semibold text-on-surface">Onboarding Overview</h2>
@@ -672,7 +672,7 @@ export default async function AdminDashboard() {
       {/* ── Desktop: ops alerts ───────────────────────────────────────────── */}
       <div className="hidden lg:block mb-8">
       {(opsAlerts > 0 || unacknowledged > 0) && (
-        <div className="rounded-2xl bg-error-container px-6 py-5 shadow-sm">
+        <div className="rounded-lg bg-error-container px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px] text-on-error-container">warning</span>
@@ -705,10 +705,10 @@ export default async function AdminDashboard() {
 
       {/* ── Desktop: main content grid ────────────────────────────────────── */}
       <div className="hidden lg:block">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* LEFT — Today's shifts + Incidents */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-6">
 
           {/* Today's shifts */}
           <SectionBox
@@ -795,7 +795,7 @@ export default async function AdminDashboard() {
                   </tbody>
                 </table>
                 {unassignedToday > 0 && (
-                  <div className="mt-4 px-4 py-3 bg-error-container rounded-xl text-xs text-on-error-container">
+                  <div className="mt-4 px-4 py-3 bg-error-container rounded-lg text-xs text-on-error-container">
                     {unassignedToday} shift{unassignedToday !== 1 ? 's' : ''} still unassigned today —{' '}
                     <Link href="/admin/shifts/open" className="font-medium underline hover:text-error">
                       view open shifts
@@ -820,7 +820,7 @@ export default async function AdminDashboard() {
             ) : (
               <div className="flex flex-col gap-2">
                 {incidents.map((inc) => (
-                  <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4 rounded-xl hover:bg-surface-container transition-colors">
+                  <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4 rounded-lg hover:bg-surface-container transition-colors">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                         <span className={`inline-flex rounded-md px-1.5 py-0.5 text-xs font-medium ${INCIDENT_SEVERITY_CLS[inc.severity] ?? 'bg-gray-50 text-gray-600'}`}>
@@ -854,29 +854,9 @@ export default async function AdminDashboard() {
         </div>
 
         {/* RIGHT — Quick actions + Compliance */}
-        <div className="space-y-5">
+        <div className="space-y-6">
 
-          {/* Quick actions */}
-          <SectionBox title="Quick Actions">
-            <div className="p-3 grid grid-cols-2 gap-2">
-              {[
-                { label: 'Onboarding Queue',       href: '/admin/onboarding' },
-                { label: 'Create Shift',           href: '/admin/shifts' },
-                { label: 'Add Client',             href: '/admin/clients' },
-                { label: 'Create Care Package',    href: '/admin/care-packages' },
-                { label: 'Invite Applicant',       href: '/admin/applicants' },
-                { label: 'Compliance Dashboard',   href: '/admin/compliance' },
-              ].map((a) => (
-                <Link
-                  key={a.href + a.label}
-                  href={a.href}
-                  className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors text-center"
-                >
-                  {a.label}
-                </Link>
-              ))}
-            </div>
-          </SectionBox>
+
 
           {/* Compliance alerts top 5 */}
           <SectionBox
@@ -929,7 +909,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Audit log + Pilot (desktop only) ─────────────────────────────── */}
-      <div className="hidden lg:block space-y-5">
+      <div className="hidden lg:block space-y-6">
       <SectionBox
         title="Recent Activity"
         action={

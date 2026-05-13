@@ -53,7 +53,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface/80 dark:bg-background/80 backdrop-blur-md z-50">
+    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container/90 dark:bg-surface-container-high/90 backdrop-blur-md z-50">
       <div className="flex flex-col h-full p-4 space-y-2 overflow-y-auto no-scrollbar">
         
         {/* Brand */}
