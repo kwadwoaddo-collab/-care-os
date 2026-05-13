@@ -53,7 +53,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container dark:bg-inverse-surface border-r border-outline-variant dark:border-outline z-50">
+    <aside className="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface/80 dark:bg-background/80 backdrop-blur-md z-50">
       <div className="flex flex-col h-full p-4 space-y-2 overflow-y-auto no-scrollbar">
         
         {/* Brand */}
@@ -86,7 +86,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
         </nav>
 
         {/* Footer: User Info */}
-        <div className="pt-4 border-t border-outline-variant dark:border-outline mt-auto shrink-0">
+        <div className="pt-4 mt-auto shrink-0">
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold text-sm shrink-0">
               {userInitials}

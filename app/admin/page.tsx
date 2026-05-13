@@ -125,12 +125,14 @@ function SectionBox({ title, children, action }: {
   action?:  React.ReactNode
 }) {
   return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
+    <div className="bg-surface-container-lowest rounded-2xl shadow-sm dark:shadow-none overflow-hidden">
+      <div className="px-6 py-5 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-on-surface tracking-tight">{title}</h2>
         {action}
       </div>
-      {children}
+      <div className="px-6 pb-6">
+        {children}
+      </div>
     </div>
   )
 }
@@ -433,14 +435,14 @@ export default async function AdminDashboard() {
             </a>
           </div>
           {(opsAlerts > 0 || unacknowledged > 0) && (
-            <a href="/admin/shifts/operations" className="flex items-center justify-between px-4 py-2.5 bg-amber-50 border-t border-amber-100">
-              <p className="text-xs font-semibold text-amber-800">
+            <a href="/admin/shifts/operations" className="flex items-center justify-between px-4 py-2.5 bg-error-container">
+              <p className="text-xs font-semibold text-on-error-container">
                 {declinedShifts > 0 && `${declinedShifts} declined`}
                 {declinedShifts > 0 && runningLate > 0 && ' · '}
                 {runningLate > 0 && `${runningLate} running late`}
                 {unacknowledged > 0 && ` · ${unacknowledged} unacknowledged`}
               </p>
-              <span className="text-xs text-amber-600 font-medium">Ops →</span>
+              <span className="text-xs text-on-error-container font-medium">Ops →</span>
             </a>
           )}
         </div>
@@ -531,34 +533,37 @@ export default async function AdminDashboard() {
 
         {/* Onboarding stall alert */}
         {onboarding && onboarding.summary.stalled_count > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between">
-            <p className="text-xs font-semibold text-amber-800">
+          <div className="rounded-xl bg-error-container px-4 py-3 flex items-center justify-between">
+            <p className="text-xs font-semibold text-on-error-container">
               {onboarding.summary.stalled_count} stalled in onboarding
             </p>
-            <a href="/admin/onboarding?stage=in_progress" className="text-xs font-medium text-amber-700">Review →</a>
+            <a href="/admin/onboarding?stage=in_progress" className="text-xs font-medium text-on-error-container hover:underline">Review →</a>
           </div>
         )}
 
         {/* Pilot analytics mini strip */}
-        <div className="mt-8">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="material-symbols-outlined text-secondary">analytics</span>
-            <h4 className="font-headline-md text-headline-md text-primary">Pilot · 30 days</h4>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+        <details className="group mt-8 bg-surface-container-low rounded-2xl">
+          <summary className="flex items-center justify-between px-4 py-4 cursor-pointer list-none">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-secondary">analytics</span>
+              <h4 className="font-headline-md text-headline-md text-primary">Pilot · 30 days</h4>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div className="grid grid-cols-2 gap-4 px-4 pb-4 pt-2">
             {([
               { label: 'Onboarding',   value: `${onboardingPct}%`,    colour: onboardingPct >= 80 ? 'text-green-600' : 'text-amber-600' },
               { label: 'Portal logins',value: `${inviteSuccessPct}%`, colour: inviteSuccessPct >= 80 ? 'text-green-600' : 'text-amber-600' },
               { label: 'Acceptance',   value: `${acceptancePct}%`,    colour: acceptancePct >= 80 ? 'text-green-600' : 'text-amber-600' },
               { label: 'Completion',   value: `${completionPct}%`,    colour: completionPct >= 80 ? 'text-green-600' : 'text-amber-600' },
             ] as { label: string; value: string; colour: string }[]).map(({ label, value, colour }) => (
-              <div key={label} className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant p-card-padding">
+              <div key={label} className="bg-surface-container-lowest rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-card-padding">
                 <p className={`font-headline-lg text-headline-lg tabular-nums ${colour}`}>{value}</p>
                 <p className="font-body-md text-body-md text-on-surface-variant mt-0.5">{label}</p>
               </div>
             ))}
           </div>
-        </div>
+        </details>
       </div>
 
       {/* ── Desktop header (hidden on mobile) ─────────────────────────────── */}
@@ -612,28 +617,26 @@ export default async function AdminDashboard() {
       </div>
 
       {/* ── Desktop: onboarding overview ──────────────────────────────────── */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block mb-6">
       {onboarding && (
-        <>
-          {onboarding.summary.stalled_count > 0 && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-base">⏰</span>
-                <p className="text-sm font-semibold text-amber-800">
-                  {onboarding.summary.stalled_count} worker{onboarding.summary.stalled_count !== 1 ? 's' : ''} stalled in onboarding — in progress for 7+ days
-                </p>
-              </div>
-              <Link href="/admin/onboarding?stage=in_progress" className="text-xs font-medium text-amber-700 hover:text-amber-900 whitespace-nowrap">
-                Review →
-              </Link>
+        <details className="group">
+          <summary className="flex items-center justify-between cursor-pointer list-none bg-surface-container-low hover:bg-surface-container transition-colors rounded-2xl px-6 py-4">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-primary">how_to_reg</span>
+              <h2 className="text-base font-semibold text-on-surface">Onboarding Overview</h2>
+              {onboarding.summary.stalled_count > 0 && (
+                <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full bg-error-container text-on-error-container">
+                  {onboarding.summary.stalled_count} Stalled
+                </span>
+              )}
             </div>
-          )}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-semibold text-gray-700">Onboarding Overview</h2>
-              <Link href="/admin/onboarding" className="text-xs text-indigo-600 hover:underline">View queue →</Link>
+            <span className="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <div className="mt-4 px-2 space-y-4">
+            <div className="flex justify-end">
+              <Link href="/admin/onboarding" className="text-sm text-primary font-medium hover:underline">View queue →</Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <SummaryCard
                 label="In progress"
                 count={onboarding.summary.in_progress}
@@ -662,37 +665,37 @@ export default async function AdminDashboard() {
               />
             </div>
           </div>
-        </>
+        </details>
       )}
       </div>
 
       {/* ── Desktop: ops alerts ───────────────────────────────────────────── */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block mb-8">
       {(opsAlerts > 0 || unacknowledged > 0) && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3.5">
+        <div className="rounded-2xl bg-error-container px-6 py-5 shadow-sm">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className="text-base">⚠</span>
-              <p className="text-sm font-semibold text-amber-800">Rota action required</p>
+              <span className="material-symbols-outlined text-[20px] text-on-error-container">warning</span>
+              <p className="text-base font-semibold text-on-error-container">Rota action required</p>
             </div>
-            <a href="/admin/shifts/operations" className="text-xs text-amber-700 font-medium hover:underline whitespace-nowrap">
+            <a href="/admin/shifts/operations" className="text-sm text-on-error-container font-medium hover:underline whitespace-nowrap">
               View Shift Ops →
             </a>
           </div>
-          <div className="mt-2 flex flex-wrap gap-4 text-sm text-amber-700">
+          <div className="mt-3 flex flex-wrap gap-4 text-sm text-on-error-container/90">
             {declinedShifts > 0 && (
               <span>
-                <strong className="font-semibold">{declinedShifts}</strong> shift{declinedShifts !== 1 ? 's' : ''} declined
+                <strong className="font-bold">{declinedShifts}</strong> shift{declinedShifts !== 1 ? 's' : ''} declined
               </span>
             )}
             {runningLate > 0 && (
               <span>
-                <strong className="font-semibold">{runningLate}</strong> worker{runningLate !== 1 ? 's' : ''} running late today
+                <strong className="font-bold">{runningLate}</strong> worker{runningLate !== 1 ? 's' : ''} running late today
               </span>
             )}
             {unacknowledged > 0 && (
               <span>
-                <strong className="font-semibold">{unacknowledged}</strong> shift{unacknowledged !== 1 ? 's' : ''} without a worker response
+                <strong className="font-bold">{unacknowledged}</strong> shift{unacknowledged !== 1 ? 's' : ''} without a worker response
               </span>
             )}
           </div>
@@ -719,19 +722,19 @@ export default async function AdminDashboard() {
             {todayShifts.length === 0 ? (
               <Empty msg="No shifts scheduled for today." />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm divide-y divide-gray-100">
+              <div className="overflow-x-auto -mx-6 px-6">
+                <table className="min-w-full text-sm">
                   <thead>
-                    <tr className="text-xs text-on-surface-variant font-medium bg-gray-50">
-                      <th className="px-4 py-2 text-left">Time</th>
-                      <th className="px-4 py-2 text-left">Client</th>
-                      <th className="px-4 py-2 text-left">Staff</th>
-                      <th className="px-4 py-2 text-left">Care package</th>
-                      <th className="px-4 py-2 text-left">Status</th>
-                      <th className="px-4 py-2 text-left">Visit note</th>
+                    <tr className="text-xs text-on-surface-variant font-medium">
+                      <th className="px-4 py-3 text-left">Time</th>
+                      <th className="px-4 py-3 text-left">Client</th>
+                      <th className="px-4 py-3 text-left">Staff</th>
+                      <th className="px-4 py-3 text-left">Care package</th>
+                      <th className="px-4 py-3 text-left">Status</th>
+                      <th className="px-4 py-3 text-left">Visit note</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="[&>tr:not(:last-child)]:border-b-0">
                     {todayShifts.map((shift) => {
                       const isUnassigned = !shift.assigned_staff_id
                       const isCancelled  = shift.status === 'cancelled'
@@ -743,7 +746,7 @@ export default async function AdminDashboard() {
                         : ''
 
                       return (
-                        <tr key={shift.id} className={`${rowCls} hover:bg-gray-50 transition-colors`}>
+                        <tr key={shift.id} className={`${rowCls} hover:bg-surface-container transition-colors`}>
                           <td className="px-4 py-2.5 whitespace-nowrap tabular-nums text-gray-700 text-xs font-medium">
                             {fmtTime(shift.start_time)}–{fmtTime(shift.end_time)}
                           </td>
@@ -792,9 +795,9 @@ export default async function AdminDashboard() {
                   </tbody>
                 </table>
                 {unassignedToday > 0 && (
-                  <div className="px-4 py-2 bg-amber-50 border-t border-amber-100 text-xs text-amber-700">
+                  <div className="mt-4 px-4 py-3 bg-error-container rounded-xl text-xs text-on-error-container">
                     {unassignedToday} shift{unassignedToday !== 1 ? 's' : ''} still unassigned today —{' '}
-                    <Link href="/admin/shifts/open" className="font-medium underline">
+                    <Link href="/admin/shifts/open" className="font-medium underline hover:text-error">
                       view open shifts
                     </Link>
                   </div>
@@ -815,9 +818,9 @@ export default async function AdminDashboard() {
             {incidents.length === 0 ? (
               <Empty msg="No open incidents." />
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="flex flex-col gap-2">
                 {incidents.map((inc) => (
-                  <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4">
+                  <div key={inc.id} className="px-4 py-3 flex items-center justify-between gap-4 rounded-xl hover:bg-surface-container transition-colors">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                         <span className={`inline-flex rounded-md px-1.5 py-0.5 text-xs font-medium ${INCIDENT_SEVERITY_CLS[inc.severity] ?? 'bg-gray-50 text-gray-600'}`}>
