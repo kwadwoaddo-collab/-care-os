@@ -4,6 +4,7 @@ import { adminFetch } from '@/lib/admin/serverFetch'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { can } from '@/lib/auth/permissions'
 import AccessDenied from '@/components/admin/AccessDenied'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 
 interface HealthData {
   database:             boolean
@@ -140,26 +141,24 @@ export default async function SystemPage() {
   return (
     <div className="space-y-8 max-w-3xl">
 
-      {/* Page header */}
-      <div className="flex items-start justify-between">
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="System Health"
+        subtitle={allOk ? 'All systems operational' : hasWarnings ? 'Degraded' : 'Warnings present'}
+      />
+
+      {/* Desktop page header */}
+      <div className="hidden lg:flex items-start justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">System Health</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Operational status and environment checks
-          </p>
+          <p className="text-sm text-gray-500 mt-0.5">Operational status and environment checks</p>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
-            allOk
-              ? 'bg-green-100 text-green-800'
-              : hasWarnings
-              ? 'bg-red-100 text-red-800'
-              : 'bg-yellow-100 text-yellow-800'
+            allOk ? 'bg-green-100 text-green-800' : hasWarnings ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
           }`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${allOk ? 'bg-green-500' : hasWarnings ? 'bg-red-500' : 'bg-yellow-400'}`}
-          />
+          <span className={`w-1.5 h-1.5 rounded-full ${allOk ? 'bg-green-500' : hasWarnings ? 'bg-red-500' : 'bg-yellow-400'}`} />
           {allOk ? 'All systems operational' : hasWarnings ? 'Degraded' : 'Warnings present'}
         </span>
       </div>

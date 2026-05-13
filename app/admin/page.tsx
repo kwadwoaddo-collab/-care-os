@@ -419,15 +419,165 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-5">
 
-      {/* Header */}
-      <div className="flex items-start justify-between">
+      {/* ── Mobile hero (lg:hidden) ────────────────────────────────────────── */}
+      <div className="lg:hidden space-y-3">
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Care OS · {fmt(today)}</p>
+          <h1 className="text-lg font-bold text-gray-900 mt-0.5">Operations</h1>
+        </div>
+
+        {/* Hero triage card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="grid grid-cols-3 divide-x divide-gray-100">
+            <a href="/admin/shifts/open" className={`flex flex-col items-center py-4 ${openShifts > 0 ? 'bg-orange-50' : ''}`}>
+              <span className={`text-3xl font-extrabold tabular-nums ${openShifts > 0 ? 'text-orange-600' : 'text-gray-800'}`}>{openShifts}</span>
+              <span className={`text-[11px] font-medium mt-0.5 ${openShifts > 0 ? 'text-orange-600' : 'text-gray-400'}`}>Open shifts</span>
+            </a>
+            <a href="/admin/compliance" className={`flex flex-col items-center py-4 ${nonCompliant > 0 ? 'bg-red-50' : ''}`}>
+              <span className={`text-3xl font-extrabold tabular-nums ${nonCompliant > 0 ? 'text-red-600' : 'text-gray-800'}`}>{nonCompliant}</span>
+              <span className={`text-[11px] font-medium mt-0.5 ${nonCompliant > 0 ? 'text-red-600' : 'text-gray-400'}`}>Non-compliant</span>
+            </a>
+            <a href="/admin/incidents" className={`flex flex-col items-center py-4 ${incidents.length > 0 ? 'bg-amber-50' : ''}`}>
+              <span className={`text-3xl font-extrabold tabular-nums ${incidents.length > 0 ? 'text-amber-700' : 'text-gray-800'}`}>{incidents.length}</span>
+              <span className={`text-[11px] font-medium mt-0.5 ${incidents.length > 0 ? 'text-amber-700' : 'text-gray-400'}`}>Active incidents</span>
+            </a>
+          </div>
+          {(opsAlerts > 0 || unacknowledged > 0) && (
+            <a href="/admin/shifts/operations" className="flex items-center justify-between px-4 py-2.5 bg-amber-50 border-t border-amber-100">
+              <p className="text-xs font-semibold text-amber-800">
+                {declinedShifts > 0 && `${declinedShifts} declined`}
+                {declinedShifts > 0 && runningLate > 0 && ' · '}
+                {runningLate > 0 && `${runningLate} running late`}
+                {unacknowledged > 0 && ` · ${unacknowledged} unacknowledged`}
+              </p>
+              <span className="text-xs text-amber-600 font-medium">Ops →</span>
+            </a>
+          )}
+        </div>
+
+        {/* Horizontal metrics strip */}
+        <div className="-mx-4 px-4 overflow-x-auto flex gap-2 pb-1" style={{ scrollbarWidth: 'none' }}>
+          {[
+            { label: 'Staff',      value: activeStaff,    href: '/admin/staff',       tint: '' },
+            { label: 'Clients',    value: activeClients,  href: '/admin/clients',     tint: '' },
+            { label: 'Expiring',   value: expiring7d,     href: '/admin/compliance',  tint: expiring7d > 0 ? 'bg-orange-50 border-orange-200 text-orange-700' : '' },
+            { label: 'HR gaps',    value: hrIncomplete,   href: '/admin/onboarding',  tint: hrIncomplete > 0 ? 'bg-red-50 border-red-200 text-red-700' : '' },
+            { label: 'Certs',      value: pendingCerts,   href: '/admin/staff',       tint: pendingCerts > 0 ? 'bg-amber-50 border-amber-200 text-amber-700' : '' },
+            { label: 'Draft notes',value: draftNotes,     href: '/admin/visit-notes', tint: draftNotes > 0 ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : '' },
+          ].map(({ label, value, href, tint }) => (
+            <a
+              key={label}
+              href={href}
+              className={`flex-shrink-0 rounded-xl border px-4 py-3 min-w-[90px] text-center ${
+                tint || 'bg-white border-gray-100'
+              }`}
+            >
+              <p className="text-xl font-bold tabular-nums">{value}</p>
+              <p className="text-[11px] font-medium text-gray-500 mt-0.5">{label}</p>
+            </a>
+          ))}
+        </div>
+
+        {/* Today’s shifts — mobile card list */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Today’s Shifts</p>
+            <a href="/admin/shifts" className="text-xs text-indigo-600 hover:underline">View all →</a>
+          </div>
+          {todayShifts.length === 0 ? (
+            <div className="bg-white rounded-xl border border-gray-100 px-4 py-6 text-center text-sm text-gray-400">
+              No shifts today.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {todayShifts.map((shift) => {
+                const isUnassigned = !shift.assigned_staff_id
+                const note = shift.visit_notes?.[0] ?? null
+                return (
+                  <div
+                    key={shift.id}
+                    className={`bg-white rounded-xl border overflow-hidden ${
+                      isUnassigned ? 'border-amber-200' : 'border-gray-100'
+                    }`}
+                  >
+                    <div className={`flex items-center justify-between px-4 py-2 border-b ${
+                      isUnassigned ? 'bg-amber-50 border-amber-100' : 'bg-gray-50 border-gray-50'
+                    }`}>
+                      <span className="text-xs font-semibold tabular-nums text-gray-700">
+                        {fmtTime(shift.start_time)}–{fmtTime(shift.end_time)}
+                      </span>
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        SHIFT_STATUS_CLS[shift.status] ?? 'bg-gray-50 text-gray-500'
+                      }`}>
+                        {shift.status.replace(/_/g, ' ')}
+                      </span>
+                    </div>
+                    <div className="px-4 py-2.5">
+                      <p className="text-sm font-medium text-gray-900 truncate">{shift.title}</p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                        <span className="truncate">
+                          {shift.clients
+                            ? `${shift.clients.first_name} ${shift.clients.last_name}`
+                            : (shift.client_name ?? 'No client')}
+                        </span>
+                        <span className={`truncate ${
+                          isUnassigned ? 'text-amber-700 font-semibold' : ''
+                        }`}>
+                          {isUnassigned ? '⚠️ Unassigned' : staffName(shift.staff_profiles)}
+                        </span>
+                        {note && (
+                          <span className={`ml-auto ${ NOTE_STATUS_CLS[note.status] ?? 'text-gray-300'}`}>
+                            {note.status}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Onboarding stall alert */}
+        {onboarding && onboarding.summary.stalled_count > 0 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center justify-between">
+            <p className="text-xs font-semibold text-amber-800">
+              {onboarding.summary.stalled_count} stalled in onboarding
+            </p>
+            <a href="/admin/onboarding?stage=in_progress" className="text-xs font-medium text-amber-700">Review →</a>
+          </div>
+        )}
+
+        {/* Pilot analytics mini strip */}
+        <div>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Pilot · 30 days</p>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { label: 'Onboarding',   value: `${onboardingPct}%`,    colour: onboardingPct >= 80 ? 'text-green-600' : 'text-amber-600' },
+              { label: 'Portal logins',value: `${inviteSuccessPct}%`, colour: inviteSuccessPct >= 80 ? 'text-green-600' : 'text-amber-600' },
+              { label: 'Acceptance',   value: `${acceptancePct}%`,    colour: acceptancePct >= 80 ? 'text-green-600' : 'text-amber-600' },
+              { label: 'Completion',   value: `${completionPct}%`,    colour: completionPct >= 80 ? 'text-green-600' : 'text-amber-600' },
+            ] as { label: string; value: string; colour: string }[]).map(({ label, value, colour }) => (
+              <div key={label} className="bg-white rounded-xl border border-gray-100 px-3 py-3">
+                <p className={`text-xl font-extrabold tabular-nums ${colour}`}>{value}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop header (hidden on mobile) ─────────────────────────────── */}
+      <div className="hidden lg:flex items-start justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-0.5">{fmt(today)} · Care OS Operations</p>
         </div>
       </div>
 
-      {/* ── Summary cards ──────────────────────────────────────────────────── */}
+      {/* ── Desktop-only summary grids (hidden on mobile) ─────────────────── */}
+      <div className="hidden lg:block space-y-5">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard
           label="Non-compliant staff"
@@ -524,8 +674,10 @@ export default async function AdminDashboard() {
           urgent={notifFailed > 0}
         />
       </div>
+      </div>
 
-      {/* ── Onboarding overview ─────────────────────────────────────────────── */}
+      {/* ── Desktop: onboarding overview ──────────────────────────────────── */}
+      <div className="hidden lg:block">
       {onboarding && (
         <>
           {onboarding.summary.stalled_count > 0 && (
@@ -577,8 +729,10 @@ export default async function AdminDashboard() {
           </div>
         </>
       )}
+      </div>
 
-      {/* ── Operational alerts ─────────────────────────────────────────────── */}
+      {/* ── Desktop: ops alerts ───────────────────────────────────────────── */}
+      <div className="hidden lg:block">
       {(opsAlerts > 0 || unacknowledged > 0) && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3.5">
           <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -609,8 +763,10 @@ export default async function AdminDashboard() {
           </div>
         </div>
       )}
+      </div>
 
-      {/* ── Main content: 2/3 + 1/3 ────────────────────────────────────────── */}
+      {/* ── Desktop: main content grid ────────────────────────────────────── */}
+      <div className="hidden lg:block">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* LEFT — Today's shifts + Incidents */}
@@ -832,8 +988,10 @@ export default async function AdminDashboard() {
 
         </div>
       </div>
+      </div>
 
-      {/* ── Audit log ───────────────────────────────────────────────────────── */}
+      {/* ── Audit log + Pilot (desktop only) ─────────────────────────────── */}
+      <div className="hidden lg:block space-y-5">
       <SectionBox
         title="Recent Activity"
         action={
@@ -904,6 +1062,8 @@ export default async function AdminDashboard() {
           ))}
         </div>
       </SectionBox>
+
+      </div>
 
     </div>
   )

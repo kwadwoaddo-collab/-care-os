@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import CreateCarePackageForm, { type ClientOption }  from './CreateCarePackageForm'
 import CarePackageStatusControl                      from './CarePackageStatusControl'
+import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import { adminFetch } from '@/lib/admin/serverFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -94,15 +96,19 @@ export default async function CarePackagesPage() {
     .reduce((sum, p) => sum + (p.weekly_hours ?? 0), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Mobile header */}
+      <MobilePageHeader
+        title="Care Packages"
+        subtitle={`${packages.length} package${packages.length !== 1 ? 's' : ''}`}
+      />
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Care Packages</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {packages.length} package{packages.length !== 1 ? 's' : ''}
-          </p>
+          <p className="text-sm text-gray-500 mt-0.5">{packages.length} package{packages.length !== 1 ? 's' : ''}</p>
         </div>
         <CreateCarePackageForm clients={clients} />
       </div>
@@ -127,61 +133,93 @@ export default async function CarePackagesPage() {
         </div>
       </div>
 
-      {/* Table */}
       {packages.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
           No care packages yet. Create one to get started.
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package title</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visits</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly hrs</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {packages.map((pkg) => (
-                  <tr key={pkg.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {pkg.clients ? (
-                        <a
-                          href={`/admin/clients/${pkg.clients.id}`}
-                          className="text-sm font-medium text-indigo-700 hover:underline"
-                        >
-                          {pkg.clients.first_name} {pkg.clients.last_name}
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-900 whitespace-nowrap font-medium">{pkg.title}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <CarePackageStatusControl
-                        packageId={pkg.id}
-                        currentStatus={pkg.status}
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate">
-                      {visitSummary(pkg.care_package_visits)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">
-                      {pkg.weekly_hours ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.start_date)}</td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.end_date)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="space-y-3">
+
+          {/* ── Mobile card list (lg:hidden) ──────────────────────── */}
+          <div className="lg:hidden space-y-2">
+            {packages.map((pkg) => (
+              <div
+                key={pkg.id}
+                className={`bg-white rounded-xl border shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden ${
+                  pkg.status === 'active' ? 'border-green-100' : 'border-gray-100'
+                }`}
+              >
+                {/* Header bar */}
+                <div className={`flex items-center justify-between px-4 py-2.5 border-b ${
+                  pkg.status === 'active' ? 'bg-green-50/60 border-green-100' : 'bg-gray-50 border-gray-100'
+                }`}>
+                  <div className="min-w-0">
+                    {pkg.clients && (
+                      <Link
+                        href={`/admin/clients/${pkg.clients.id}`}
+                        className="text-xs font-semibold text-indigo-700 truncate block"
+                      >
+                        {pkg.clients.first_name} {pkg.clients.last_name}
+                      </Link>
+                    )}
+                  </div>
+                  <Badge value={pkg.status} map={STATUS_CLS} />
+                </div>
+                {/* Body */}
+                <div className="px-4 py-3">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{pkg.title}</p>
+                  <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400 flex-wrap">
+                    <span>{visitSummary(pkg.care_package_visits)}</span>
+                    {pkg.weekly_hours && (
+                      <span className="font-medium text-gray-600">{pkg.weekly_hours}h/wk</span>
+                    )}
+                    <span className="ml-auto">From {formatDate(pkg.start_date)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+
+          {/* ── Desktop table (hidden on mobile) ──────────────────────── */}
+          <div className="hidden lg:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Package title</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visits</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weekly hrs</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {packages.map((pkg) => (
+                    <tr key={pkg.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {pkg.clients ? (
+                          <a href={`/admin/clients/${pkg.clients.id}`} className="text-sm font-medium text-indigo-700 hover:underline">
+                            {pkg.clients.first_name} {pkg.clients.last_name}
+                          </a>
+                        ) : <span className="text-gray-400">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-gray-900 whitespace-nowrap font-medium">{pkg.title}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <CarePackageStatusControl packageId={pkg.id} currentStatus={pkg.status} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs max-w-[200px] truncate">{visitSummary(pkg.care_package_visits)}</td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">{pkg.weekly_hours ?? '—'}</td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.start_date)}</td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{formatDate(pkg.end_date)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       )}
     </div>
