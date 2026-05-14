@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { getStaffDocuments } from '@/lib/staff/getStaffDocuments'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
 import { calculateHrReadiness, type HrReadinessInput } from '@/lib/staff/calculateHrReadiness'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -270,4 +271,90 @@ export async function GET(
     compliance_items: complianceItems ?? [],
     hr_readiness:     hrReadiness,
   })
+}
+
+// ── DELETE ─────────────────────────────────────────────────────────────────────
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId, userId, role } = auth.ctx
+
+  // Only company_admin or registered_manager can delete staff
+  if (!can(role, 'staff:delete')) {
+    return NextResponse.json({ error: 'You do not have permission to delete staff members.' }, { status: 403 })
+  }
+
+  const { id: staffProfileId } = await params
+
+  // Verify staff belongs to this company
+  const { data: profile, error: fetchErr } = await adminClient
+    .from('staff_profiles')
+    .select('id, first_name, last_name, email, status, profile_id')
+    .eq('id', staffProfileId)
+    .eq('company_id', companyId)
+    .maybeSingle()
+
+  if (fetchErr || !profile) {
+    return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  }
+
+  // Safety check: warn about future shifts
+  const { count: futureShiftCount } = await adminClient
+    .from('shifts')
+    .select('id', { count: 'exact', head: true })
+    .eq('assigned_to', staffProfileId)
+    .gte('shift_date', new Date().toISOString().split('T')[0])
+    .in('status', ['scheduled', 'confirmed'])
+
+  if ((futureShiftCount ?? 0) > 0) {
+    // Unassign future shifts first
+    await adminClient
+      .from('shifts')
+      .update({ assigned_to: null, status: 'unassigned', updated_at: new Date().toISOString() })
+      .eq('assigned_to', staffProfileId)
+      .gte('shift_date', new Date().toISOString().split('T')[0])
+      .in('status', ['scheduled', 'confirmed'])
+  }
+
+  // Delete related records (compliance items, documents references, etc.)
+  await adminClient.from('compliance_items').delete().eq('staff_profile_id', staffProfileId)
+
+  // Delete staff profile
+  const { error: deleteErr } = await adminClient
+    .from('staff_profiles')
+    .delete()
+    .eq('id', staffProfileId)
+    .eq('company_id', companyId)
+
+  if (deleteErr) {
+    console.error('[staff/delete] error:', deleteErr.message)
+    return NextResponse.json({ error: 'Failed to delete staff profile' }, { status: 500 })
+  }
+
+  // Audit log
+  void (async () => {
+    try {
+      await adminClient.from('audit_logs').insert({
+        company_id:  companyId,
+        actor_id:    userId,
+        action:      'staff.deleted',
+        entity_type: 'staff_profile',
+        entity_id:   staffProfileId,
+        metadata: {
+          deleted_name: [profile.first_name, profile.last_name].filter(Boolean).join(' '),
+          deleted_email: profile.email,
+          had_future_shifts: (futureShiftCount ?? 0) > 0,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    } catch (err) {
+      console.error('[staff/delete] audit log error:', err)
+    }
+  })()
+
+  return NextResponse.json({ ok: true })
 }

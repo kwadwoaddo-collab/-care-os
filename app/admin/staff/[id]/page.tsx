@@ -27,8 +27,10 @@ import { requireAdmin }        from '@/lib/auth/requireAdmin'
 import { adminClient }         from '@/lib/supabase/admin'
 import { canManageRoles }      from '@/lib/rbac/can'
 import AdminAccessButton    from './AdminAccessButton'
+import DeleteStaffButton    from './DeleteStaffButton'
 import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 import StaffProfileDesktop from '@/components/admin/StaffProfileDesktop'
+import { can }             from '@/lib/rbac/permissions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -654,6 +656,30 @@ export default async function StaffDetailPage({
           </div>
         </div>
       </div>
+
+      {/* ── Danger Zone ──────────────────────────────────────────────────────── */}
+      {can(callerRole, 'staff:delete') && (
+        <div className="mt-6">
+          <div className="bg-surface-container-lowest rounded-xl border border-red-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+            <div className="bg-red-50 border-b border-red-200 px-6 py-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-600 text-[20px]">warning</span>
+              <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>
+            </div>
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary">Delete this staff member</p>
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  Permanently remove this profile and all associated data. This cannot be undone.
+                </p>
+              </div>
+              <DeleteStaffButton
+                staffProfileId={sp.id}
+                staffName={[sp.first_name, sp.last_name].filter(Boolean).join(' ') || sp.email || 'this person'}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

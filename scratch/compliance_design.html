@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Care OS - Compliance Command</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "inverse-surface": "#303032",
+                      "on-surface": "#1b1b1d",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#dcd9db",
+                      "on-background": "#1b1b1d",
+                      "surface-bright": "#fbf8fa",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed": "#0f0069",
+                      "primary": "#091426",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "inverse-on-surface": "#f3f0f2",
+                      "surface-variant": "#e4e2e3",
+                      "tertiary-fixed": "#fadfb8",
+                      "on-secondary": "#ffffff",
+                      "background": "#fbf8fa",
+                      "surface-container-low": "#f5f3f4",
+                      "primary-fixed-dim": "#bcc7de",
+                      "outline": "#75777d",
+                      "on-secondary-container": "#fffbff",
+                      "on-primary-fixed": "#111c2d",
+                      "secondary": "#4b41e1",
+                      "surface-container-highest": "#e4e2e3",
+                      "on-tertiary-container": "#a38c6a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#e2dfff",
+                      "primary-container": "#1e293b",
+                      "tertiary-fixed-dim": "#ddc39d",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#8590a6",
+                      "on-error-container": "#93000a",
+                      "surface": "#fbf8fa",
+                      "tertiary": "#1e1200",
+                      "on-surface-variant": "#45474c",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "surface-container": "#f0edef",
+                      "surface-tint": "#545f73",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed": "#d8e3fb",
+                      "tertiary-container": "#35260c",
+                      "on-tertiary-fixed-variant": "#564427",
+                      "inverse-primary": "#bcc7de",
+                      "outline-variant": "#c5c6cd",
+                      "surface-container-high": "#eae7e9",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "secondary-container": "#645efb",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#271902"
+              },
+              "borderRadius": {
+                      "DEFAULT": "8px",
+                      "lg": "8px",
+                      "xl": "12px",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "margin-desktop": "40px",
+                      "card-padding": "24px",
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "container-max": "1440px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "body-lg": ["Inter"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed-dim selection:text-on-primary-fixed overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<header class="bg-surface-container-low dark:bg-surface-container shadow-sm flex justify-between items-center h-16 px-margin-mobile w-full z-50 sticky top-0">
+<div class="flex items-center gap-unit">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Care OS</span>
+</div>
+<!-- Search and Filter Cluster (Desktop Only) -->
+<div class="hidden md:flex items-center gap-4 flex-1 max-w-2xl px-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all" placeholder="Search compliance status, staff, or roles..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 bg-surface-container-highest px-3 py-2 rounded-lg text-label-md font-label-md hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filter
+                </button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-highest p-2 rounded-full transition-colors">notifications</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img alt="User avatar" data-alt="A professional business portrait of a diverse female administrator in a modern office environment. She is smiling confidently, wearing professional healthcare management attire. The background is a soft-focus clean medical facility with cool blue and white tones, reflecting a high-end clinical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF7HrgMhd1PzeNUV4uy2oxiUIPYKRU9z_lmJ_ndT5eBFFJjKgvmu4Qmz6wn2yGhvnT9VQ060qmwiHpHN_zXyWVTUY4bGuUHSlyz3i8z0L0JV66H42SojSY8-GIyNNmqzKhTrSGwg9qa2O2g6WxkPDg3sxIrmFCvUsO6kSscsuPD_91OT8CN20KZQXJfIQJW0b72NqkZU_d82707bKKmBwf8lwUoX3emJ-9gPs5uznf3ZpNRoYx8zkQt8Ct_lQkdNAQDQHmgoHPZr91"/>
+</div>
+</div>
+</header>
+<div class="flex min-h-screen">
+<!-- Main Sidebar Navigation -->
+<aside class="hidden md:flex flex-col w-64 bg-surface-container-lowest border-r border-outline-variant p-4 gap-2">
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-primary dark:text-primary-fixed font-bold bg-secondary-container/10 rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_search</span>
+<span class="font-label-md text-label-md">Compliance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-label-md text-label-md">Staff</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">folder_shared</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-highest transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 p-margin-desktop space-y-gutter overflow-y-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary">Compliance Command</h1>
+<p class="text-on-surface-variant font-body-lg">Real-time oversight of clinical credentials and staff eligibility.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-highest text-primary font-label-md px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+                        Export Report
+                    </button>
+<button class="bg-primary text-on-primary font-label-md px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Upload Documents
+                    </button>
+</div>
+</div>
+<!-- Triage Metrics Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Critical Card -->
+<div class="bg-surface-container-lowest border-l-4 border-error p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-md font-label-md text-error uppercase tracking-wider">Non-compliant</p>
+<h2 class="text-display-lg font-display-lg text-primary">12</h2>
+</div>
+<span class="material-symbols-outlined text-error text-[32px] opacity-20">error</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-2">Requires immediate attention</p>
+</div>
+<!-- Warning Card -->
+<div class="bg-surface-container-lowest border-l-4 border-tertiary-fixed-dim p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-md font-label-md text-on-tertiary-fixed-variant uppercase tracking-wider">Expiring Soon</p>
+<h2 class="text-display-lg font-display-lg text-primary">34</h2>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[32px] opacity-40">warning</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-2">Expires within 30 days</p>
+</div>
+<!-- Success Card -->
+<div class="bg-surface-container-lowest border-l-4 border-secondary p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-label-md font-label-md text-secondary uppercase tracking-wider">Fully Compliant</p>
+<h2 class="text-display-lg font-display-lg text-primary">186</h2>
+</div>
+<span class="material-symbols-outlined text-secondary text-[32px] opacity-20">check_circle</span>
+</div>
+<p class="text-body-md text-on-surface-variant mt-2">All credentials verified</p>
+</div>
+</div>
+<!-- Compliance Power Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
+<!-- Staff Card 1: Critical -->
+<div class="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full">
+<div class="flex items-center gap-4 mb-4">
+<img alt="James Wilson" class="w-12 h-12 rounded-full bg-surface-container-high" data-alt="A detailed digital illustration of a male registered nurse with short hair and a professional demeanor. He is wearing dark blue medical scrubs. The background is a soft, abstract gradient of white and light grey, emphasizing a clean clinical environment. The style is modern, minimalist, and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQAbTyq6AtaJy4ipw_-d6cmVAZnvMOCYTlAgV1LuwbJDEJjfNo8S20asStGy-LcT3Z7JghN4yJdT8d3PejmrFs9DILXpjcHqSyMpnr02b9e-5mB_pPpDXye6taUmGe2JO1YBDggxboEEt3McO-Vniyhbjz8yPSDFD4saiUZO5vkS8tqa-lGqrJsQ9ZB4dPSR3y6LktBQbJdt4UwaOyCx8d2MpNsg_Tcfhp4OYuZzp8UF-PYNXhyNdBiBzzZEa0D0cVigqm6vlUrrCP"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">James Wilson</h3>
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Registered Nurse</span>
+</div>
+</div>
+<div class="space-y-3 flex-1">
+<p class="text-label-md font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">health_and_safety</span>
+                            Compliance Health
+                        </p>
+<div class="space-y-2">
+<div class="flex justify-between items-center bg-error/5 p-2 rounded border border-error/10">
+<span class="text-body-md text-primary">DBS Check</span>
+<span class="text-label-md text-error font-bold">EXPIRED</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Manual Handling</span>
+<span class="text-label-md text-on-surface-variant">Valid</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Safeguarding L3</span>
+<span class="text-label-md text-on-surface-variant">Valid</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-surface-container">
+<button class="bg-secondary-container/10 text-secondary font-label-md py-2 px-3 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                            Remind
+                        </button>
+<button class="bg-surface-container-highest text-primary font-label-md py-2 px-3 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Profile
+                        </button>
+</div>
+</div>
+<!-- Staff Card 2: Warning -->
+<div class="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full">
+<div class="flex items-center gap-4 mb-4">
+<img alt="Sarah Chen" class="w-12 h-12 rounded-full bg-surface-container-high" data-alt="A portrait of a female healthcare professional with glasses, looking professional and approachable. She is wearing a stethoscope over her teal scrubs. The lighting is soft and natural, suggesting a high-end medical clinic at midday. The aesthetic is clean, sophisticated, and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUoycf34tqXVM_zSKkGoolcKv6bYD2Enh512qPCyF2qC0yyFsJCo87xV17p2nb2YX4tx-0EPlOvYJU77yAbwrwnykZXPWD2i4meT9AfinEjKUcpds03rC9lTaamrlR9kWNbm9Dfn0U5KcMd1OQZMmiJn4nQZaxDrNKHtUyiqtIMYtw-LDNMn_XfkEtt70mmiraEBJSshwjIThfDEXhspjsPrEaqtXOdRjymi8Mlf9vmm2fUaW6vhbj4reG1iqy8cWgzG92spvDjN2S"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Sarah Chen</h3>
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Care Assistant</span>
+</div>
+</div>
+<div class="space-y-3 flex-1">
+<p class="text-label-md font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">health_and_safety</span>
+                            Compliance Health
+                        </p>
+<div class="space-y-2">
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">DBS Check</span>
+<span class="text-label-md text-on-surface-variant">Valid</span>
+</div>
+<div class="flex justify-between items-center bg-tertiary-fixed/10 p-2 rounded border border-tertiary-fixed-dim/30">
+<span class="text-body-md text-primary">Fire Safety</span>
+<span class="text-label-md text-tertiary font-bold">EXPIRING</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Basic Life Sup.</span>
+<span class="text-label-md text-on-surface-variant">Valid</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-surface-container">
+<button class="bg-secondary-container/10 text-secondary font-label-md py-2 px-3 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                            Remind
+                        </button>
+<button class="bg-surface-container-highest text-primary font-label-md py-2 px-3 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Profile
+                        </button>
+</div>
+</div>
+<!-- Staff Card 3: Success -->
+<div class="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full">
+<div class="flex items-center gap-4 mb-4">
+<img alt="Michael Thorne" class="w-12 h-12 rounded-full bg-surface-container-high" data-alt="A portrait of a senior male clinician with a kind, experienced expression. He has grey hair and is wearing professional medical attire including a white lab coat. The setting is a bright, modern corridor of a healthcare facility with minimalist architectural details. The color palette is composed of soft whites and calm blues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUK9U_O9qGaVo1bqKqieDDVPlMTnMDKi9trEsK3XQIgkov-eMIvsu7jN4-no08uZ4lFVcGlIi3mBwtB2LvTA1QDJxt3IFjU_BG1XFa_99jXDn_hSRYc0CBry_2XlvU12vqBE3Bo6WOQo4iDsUMnSTYt7jvK8svi0Nm6RUm44r6c9HPFSEWMk42-Y2IpsLUZ1Kqte_-FNM4Ax5SvUXmFschwqRtNrj0NLtnxfppIrOg01IvnzERHhBuyZa_egEUDZ7cnAXFDKiFCN8G"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Michael Thorne</h3>
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Clinical Lead</span>
+</div>
+</div>
+<div class="space-y-3 flex-1">
+<p class="text-label-md font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">health_and_safety</span>
+                            Compliance Health
+                        </p>
+<div class="space-y-2">
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">GMC Reg.</span>
+<span class="text-label-md text-secondary font-bold">VALID</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Advanced Life Sup.</span>
+<span class="text-label-md text-secondary font-bold">VALID</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Infection Control</span>
+<span class="text-label-md text-secondary font-bold">VALID</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-surface-container">
+<button class="bg-secondary-container/10 text-secondary font-label-md py-2 px-3 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                            Remind
+                        </button>
+<button class="bg-surface-container-highest text-primary font-label-md py-2 px-3 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Profile
+                        </button>
+</div>
+</div>
+<!-- Staff Card 4: Critical -->
+<div class="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full">
+<div class="flex items-center gap-4 mb-4">
+<img alt="Amina Jalloh" class="w-12 h-12 rounded-full bg-surface-container-high" data-alt="A professional portrait of a woman of African descent in healthcare management. She has a confident smile and is wearing professional dark attire. The background is a sophisticated, minimalist workspace with soft ambient lighting and clean lines. The image conveys authority, calm, and absolute reliability within a medical corporate context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrVO_iHj_BCUPGoGb87ccD2nG_BY1rXGXGjkS9-nTwtW-vnNSCv3pDsXc87HW7iwQi0SkiEbAih5F_NA1RixA6C5KQ6IoNMg5gXV3l5RkDaXGGJLfjeuRyChVx0w7A5P1G86Dpe-UYdDrFczw8A6sU11LjPf-rmjnGTx5UKRwxKdK5kpqZeOooA1vFai3P1jZTvorlKUXVURme3Ka2AFReLtK2wnv37J5QkTOctzh7GtBt6tE8SaM6mkfwSnUnPsJ53EmyNzPHvVTc"/>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Amina Jalloh</h3>
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter">Support Worker</span>
+</div>
+</div>
+<div class="space-y-3 flex-1">
+<p class="text-label-md font-label-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">health_and_safety</span>
+                            Compliance Health
+                        </p>
+<div class="space-y-2">
+<div class="flex justify-between items-center bg-error/5 p-2 rounded border border-error/10">
+<span class="text-body-md text-primary">First Aid</span>
+<span class="text-label-md text-error font-bold">EXPIRED</span>
+</div>
+<div class="flex justify-between items-center bg-surface-container-low p-2 rounded">
+<span class="text-body-md text-primary">Food Hygiene</span>
+<span class="text-label-md text-on-surface-variant">Valid</span>
+</div>
+<div class="flex justify-between items-center bg-error/5 p-2 rounded border border-error/10">
+<span class="text-body-md text-primary">Medication Training</span>
+<span class="text-label-md text-error font-bold">EXPIRED</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-surface-container">
+<button class="bg-secondary-container/10 text-secondary font-label-md py-2 px-3 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                            Remind
+                        </button>
+<button class="bg-surface-container-highest text-primary font-label-md py-2 px-3 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+                            Profile
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-margin-mobile pb-safe bg-surface dark:bg-surface-container border-t border-surface-container-highest dark:border-surface-container-high shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.05)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-4 py-1.5 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_search</span>
+<span class="font-label-md text-label-md">Compliance</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-4 py-1.5 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-label-md text-label-md">Staff</span>
+</a>
+</nav>
+</body></html>

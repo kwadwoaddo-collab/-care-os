@@ -24,6 +24,7 @@ export const PERMISSIONS = [
   // Staff
   'staff:read',
   'staff:write',
+  'staff:delete',
 
   // Documents
   'documents:read',
@@ -120,6 +121,7 @@ const REGISTERED_MANAGER_PERMISSIONS: PermSet = new Set<Permission>([
   'applicants:update',
   'staff:read',
   'staff:write',
+  'staff:delete',
   'documents:read',
   'documents:upload',
   'compliance:read',
@@ -144,6 +146,7 @@ const COMPANY_ADMIN_PERMISSIONS: PermSet = new Set<Permission>([
   'applicants:update',
   'staff:read',
   'staff:write',
+  'staff:delete',
   'documents:read',
   'documents:upload',
   'compliance:read',

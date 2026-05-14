@@ -113,6 +113,7 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
   }
 
   const isSaving = actionStatus === 'saving'
+  const isTerminal = status === 'hired' || status === 'rejected' || status === 'withdrawn'
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
@@ -123,37 +124,48 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
           <StatusBadge status={status} />
         </div>
 
-        <div className="h-4 w-px bg-gray-200" />
+        {/* Pipeline buttons — hidden for terminal statuses */}
+        {!isTerminal && (
+          <>
+            <div className="h-4 w-px bg-gray-200" />
+            {ACTIONS.map((action) => {
+              const isActive = status === action.targetStatus
+              return (
+                <button
+                  key={action.targetStatus}
+                  id={`action-${action.targetStatus}`}
+                  onClick={() => handleAction(action.targetStatus)}
+                  disabled={isSaving || isActive}
+                  className={[
+                    'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                    action.btnCls,
+                    isActive ? 'opacity-40 cursor-not-allowed' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                  ].join(' ')}
+                >
+                  {isSaving && !isActive ? (
+                    <span className="flex items-center gap-1">
+                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      {action.label}
+                    </span>
+                  ) : (
+                    action.label
+                  )}
+                </button>
+              )
+            })}
+          </>
+        )}
 
-        {/* Action buttons */}
-        {ACTIONS.map((action) => {
-          const isActive = status === action.targetStatus
-          return (
-            <button
-              key={action.targetStatus}
-              id={`action-${action.targetStatus}`}
-              onClick={() => handleAction(action.targetStatus)}
-              disabled={isSaving || isActive}
-              className={[
-                'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-                action.btnCls,
-                isActive ? 'opacity-40 cursor-not-allowed' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-              ].join(' ')}
-            >
-              {isSaving && !isActive ? (
-                <span className="flex items-center gap-1">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  {action.label}
-                </span>
-              ) : (
-                action.label
-              )}
-            </button>
-          )
-        })}
+        {/* Terminal state label */}
+        {isTerminal && status !== 'hired' && (
+          <>
+            <div className="h-4 w-px bg-gray-200" />
+            <span className="text-xs text-on-surface-variant italic">Pipeline closed</span>
+          </>
+        )}
       </div>
 
       {/* Feedback message */}
