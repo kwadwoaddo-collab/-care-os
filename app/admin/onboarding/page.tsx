@@ -189,27 +189,22 @@ function OnboardingCard({
   )
 }
 
-// ── Summary card ──────────────────────────────────────────────────────────────
+// ── Triage metric card ────────────────────────────────────────────────────────
 
-function SummaryCard({
-  label, count, active, onClick, cls,
-}: {
-  label:   string
-  count:   number
-  active:  boolean
-  onClick: () => void
-  cls:     string
+function TriageMetric({ label, count, subtitle, icon, iconCls }: {
+  label: string; count: number; subtitle: string; icon: string; iconCls: string
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-xl border px-4 py-3 text-left transition-all hover:shadow-sm ${cls} ${
-        active ? 'ring-2 ring-indigo-400 shadow-sm' : ''
-      }`}
-    >
-      <p className="text-xs font-medium opacity-60 mb-1">{label}</p>
-      <p className="text-2xl font-bold tabular-nums">{count}</p>
-    </button>
+    <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-transparent">
+      <div className="flex justify-between items-start mb-4">
+        <span className="text-on-surface-variant font-label-md text-label-md">{label}</span>
+        <span className={`material-symbols-outlined p-2 rounded-lg ${iconCls}`}>{icon}</span>
+      </div>
+      <div className="flex items-baseline gap-2">
+        <span className="font-display-lg text-display-lg">{count}</span>
+        <span className="text-[12px] font-semibold text-on-surface-variant">{subtitle}</span>
+      </div>
+    </div>
   )
 }
 
@@ -352,32 +347,28 @@ export default function OnboardingQueuePage() {
   const stalledRows = data.filter((r) => r.stalled_days !== null)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* Mobile header */}
       <MobilePageHeader
-        title="Onboarding"
-        subtitle={summary ? `${summary.total} staff · ${summary.awaiting_review} awaiting review` : undefined}
+        title="Onboarding Command"
+        subtitle="Staff onboarding pipeline, progress tracking, and stalled alerts."
       />
 
       {/* Desktop header */}
-      <div className="hidden lg:flex items-center justify-between gap-4">
+      <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-primary">Onboarding Queue</h1>
-          {summary && (
-            <p className="text-sm text-on-surface-variant mt-0.5">
-              {summary.total} staff · {summary.awaiting_review} awaiting review · {summary.complete} complete
-              {summary.stalled_count > 0 && (
-                <span className="ml-2 text-amber-600 font-medium">· {summary.stalled_count} stalled</span>
-              )}
-            </p>
-          )}
+          <h1 className="text-xl font-semibold text-primary tracking-tight">Onboarding Command</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
+            Staff onboarding pipeline, progress tracking, and stalled alerts.
+          </p>
         </div>
         <Link
           href="/admin/applicants"
-          className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-primary text-on-primary hover:opacity-90 transition-all shadow-sm"
         >
-          + Invite applicant
+          <span className="material-symbols-outlined text-[16px]">person_add</span>
+          Invite Applicant
         </Link>
       </div>
 
@@ -399,51 +390,19 @@ export default function OnboardingQueuePage() {
         </div>
       )}
 
-      {/* Summary cards — clickable filters */}
+      {/* Triage Metrics Row */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <SummaryCard
-            label="All"
-            count={summary.total}
-            active={stage === 'all'}
-            onClick={() => switchStage('all')}
-            cls="bg-white border-gray-200 text-primary"
-          />
-          <SummaryCard
-            label="Not started"
-            count={summary.not_started}
-            active={stage === 'not_started'}
-            onClick={() => switchStage('not_started')}
-            cls="bg-gray-50 border-gray-200 text-primary"
-          />
-          <SummaryCard
-            label="In progress"
-            count={summary.in_progress}
-            active={stage === 'in_progress'}
-            onClick={() => switchStage('in_progress')}
-            cls="bg-blue-50 border-blue-200 text-blue-900"
-          />
-          <SummaryCard
-            label="Awaiting review"
-            count={summary.awaiting_review}
-            active={stage === 'awaiting_review'}
-            onClick={() => switchStage('awaiting_review')}
-            cls={summary.awaiting_review > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-white border-gray-200 text-primary'}
-          />
-          <SummaryCard
-            label="Complete"
-            count={summary.complete}
-            active={stage === 'complete'}
-            onClick={() => switchStage('complete')}
-            cls="bg-green-50 border-green-200 text-green-900"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TriageMetric label="Awaiting Review" count={summary.awaiting_review} subtitle={`of ${summary.total} total`} icon="rate_review" iconCls="text-primary bg-primary-fixed" />
+          <TriageMetric label="In Progress" count={summary.in_progress} subtitle={summary.stalled_count > 0 ? `${summary.stalled_count} stalled` : 'on track'} icon="pending_actions" iconCls="text-secondary bg-secondary-fixed" />
+          <TriageMetric label="Complete" count={summary.complete} subtitle={`${summary.total > 0 ? Math.round((summary.complete / summary.total) * 100) : 0}% completion`} icon="check_circle" iconCls="text-on-tertiary-fixed-variant bg-tertiary-fixed" />
         </div>
       )}
 
       {/* Search + filters row */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="bg-surface-container-lowest p-4 md:p-6 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant space-y-4">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
           <input
             ref={searchRef}
             id="onboarding-search"
@@ -451,36 +410,36 @@ export default function OnboardingQueuePage() {
             placeholder="Search by name or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-gray-300 pl-9 pr-4 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full bg-background border border-outline-variant rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
           />
         </div>
 
         {/* Stage tab strip */}
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {(['all', 'not_started', 'in_progress', 'awaiting_review', 'complete'] as Stage[]).map((s) => (
             <button
               key={s}
               onClick={() => switchStage(s)}
               className={[
-                'rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
+                'rounded-full px-3 py-1 text-xs font-medium border transition-colors whitespace-nowrap cursor-pointer',
                 stage === s
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                  ? 'bg-primary border-primary text-on-primary'
+                  : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
               ].join(' ')}
             >
-              {STAGE_LABEL[s]}
+              {STAGE_LABEL[s]} {summary ? `(${s === 'all' ? summary.total : summary[s as keyof OnboardingSummary]})` : ''}
             </button>
           ))}
           <button
             onClick={() => setUrgentOnly((v) => !v)}
             className={[
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+              'rounded-full px-3 py-1 text-xs font-medium border transition-colors cursor-pointer',
               urgentOnly
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                ? 'bg-error border-error text-on-error'
+                : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
             ].join(' ')}
           >
-            🚨 Urgent
+            🚨 Urgent / Stalled
           </button>
         </div>
       </div>
@@ -505,7 +464,7 @@ export default function OnboardingQueuePage() {
       {!loading && !error && (
         <>
           {filtered.length === 0 ? (
-            <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-8 text-center text-sm text-gray-400">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-on-surface-variant">
               {search
                 ? `No results for "${search}".`
                 : stage === 'all'
