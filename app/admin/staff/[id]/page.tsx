@@ -618,6 +618,42 @@ export default async function StaffDetailPage({
           recentIncidents={recentIncidents}
         />
       </div>{/* end lg:block wrapper */}
+
+      {/* ── Role & Access Management ─────────────────────────────────────── */}
+      <div className="mt-6">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+          <div className="bg-surface-container-low border-b border-outline-variant px-6 py-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[20px]">admin_panel_settings</span>
+            <h2 className="text-sm font-semibold text-primary">Role & Access Management</h2>
+          </div>
+          <div className="p-6">
+            <RoleManagementPanel
+              staffProfileId={sp.id}
+              profileId={sp.profile_id}
+              currentRole={staffProfileRole}
+              callerRole={callerRole}
+              lastChangedBy={lastChangedBy}
+              lastChangedAt={lastChangedAt}
+              portalTokenActive={portalTokenActive}
+              portalLastLoginAt={sp.portal_last_login_at ?? null}
+              adminInviteSentAt={adminInviteSentAt}
+            />
+
+            {/* Admin Access invite (if no admin account yet) */}
+            {!sp.profile_id && canManageRoles(callerRole) && (
+              <div className="mt-6 pt-4 border-t border-outline-variant">
+                <p className="text-sm text-on-surface-variant mb-3">
+                  This person does not have admin portal access. Create an admin account to assign a system role.
+                </p>
+                <AdminAccessButton
+                  staffProfileId={sp.id}
+                  adminInviteSentAt={adminInviteSentAt}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
