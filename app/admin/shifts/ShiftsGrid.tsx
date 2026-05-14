@@ -2,6 +2,7 @@
 
 import { useState }    from 'react'
 import { useRouter }   from 'next/navigation'
+import AssignShiftModal, { type AssignableShift } from './AssignShiftModal'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -166,6 +167,7 @@ function VisitNoteButton({ shiftId }: { shiftId: string }) {
 
 export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
   const [filter, setFilter] = useState<FilterKey>('all')
+  const [selectedShift, setSelectedShift] = useState<AssignableShift | null>(null)
 
   const today = new Date().toISOString().slice(0, 10)
 
@@ -223,6 +225,14 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
           </button>
         ))}
       </div>
+
+      {selectedShift && (
+        <AssignShiftModal
+          shift={selectedShift}
+          onClose={() => setSelectedShift(null)}
+          onAssigned={() => setSelectedShift(null)}
+        />
+      )}
 
       {/* Grid */}
       {filtered.length === 0 ? (
@@ -324,14 +334,34 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
                   
                   <div className="mt-auto pt-4 flex flex-col gap-2">
                     {isUnassigned ? (
-                      <a href={`/admin/shifts/${shift.id}`} className="w-full text-center bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all">
+                      <button 
+                        onClick={() => setSelectedShift({
+                          id: shift.id,
+                          title: shift.title,
+                          shift_date: shift.shift_date,
+                          start_time: shift.start_time,
+                          end_time: shift.end_time,
+                          client_name: clientName,
+                          shift_type: shift.shift_type
+                        })}
+                        className="w-full text-center bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all cursor-pointer">
                         Assign Professional
-                      </a>
+                      </button>
                     ) : (
                       <div className="flex flex-col gap-2">
-                        <a href={`/admin/shifts/${shift.id}`} className="w-full text-center border border-outline-variant text-primary font-bold py-2.5 rounded-xl hover:bg-surface-container-low transition-all">
+                        <button 
+                          onClick={() => setSelectedShift({
+                            id: shift.id,
+                            title: shift.title,
+                            shift_date: shift.shift_date,
+                            start_time: shift.start_time,
+                            end_time: shift.end_time,
+                            client_name: clientName,
+                            shift_type: shift.shift_type
+                          })}
+                          className="w-full text-center border border-outline-variant text-primary font-bold py-2.5 rounded-xl hover:bg-surface-container-low transition-all cursor-pointer">
                           Edit Assignment
-                        </a>
+                        </button>
                         <div className="flex justify-between items-center px-1">
                           <VisitNoteButton shiftId={shift.id} />
                           {shift.status !== 'completed' && shift.status !== 'cancelled' && (

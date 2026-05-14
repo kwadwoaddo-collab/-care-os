@@ -46,7 +46,6 @@ export async function POST(
     .select('id, status, company_id, first_name, last_name')
     .eq('id', id)
     .eq('company_id', companyId)
-    .is('deleted_at', null)
     .maybeSingle()
 
   if (fetchError) {
@@ -65,10 +64,6 @@ export async function POST(
     .from('applicants')
     .update({
       status:           new_status,
-      rejected_at:      null,
-      rejected_by:      null,
-      rejection_reason: null,
-      rejection_notes:  null,
       updated_at:       new Date().toISOString(),
     })
     .eq('id', id)

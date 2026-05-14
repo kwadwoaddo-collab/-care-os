@@ -23,8 +23,6 @@ interface ApplicantRow {
   job_role: string | null
   status: string
   created_at: string
-  rejected_at: string | null
-  rejection_reason: string | null
   form_status: string | null
   submitted_at: string | null
 }

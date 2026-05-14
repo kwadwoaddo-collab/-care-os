@@ -22,8 +22,6 @@ interface ArchivedApplicantRow {
   job_role: string | null
   status: string
   created_at: string
-  rejected_at: string | null
-  rejection_reason: string | null
   form_status: string | null
   submitted_at: string | null
 }
@@ -168,16 +166,8 @@ export default async function ArchivedApplicantsPage({
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
                         rejected
                       </span>
-                      {a.rejected_at && (
-                        <span className="text-[10px] text-on-surface-variant">{formatDate(a.rejected_at)}</span>
-                      )}
                     </div>
                   </div>
-                  {a.rejection_reason && (
-                    <p className="text-xs text-red-600 bg-red-50 rounded px-2 py-1 border border-red-100">
-                      <span className="font-medium">Reason: </span>{a.rejection_reason}
-                    </p>
-                  )}
                   <ArchivedApplicantActions
                     applicantId={a.id}
                     applicantName={name}
@@ -197,8 +187,6 @@ export default async function ArchivedApplicantsPage({
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Role</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Applied</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Form</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Rejected</th>
-                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Reason</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant text-right">Actions</th>
                 </tr>
               </thead>
@@ -231,16 +219,6 @@ export default async function ArchivedApplicantsPage({
                           </span>
                         ) : (
                           <span className="text-xs text-on-surface-variant">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">
-                        {formatDate(a.rejected_at)}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-on-surface-variant max-w-[200px]">
-                        {a.rejection_reason ? (
-                          <span className="truncate block" title={a.rejection_reason}>{a.rejection_reason}</span>
-                        ) : (
-                          <span className="italic">No reason recorded</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
