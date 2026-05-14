@@ -290,19 +290,177 @@ function CriminalRecordSection({ data }: { data: unknown }) {
   )
 }
 
-// ── Generic JSONB Block ───────────────────────────────────────────────────────
+// ── Helpers: check if structured data is "empty" ─────────────────────────────
 
-function JsonBlock({ data }: { data: unknown }) {
-  if (data === null || data === undefined) {
-    return <p className="text-sm text-gray-400">—</p>
-  }
-  if (typeof data !== 'object') {
-    return <p className="text-sm text-primary">{String(data)}</p>
-  }
+function isEmptyEntry(obj: Record<string, unknown>): boolean {
+  return Object.values(obj).every(v => v === '' || v === null || v === undefined || v === false)
+}
+
+function isEmptyArray(data: unknown): boolean {
+  if (!Array.isArray(data) || data.length === 0) return true
+  return data.every(item => typeof item === 'object' && item && isEmptyEntry(item as Record<string, unknown>))
+}
+
+// ── Professional Qualifications ───────────────────────────────────────────────
+
+interface ProfQualification { qualification_name?: string; institution?: string; date_from?: string; date_to?: string }
+
+function ProfessionalQualificationsSection({ data }: { data: unknown }) {
+  if (isEmptyArray(data)) return null
+  const items = data as ProfQualification[]
   return (
-    <pre className="bg-gray-50 border border-gray-200 rounded p-3 text-xs text-gray-700 overflow-auto whitespace-pre-wrap">
-      {JSON.stringify(data, null, 2)}
-    </pre>
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Professional Qualifications</h2>
+      </div>
+      <div className="p-4 space-y-3">
+        {items.filter(q => q.qualification_name).map((q, i) => (
+          <div key={i} className="border border-gray-200 rounded p-3 text-sm">
+            <p className="font-medium text-primary">{q.qualification_name}</p>
+            {q.institution && <p className="text-xs text-on-surface-variant mt-0.5">{q.institution}</p>}
+            {(q.date_from || q.date_to) && (
+              <p className="text-xs text-gray-500 mt-1">{[q.date_from, q.date_to].filter(Boolean).join(' – ')}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Professional Registration ─────────────────────────────────────────────────
+
+interface ProfRegistration { body_name?: string; registration_number?: string; registration_status?: string; expiry_date?: string }
+
+function ProfessionalRegistrationSection({ data }: { data: unknown }) {
+  if (isEmptyArray(data)) return null
+  const items = data as ProfRegistration[]
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Professional Registration</h2>
+      </div>
+      <div className="p-4 space-y-3">
+        {items.filter(r => r.body_name || r.registration_number).map((r, i) => (
+          <div key={i} className="border border-gray-200 rounded p-3 text-sm">
+            <p className="font-medium text-primary">{r.body_name || '—'}</p>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 text-xs">
+              {r.registration_number && <><dt className="text-on-surface-variant">Reg #</dt><dd className="text-primary">{r.registration_number}</dd></>}
+              {r.registration_status && <><dt className="text-on-surface-variant">Status</dt><dd className="text-primary">{r.registration_status}</dd></>}
+              {r.expiry_date && <><dt className="text-on-surface-variant">Expiry</dt><dd className="text-primary">{r.expiry_date}</dd></>}
+            </dl>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Work Availability ─────────────────────────────────────────────────────────
+
+interface DayAvailability { available?: boolean; notes?: string }
+interface WorkAvailability { monday?: DayAvailability; tuesday?: DayAvailability; wednesday?: DayAvailability; thursday?: DayAvailability; friday?: DayAvailability; saturday?: DayAvailability; sunday?: DayAvailability; general_notes?: string }
+
+const DAYS_ORDER = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const
+const DAY_LABELS: Record<string, string> = { monday:'Mon', tuesday:'Tue', wednesday:'Wed', thursday:'Thu', friday:'Fri', saturday:'Sat', sunday:'Sun' }
+
+function WorkAvailabilitySection({ data }: { data: unknown }) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const wa = data as WorkAvailability
+  const hasAny = DAYS_ORDER.some(d => wa[d]?.available || wa[d]?.notes)
+  if (!hasAny) return null
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Work Availability</h2>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-7 gap-2">
+          {DAYS_ORDER.map(day => {
+            const d = wa[day]
+            const available = d?.available ?? false
+            return (
+              <div key={day} className={`text-center rounded-lg p-2.5 border ${available ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                <p className={`text-xs font-semibold ${available ? 'text-green-700' : 'text-gray-400'}`}>{DAY_LABELS[day]}</p>
+                {d?.notes && <p className="text-[10px] text-gray-500 mt-1">{d.notes}</p>}
+                {!available && !d?.notes && <p className="text-[10px] text-gray-300 mt-1">Off</p>}
+              </div>
+            )
+          })}
+        </div>
+        {wa.general_notes && <p className="text-xs text-on-surface-variant mt-3">{wa.general_notes}</p>}
+      </div>
+    </div>
+  )
+}
+
+// ── Medical History ───────────────────────────────────────────────────────────
+
+interface MedicalHistory { has_illness_impairment_disability?: boolean; needs_assistance_to_do_job?: boolean; awaiting_treatment_or_investigation?: boolean; has_student_loan?: boolean; medical_details?: string }
+
+function MedicalHistorySection({ data }: { data: unknown }) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const mh = data as MedicalHistory
+  const allNo = !mh.has_illness_impairment_disability && !mh.needs_assistance_to_do_job && !mh.awaiting_treatment_or_investigation && !mh.medical_details
+  if (allNo) return null
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Medical History</h2>
+      </div>
+      <div className="p-4">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div><dt className="text-xs font-medium text-on-surface-variant">Illness / disability</dt><dd className="mt-0.5 text-primary">{mh.has_illness_impairment_disability ? 'Yes' : 'No'}</dd></div>
+          <div><dt className="text-xs font-medium text-on-surface-variant">Needs assistance</dt><dd className="mt-0.5 text-primary">{mh.needs_assistance_to_do_job ? 'Yes' : 'No'}</dd></div>
+          <div><dt className="text-xs font-medium text-on-surface-variant">Awaiting treatment</dt><dd className="mt-0.5 text-primary">{mh.awaiting_treatment_or_investigation ? 'Yes' : 'No'}</dd></div>
+          {mh.medical_details && <div className="col-span-full"><dt className="text-xs font-medium text-on-surface-variant">Details</dt><dd className="mt-0.5 text-primary">{mh.medical_details}</dd></div>}
+        </dl>
+      </div>
+    </div>
+  )
+}
+
+// ── Application Source ────────────────────────────────────────────────────────
+
+interface AppSource { source?: string; other_details?: string }
+
+function ApplicationSourceSection({ data }: { data: unknown }) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const src = data as AppSource
+  if (!src.source) return null
+  return (
+    <Section title="Application Source">
+      <Field label="Source" value={src.source} />
+      {src.other_details && <Field label="Details" value={src.other_details} />}
+    </Section>
+  )
+}
+
+// ── Declaration & Consent ─────────────────────────────────────────────────────
+
+function DeclarationSection({ declaration, declarations }: { declaration: unknown; declarations: unknown }) {
+  if (!declaration && !declarations) return null
+  const decl = (declaration && typeof declaration === 'object' && !Array.isArray(declaration)) ? declaration as Record<string, unknown> : null
+  if (!decl) return null
+  const sig = decl.applicant_signature as string | undefined
+  const date = decl.declaration_date as string | undefined
+  if (!sig && !date) return null
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Declaration & Consent</h2>
+      </div>
+      <div className="p-4">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          {sig && <div><dt className="text-xs font-medium text-on-surface-variant">Signed by</dt><dd className="mt-0.5 text-primary font-medium">{sig}</dd></div>}
+          {date && <div><dt className="text-xs font-medium text-on-surface-variant">Date</dt><dd className="mt-0.5 text-primary">{date}</dd></div>}
+          <div><dt className="text-xs font-medium text-on-surface-variant">Information true</dt><dd className="mt-0.5 text-primary">{decl.information_true ? '✓ Yes' : 'No'}</dd></div>
+          <div><dt className="text-xs font-medium text-on-surface-variant">DBS check consent</dt><dd className="mt-0.5 text-primary">{decl.consent_dbs_check ? '✓ Yes' : 'No'}</dd></div>
+          <div><dt className="text-xs font-medium text-on-surface-variant">Reference checks</dt><dd className="mt-0.5 text-primary">{decl.consent_reference_checks ? '✓ Yes' : 'No'}</dd></div>
+          <div><dt className="text-xs font-medium text-on-surface-variant">Data processing</dt><dd className="mt-0.5 text-primary">{decl.consent_data_processing ? '✓ Yes' : 'No'}</dd></div>
+        </dl>
+      </div>
+    </div>
   )
 }
 
@@ -435,44 +593,16 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Professional Qualifications ───────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Professional Qualifications</h2>
-          </div>
-          <div className="p-4">
-            <JsonBlock data={answers.professional_qualifications} />
-          </div>
-        </div>
+        <ProfessionalQualificationsSection data={answers.professional_qualifications} />
 
         {/* ── Professional Registration ─────────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Professional Registration</h2>
-          </div>
-          <div className="p-4">
-            <JsonBlock data={answers.professional_registration} />
-          </div>
-        </div>
+        <ProfessionalRegistrationSection data={answers.professional_registration} />
 
         {/* ── Work Availability ─────────────────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Work Availability</h2>
-          </div>
-          <div className="p-4">
-            <JsonBlock data={answers.work_availability} />
-          </div>
-        </div>
+        <WorkAvailabilitySection data={answers.work_availability} />
 
         {/* ── Medical History ───────────────────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Medical History</h2>
-          </div>
-          <div className="p-4">
-            <JsonBlock data={answers.medical_history} />
-          </div>
-        </div>
+        <MedicalHistorySection data={answers.medical_history} />
 
         {/* ── Emergency Contact ─────────────────────────────────────────────── */}
         <Section title="Emergency Contact">
@@ -483,25 +613,10 @@ export default async function ApplicantDetailPage({
         </Section>
 
         {/* ── Application Source ────────────────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Application Source</h2>
-          </div>
-          <div className="p-4">
-            <JsonBlock data={answers.application_source} />
-          </div>
-        </div>
+        <ApplicationSourceSection data={answers.application_source} />
 
         {/* ── Declarations & Consent ────────────────────────────────────────── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Declaration & Consent</h2>
-          </div>
-          <div className="p-4 space-y-4">
-            <JsonBlock data={answers.declaration_consent} />
-            <JsonBlock data={answers.application_declarations} />
-          </div>
-        </div>
+        <DeclarationSection declaration={answers.declaration_consent} declarations={answers.application_declarations} />
 
         {/* ── Meta ─────────────────────────────────────────────────────────── */}
         <Section title="Application Meta">
