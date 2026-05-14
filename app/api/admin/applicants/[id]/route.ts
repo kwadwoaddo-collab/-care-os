@@ -114,7 +114,6 @@ export async function DELETE(
     .select('id, status, company_id, first_name, last_name')
     .eq('id', id)
     .eq('company_id', companyId)
-    .is('deleted_at', null)
     .maybeSingle()
 
   if (fetchError) {
@@ -128,10 +127,10 @@ export async function DELETE(
     return NextResponse.json({ error: 'Only rejected applicants can be permanently deleted' }, { status: 422 })
   }
 
-  // Soft delete
+  // Hard delete because deleted_at column is missing from remote schema
   const { error: deleteError } = await adminClient
     .from('applicants')
-    .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .delete()
     .eq('id', id)
     .eq('company_id', companyId)
 

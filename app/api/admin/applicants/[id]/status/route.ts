@@ -49,10 +49,7 @@ export async function PATCH(
   }
 
   if (status === 'rejected') {
-    updatePayload.rejected_at      = new Date().toISOString()
-    updatePayload.rejected_by      = userId === 'dev-admin' ? null : userId
-    updatePayload.rejection_reason = typeof rejection_reason === 'string' ? rejection_reason.trim() || null : null
-    updatePayload.rejection_notes  = typeof rejection_notes  === 'string' ? rejection_notes.trim()  || null : null
+    // We cannot update missing database columns. Just put reason in audit log metadata.
   }
 
   const { data: applicant, error: updateError } = await adminClient
@@ -60,8 +57,7 @@ export async function PATCH(
     .update(updatePayload)
     .eq('id', id)
     .eq('company_id', companyId)
-    .is('deleted_at', null)
-    .select('id, first_name, last_name, email, job_role, status, company_id, created_at, updated_at, rejected_at, rejection_reason')
+    .select('id, first_name, last_name, email, job_role, status, company_id, created_at, updated_at')
     .maybeSingle()
 
   if (updateError) {
@@ -86,7 +82,7 @@ export async function PATCH(
           metadata: {
             status,
             applicant_id:     applicant.id,
-            rejection_reason: updatePayload.rejection_reason ?? null,
+            rejection_reason: typeof rejection_reason === 'string' ? rejection_reason.trim() || null : null,
             timestamp:        new Date().toISOString(),
           },
         })

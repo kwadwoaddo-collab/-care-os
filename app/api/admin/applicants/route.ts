@@ -19,12 +19,10 @@ export async function GET(request: NextRequest) {
     .from('applicants')
     .select(
       `id, first_name, last_name, email, job_role, status, created_at,
-       rejected_at, rejection_reason,
        form_responses ( status, submitted_at )`,
       { count: 'exact' }
     )
     .eq('company_id', companyId)
-    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   if (archived) {
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[admin/applicants] fetch failed:', error)
-    return NextResponse.json({ error: 'Failed to fetch applicants' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch applicants', details: error }, { status: 500 })
   }
 
   let applicants = (data ?? []).map((row) => {
@@ -64,8 +62,6 @@ export async function GET(request: NextRequest) {
       job_role:         row.job_role,
       status:           row.status,
       created_at:       row.created_at,
-      rejected_at:      (row as Record<string, unknown>).rejected_at as string | null ?? null,
-      rejection_reason: (row as Record<string, unknown>).rejection_reason as string | null ?? null,
       form_status:      formResponse?.status       ?? null,
       submitted_at:     formResponse?.submitted_at ?? null,
     }
