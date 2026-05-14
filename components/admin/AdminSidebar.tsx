@@ -37,7 +37,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     { label: 'Dashboard',    href: '/admin',               icon: 'dashboard',     show: true },
     { label: 'Shifts',       href: '/admin/shifts',        icon: 'event_repeat',  show: navCan(canViewShifts) },
     { label: 'Compliance',   href: '/admin/compliance',    icon: 'verified_user', show: navCan(canViewCompliance) },
-    { label: 'Staff',        href: '/admin/staff',         icon: 'groups',        show: navCan(canManageStaff) },
+    { label: 'Staff & Recruitment', href: '/admin/staff', icon: 'groups', show: navCan(canManageStaff) },
     { label: 'Applicants',   href: '/admin/applicants',    icon: 'person_add',    show: navCan((r) => can(r, 'applicants:read')) },
     { label: 'Onboarding',   href: '/admin/onboarding',    icon: 'how_to_reg',    show: navCan(canManageStaff) },
     { label: 'Clients',      href: '/admin/clients',       icon: 'contact_page',  show: navCan((r) => can(r, 'clients:read')) },
