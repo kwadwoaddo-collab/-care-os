@@ -134,13 +134,30 @@ function formatDate(iso: string | null): string {
 
 interface EmploymentEntry {
   type?: string
+  // New CQC fields
+  employer_name?: string
+  employer_address?: string
+  job_title?: string
+  start_date?: string
+  end_date?: string | null
+  is_current_role?: boolean
+  reason_for_leaving?: string
+  main_duties?: string
+  manager_contact_name?: string
+  employer_phone?: string
+  employer_email?: string
+  permission_to_contact?: boolean
+  // Legacy field support
   employer?: string
+  organisation?: string
   jobTitle?: string
+  role_or_course?: string
   startDate?: string
   endDate?: string | null
   current?: boolean
   reasonForLeaving?: string
   description?: string
+  reference_available?: boolean
 }
 
 function EmploymentHistory({ entries }: { entries: unknown }) {
@@ -149,30 +166,173 @@ function EmploymentHistory({ entries }: { entries: unknown }) {
   }
   return (
     <div className="space-y-4">
-      {(entries as EmploymentEntry[]).map((entry, i) => (
-        <div key={i} className="border border-gray-200 rounded p-3 text-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-medium text-primary">{entry.employer ?? '—'}</span>
-            {entry.type && (
-              <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">{entry.type}</span>
+      {(entries as EmploymentEntry[]).map((entry, i) => {
+        // Normalise across new + legacy field names
+        const name = entry.employer_name || entry.employer || entry.organisation || '—'
+        const title = entry.job_title || entry.jobTitle || entry.role_or_course
+        const start = entry.start_date || entry.startDate
+        const end = entry.end_date || entry.endDate
+        const isCurrent = entry.is_current_role || entry.current
+        const leaving = entry.reason_for_leaving || entry.reasonForLeaving
+        const duties = entry.main_duties || entry.description
+        const canContact = entry.permission_to_contact ?? entry.reference_available
+
+        return (
+          <div key={i} className="border border-gray-200 rounded-lg p-4 text-sm space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-medium text-primary">{name}</span>
+              {entry.type && (
+                <span className="text-xs bg-gray-100 text-gray-600 rounded px-1.5 py-0.5">{entry.type}</span>
+              )}
+              {isCurrent && (
+                <span className="text-xs bg-blue-50 text-blue-700 rounded px-1.5 py-0.5">Current</span>
+              )}
+              {canContact !== undefined && (
+                <span className={`text-xs rounded px-1.5 py-0.5 ${canContact ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {canContact ? 'Can contact' : 'Do not contact'}
+                </span>
+              )}
+            </div>
+
+            {entry.employer_address && (
+              <p className="text-xs text-gray-500">{entry.employer_address}</p>
             )}
-            {entry.current && (
-              <span className="text-xs bg-blue-50 text-blue-700 rounded px-1.5 py-0.5">Current</span>
+
+            <dl className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5 text-xs">
+              {title && <><dt className="text-on-surface-variant">Job Title</dt><dd className="text-primary">{title}</dd></>}
+              {start && <><dt className="text-on-surface-variant">Start</dt><dd className="text-primary">{start}</dd></>}
+              {(end || isCurrent) && <><dt className="text-on-surface-variant">End</dt><dd className="text-primary">{isCurrent ? 'Present' : end}</dd></>}
+              {leaving && <><dt className="text-on-surface-variant">Reason for leaving</dt><dd className="text-primary">{leaving}</dd></>}
+              {entry.manager_contact_name && <><dt className="text-on-surface-variant">Manager</dt><dd className="text-primary">{entry.manager_contact_name}</dd></>}
+              {entry.employer_phone && <><dt className="text-on-surface-variant">Phone</dt><dd className="text-primary">{entry.employer_phone}</dd></>}
+              {entry.employer_email && <><dt className="text-on-surface-variant">Email</dt><dd className="text-primary">{entry.employer_email}</dd></>}
+            </dl>
+
+            {duties && (
+              <div className="mt-1">
+                <dt className="text-xs font-medium text-on-surface-variant mb-0.5">Main duties</dt>
+                <dd className="text-xs text-gray-600 whitespace-pre-line">{duties}</dd>
+              </div>
             )}
           </div>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-            {entry.jobTitle && <><dt className="text-on-surface-variant">Job Title</dt><dd className="text-primary">{entry.jobTitle}</dd></>}
-            {entry.startDate && <><dt className="text-on-surface-variant">Start</dt><dd className="text-primary">{entry.startDate}</dd></>}
-            {(entry.endDate || entry.current) && <><dt className="text-on-surface-variant">End</dt><dd className="text-primary">{entry.current ? 'Present' : entry.endDate}</dd></>}
-            {entry.reasonForLeaving && <><dt className="text-on-surface-variant">Reason for leaving</dt><dd className="text-primary">{entry.reasonForLeaving}</dd></>}
-          </dl>
-          {entry.description && (
-            <p className="mt-2 text-xs text-gray-600">{entry.description}</p>
-          )}
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
+}
+
+// ── Employment Gap Declarations Section ───────────────────────────────────────
+
+interface GapEntry {
+  from_date?: string
+  to_date?: string
+  gap_reason?: string
+  explanation?: string
+}
+
+function EmploymentGapDeclarations({ entries }: { entries: unknown }) {
+  if (!Array.isArray(entries) || entries.length === 0) return null
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Employment Gap Declarations</h2>
+      </div>
+      <div className="p-4 space-y-3">
+        {(entries as GapEntry[]).map((gap, i) => (
+          <div key={i} className="border border-gray-200 rounded-lg p-3 text-sm space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-amber-700 bg-amber-50 rounded px-1.5 py-0.5">{gap.gap_reason || 'Unspecified'}</span>
+              <span className="text-xs text-gray-500">{[gap.from_date, gap.to_date].filter(Boolean).join(' → ')}</span>
+            </div>
+            {gap.explanation && <p className="text-xs text-gray-600">{gap.explanation}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Safer Recruitment Status Banner ──────────────────────────────────────────
+
+function SaferRecruitmentStatus({ answers }: { answers: Record<string, unknown> }) {
+  const history = answers.employment_history
+  const gaps = answers.employment_gap_declarations
+  const neverWorked = answers.has_never_worked === true || (answers.has_never_worked && typeof answers.has_never_worked === 'object' && 'text' in (answers.has_never_worked as Record<string, unknown>) && (answers.has_never_worked as Record<string, string>).text === 'true')
+  const declaration = answers.employment_history_declaration === true || (answers.employment_history_declaration && typeof answers.employment_history_declaration === 'object' && 'text' in (answers.employment_history_declaration as Record<string, unknown>) && (answers.employment_history_declaration as Record<string, string>).text === 'true')
+
+  if (neverWorked) {
+    return (
+      <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 flex items-center gap-1.5">
+        <span>ℹ️</span> Applicant confirmed they have never been employed
+      </div>
+    )
+  }
+
+  const entries = Array.isArray(history) ? history as EmploymentEntry[] : []
+  const gapEntries = Array.isArray(gaps) ? gaps as GapEntry[] : []
+
+  // Check for missing dates
+  const hasMissingDates = entries.some(e => !e.start_date && !e.startDate)
+
+  if (hasMissingDates) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 flex items-center gap-1.5">
+        <span>🔴</span> Missing employment dates — review required
+      </div>
+    )
+  }
+
+  // Detect unexplained gaps (>31 days between entries)
+  const dated = entries
+    .filter(e => (e.start_date || e.startDate) && (e.end_date || e.endDate || e.is_current_role || e.current))
+    .map(e => ({
+      start: new Date((e.start_date || e.startDate)!),
+      end: (e.is_current_role || e.current) ? new Date() : new Date((e.end_date || e.endDate)!)
+    }))
+    .sort((a, b) => a.start.getTime() - b.start.getTime())
+
+  let hasUnexplainedGaps = false
+  for (let i = 1; i < dated.length; i++) {
+    const gapMs = dated[i].start.getTime() - dated[i - 1].end.getTime()
+    if (gapMs > 31 * 24 * 60 * 60 * 1000) {
+      hasUnexplainedGaps = true
+      break
+    }
+  }
+
+  if (hasUnexplainedGaps && gapEntries.length === 0) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 flex items-center gap-1.5">
+        <span>⚠️</span> Unexplained gaps detected — no gap declarations provided
+      </div>
+    )
+  }
+
+  if (gapEntries.length > 0) {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 flex items-center gap-1.5">
+        <span>⚠️</span> Gaps declared ({gapEntries.length}) — requires admin review
+      </div>
+    )
+  }
+
+  if (declaration && entries.length > 0) {
+    return (
+      <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs font-medium text-green-700 flex items-center gap-1.5">
+        <span>✅</span> Employment history complete — declaration signed
+      </div>
+    )
+  }
+
+  if (entries.length > 0) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-600 flex items-center gap-1.5">
+        <span>ℹ️</span> Employment history provided — declaration not yet signed
+      </div>
+    )
+  }
+
+  return null
 }
 
 // ── References Section ────────────────────────────────────────────────────────
@@ -535,15 +695,21 @@ export default async function ApplicantDetailPage({
           <Field label="National Insurance" value={answers.national_insurance} />
         </Section>
 
+        {/* ── Safer Recruitment Status ─────────────────────────────────────── */}
+        <SaferRecruitmentStatus answers={answers} />
+
         {/* ── Employment / Education History ────────────────────────────────── */}
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-            <h2 className="text-sm font-semibold text-gray-700">Employment / Education History</h2>
+            <h2 className="text-sm font-semibold text-gray-700">Employment History</h2>
           </div>
           <div className="p-4">
             <EmploymentHistory entries={answers.employment_history} />
           </div>
         </div>
+
+        {/* ── Employment Gap Declarations ──────────────────────────────────── */}
+        <EmploymentGapDeclarations entries={answers.employment_gap_declarations} />
 
         {/* ── References ───────────────────────────────────────────────────── */}
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">

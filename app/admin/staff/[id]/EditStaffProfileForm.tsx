@@ -107,9 +107,10 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
     <>
       <button
         onClick={openModal}
-        className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
       >
-        Edit profile
+        <span className="material-symbols-outlined text-[18px]">edit</span>
+        Edit Profile
       </button>
 
       {open && (

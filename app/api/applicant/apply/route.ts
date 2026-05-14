@@ -19,7 +19,16 @@ const FIELD_DEFS = [
   { slug: 'national_insurance',          label: 'National Insurance number',       field_type: 'text',     is_required: true,  sort_order: 11 },
 
   // Section 2 — Employment / Education History (stored as single JSONB array)
-  { slug: 'employment_history',          label: 'Employment / Education History',  field_type: 'textarea', is_required: true,  sort_order: 12 },
+  { slug: 'employment_history',          label: 'Employment / Education History',  field_type: 'textarea', is_required: false, sort_order: 12 },
+
+  // Section 2 — Employment Gap Declarations (stored as single JSONB array)
+  { slug: 'employment_gap_declarations', label: 'Employment Gap Declarations',     field_type: 'textarea', is_required: false, sort_order: 14 },
+
+  // Section 2 — Has Never Worked flag
+  { slug: 'has_never_worked',            label: 'Has never worked',                field_type: 'checkbox', is_required: false, sort_order: 15 },
+
+  // Section 2 — Employment History Declaration
+  { slug: 'employment_history_declaration', label: 'Employment history declaration', field_type: 'checkbox', is_required: false, sort_order: 16 },
 
   // Section 2 — References (stored as single JSONB array)
   { slug: 'references',                  label: 'References',                      field_type: 'textarea', is_required: true,  sort_order: 13 },

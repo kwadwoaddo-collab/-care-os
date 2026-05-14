@@ -31,31 +31,71 @@ type HistoryType = (typeof HISTORY_TYPES)[number] | ''
 
 type EmploymentEntry = {
   type: HistoryType
-  organisation: string
-  role_or_course: string
+  employer_name: string
+  employer_address: string
+  job_title: string
   start_date: string
   end_date: string
+  is_current_role: boolean
   reason_for_leaving: string
-  reference_available: boolean
+  main_duties: string
+  manager_contact_name: string
+  employer_phone: string
+  employer_email: string
+  permission_to_contact: boolean
 }
 
 function makeEmptyEmployment(): EmploymentEntry {
   return {
     type: '',
-    organisation: '',
-    role_or_course: '',
+    employer_name: '',
+    employer_address: '',
+    job_title: '',
     start_date: '',
     end_date: '',
+    is_current_role: false,
     reason_for_leaving: '',
-    reference_available: false,
+    main_duties: '',
+    manager_contact_name: '',
+    employer_phone: '',
+    employer_email: '',
+    permission_to_contact: false,
   }
+}
+
+// ── Employment Gap Declaration types ─────────────────────────────────────────
+
+const GAP_REASONS = [
+  'Unemployed',
+  'Caring responsibilities',
+  'Maternity or paternity leave',
+  'Study or training',
+  'Illness or recovery',
+  'Travel',
+  'Career break',
+  'Volunteering',
+  'Self-employment',
+  'Other',
+] as const
+
+type GapReason = (typeof GAP_REASONS)[number] | ''
+
+type EmploymentGapEntry = {
+  from_date: string
+  to_date: string
+  gap_reason: GapReason
+  explanation: string
+}
+
+function makeEmptyGap(): EmploymentGapEntry {
+  return { from_date: '', to_date: '', gap_reason: '', explanation: '' }
 }
 
 /** Returns true if there is a gap of >31 days between any two consecutive date-sorted entries. */
 function detectGaps(entries: EmploymentEntry[]): boolean {
   const dated = entries
-    .filter(e => e.start_date && e.end_date)
-    .map(e => ({ start: new Date(e.start_date), end: new Date(e.end_date) }))
+    .filter(e => e.start_date && (e.end_date || e.is_current_role))
+    .map(e => ({ start: new Date(e.start_date), end: e.is_current_role ? new Date() : new Date(e.end_date) }))
     .sort((a, b) => a.start.getTime() - b.start.getTime())
   for (let i = 1; i < dated.length; i++) {
     const gapMs = dated[i].start.getTime() - dated[i - 1].end.getTime()
@@ -452,6 +492,9 @@ export default function ApplyContent() {
   const [form, setForm]               = useState<FormValues>(EMPTY)
   const [training, setTraining]       = useState<TrainingQualifications>({ default: makeDefaultTraining(), other: [] })
   const [employment, setEmployment]   = useState<EmploymentEntry[]>([makeEmptyEmployment()])
+  const [gapDeclarations, setGapDeclarations] = useState<EmploymentGapEntry[]>([])
+  const [hasNeverWorked, setHasNeverWorked]   = useState(false)
+  const [employmentHistoryDeclaration, setEmploymentHistoryDeclaration] = useState(false)
   const [references, setReferences]   = useState<ReferenceEntry[]>([makeEmptyReference(), makeEmptyReference()])
   const [criminalRecord, setCriminalRecord] = useState<CriminalRecord>(makeEmptyCriminalRecord())
   const [qualifications, setQualifications] = useState<ProfessionalQualification[]>([makeEmptyQualification()])
@@ -504,7 +547,7 @@ export default function ApplyContent() {
     if (!token || saveState === 'saving' || isSubmitted) return
     setSave('saving'); setSaveError(null)
     try {
-      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
+      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
       const res = await fetch('/api/applicant/apply', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, answers }),
@@ -518,7 +561,7 @@ export default function ApplyContent() {
     if (!token || submitState === 'submitting' || isSubmitted) return
     setSubmitState('submitting'); setSubmitError(null)
     try {
-      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
+      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
       const res = await fetch('/api/applicant/apply', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, answers, submit: true }),
@@ -626,23 +669,38 @@ export default function ApplyContent() {
           </div>
         </SectionCard>
 
-        {/* Section 2 — Employment / Education History */}
+        {/* Section 2 — Employment / Education History (CQC Reg 19 compliant) */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Employment / Education History</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Employment History</h2>
             <p className="mt-1 text-sm text-gray-500">
-              Please provide your full history, including employment, education, volunteering, unemployment, or career breaks.
-              There should be no unexplained gaps.
+              Please provide your full employment history from leaving full-time education or from your first employment.
+              Include all employment, education, volunteering, unemployment, or career breaks.
+              There should be no unexplained gaps in your history.
             </p>
           </div>
 
-          {detectGaps(employment) && (
+          {/* Never worked checkbox */}
+          <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
+            <input
+              type="checkbox"
+              className="mt-0.5 accent-blue-600"
+              checked={hasNeverWorked}
+              onChange={e => {
+                setHasNeverWorked(e.target.checked)
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }}
+            />
+            <span>I have never been employed. I understand I need to provide education, training, or an explanation of how I have spent my time since leaving full-time education.</span>
+          </label>
+
+          {!hasNeverWorked && detectGaps(employment) && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              There appears to be a gap in your history. Please ensure all periods are covered.
+              There appears to be a gap in your history. Please ensure all periods are covered, or declare gaps in the Employment Gap Declaration section below.
             </div>
           )}
 
-          {employment.map((entry, i) => (
+          {!hasNeverWorked && employment.map((entry, i) => (
             <div key={i} className="space-y-4">
               {i > 0 && <div className="border-t border-gray-100 pt-2" />}
               <div className="flex items-center justify-between">
@@ -675,72 +733,219 @@ export default function ApplyContent() {
                 </select>
               </Field>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Organisation / Institution">
-                  <input type="text" className={inputCls} value={entry.organisation}
-                    onChange={e => {
-                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], organisation: e.target.value }; return next })
-                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
-                    }} />
-                </Field>
-                <Field label="Role / Course" hint="e.g. Care Assistant, NVQ Level 2">
-                  <input type="text" className={inputCls} value={entry.role_or_course}
-                    onChange={e => {
-                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], role_or_course: e.target.value }; return next })
-                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
-                    }} />
-                </Field>
-              </div>
+              <Field label="Employer / Organisation name" required>
+                <input type="text" className={inputCls} value={entry.employer_name}
+                  onChange={e => {
+                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], employer_name: e.target.value }; return next })
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }} />
+              </Field>
+
+              <Field label="Employer / Organisation address">
+                <textarea className={textareaCls} value={entry.employer_address} rows={2}
+                  onChange={e => {
+                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], employer_address: e.target.value }; return next })
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }} />
+              </Field>
+
+              <Field label="Job title / Role" hint="e.g. Care Assistant, NVQ Level 2, Support Worker">
+                <input type="text" className={inputCls} value={entry.job_title}
+                  onChange={e => {
+                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], job_title: e.target.value }; return next })
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }} />
+              </Field>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Field label="Start date">
+                <Field label="Start date" required>
                   <input type="date" className={inputCls} value={entry.start_date}
                     onChange={e => {
                       setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], start_date: e.target.value }; return next })
                       if (saveState === 'saved' || saveState === 'error') setSave('idle')
                     }} />
                 </Field>
-                <Field label="End date" hint="Leave blank if ongoing">
-                  <input type="date" className={inputCls} value={entry.end_date}
+                <div>
+                  <Field label="End date" hint={entry.is_current_role ? 'Not required — current role' : undefined}>
+                    <input type="date" className={inputCls} value={entry.end_date}
+                      disabled={entry.is_current_role}
+                      onChange={e => {
+                        setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], end_date: e.target.value }; return next })
+                        if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                      }} />
+                  </Field>
+                  <label className="flex items-center gap-2 mt-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" className="accent-blue-600"
+                      checked={entry.is_current_role}
+                      onChange={e => {
+                        setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], is_current_role: e.target.checked, end_date: e.target.checked ? '' : next[i].end_date }; return next })
+                        if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                      }} />
+                    Currently working here
+                  </label>
+                </div>
+              </div>
+
+              {!entry.is_current_role && (
+                <Field label="Reason for leaving">
+                  <input type="text" className={inputCls} value={entry.reason_for_leaving}
                     onChange={e => {
-                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], end_date: e.target.value }; return next })
+                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], reason_for_leaving: e.target.value }; return next })
+                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                    }} />
+                </Field>
+              )}
+
+              <Field label="Main duties and responsibilities">
+                <textarea className={textareaCls} value={entry.main_duties} rows={3}
+                  onChange={e => {
+                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], main_duties: e.target.value }; return next })
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }} />
+              </Field>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="Manager / Contact name">
+                  <input type="text" className={inputCls} value={entry.manager_contact_name}
+                    onChange={e => {
+                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], manager_contact_name: e.target.value }; return next })
+                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                    }} />
+                </Field>
+                <Field label="Employer phone">
+                  <input type="tel" className={inputCls} value={entry.employer_phone}
+                    onChange={e => {
+                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], employer_phone: e.target.value }; return next })
+                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                    }} />
+                </Field>
+                <Field label="Employer email">
+                  <input type="email" className={inputCls} value={entry.employer_email}
+                    onChange={e => {
+                      setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], employer_email: e.target.value }; return next })
                       if (saveState === 'saved' || saveState === 'error') setSave('idle')
                     }} />
                 </Field>
               </div>
 
-              <Field label="Reason for leaving / ending">
-                <input type="text" className={inputCls} value={entry.reason_for_leaving}
+              <Field label="May we contact this employer for a reference?" required>
+                <div className="flex gap-6 mt-1">
+                  {['true', 'false'].map(v => (
+                    <label key={v} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                      <input type="radio" className="accent-blue-600"
+                        checked={String(entry.permission_to_contact) === v}
+                        onChange={() => {
+                          setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], permission_to_contact: v === 'true' }; return next })
+                          if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                        }} />
+                      {v === 'true' ? 'Yes' : 'No'}
+                    </label>
+                  ))}
+                </div>
+              </Field>
+            </div>
+          ))}
+
+          {!hasNeverWorked && (
+            <button
+              type="button"
+              onClick={() => {
+                setEmployment(prev => [...prev, makeEmptyEmployment()])
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
+            >
+              + Add employment entry
+            </button>
+          )}
+
+          {hasNeverWorked && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              Since you have not been employed, please ensure you complete the Training &amp; Qualifications section with your education history, or use the Employment Gap Declaration section below to explain how you have spent your time since leaving full-time education.
+            </div>
+          )}
+        </div>
+
+        {/* Section 2 — Employment Gap Declaration */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Employment Gap Declaration</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Please explain any gaps in your employment, education, training, volunteering, or self-employment history.
+              This helps us complete safer recruitment checks.
+            </p>
+          </div>
+
+          {gapDeclarations.length === 0 && (
+            <p className="text-sm text-gray-400 italic">No gaps declared. If there are no gaps in your history, you can leave this section empty.</p>
+          )}
+
+          {gapDeclarations.map((gap, i) => (
+            <div key={i} className="space-y-4">
+              {i > 0 && <div className="border-t border-gray-100 pt-2" />}
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-gray-700">Gap {i + 1}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGapDeclarations(prev => prev.filter((_, idx) => idx !== i))
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="From date" required>
+                  <input type="date" className={inputCls} value={gap.from_date}
+                    onChange={e => {
+                      setGapDeclarations(prev => { const next = [...prev]; next[i] = { ...next[i], from_date: e.target.value }; return next })
+                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                    }} />
+                </Field>
+                <Field label="To date" required>
+                  <input type="date" className={inputCls} value={gap.to_date}
+                    onChange={e => {
+                      setGapDeclarations(prev => { const next = [...prev]; next[i] = { ...next[i], to_date: e.target.value }; return next })
+                      if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                    }} />
+                </Field>
+              </div>
+
+              <Field label="Reason for gap" required>
+                <select className={inputCls} value={gap.gap_reason}
                   onChange={e => {
-                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], reason_for_leaving: e.target.value }; return next })
+                    setGapDeclarations(prev => { const next = [...prev]; next[i] = { ...next[i], gap_reason: e.target.value as GapReason }; return next })
+                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                  }}
+                >
+                  <option value="">Select reason…</option>
+                  {GAP_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </Field>
+
+              <Field label="Brief explanation" required>
+                <textarea className={textareaCls} value={gap.explanation} rows={2}
+                  placeholder="Please briefly explain what you were doing during this period."
+                  onChange={e => {
+                    setGapDeclarations(prev => { const next = [...prev]; next[i] = { ...next[i], explanation: e.target.value }; return next })
                     if (saveState === 'saved' || saveState === 'error') setSave('idle')
                   }} />
               </Field>
-
-              <label className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="accent-blue-600"
-                  checked={entry.reference_available}
-                  onChange={e => {
-                    setEmployment(prev => { const next = [...prev]; next[i] = { ...next[i], reference_available: e.target.checked }; return next })
-                    if (saveState === 'saved' || saveState === 'error') setSave('idle')
-                  }}
-                />
-                Reference available for this period
-              </label>
             </div>
           ))}
 
           <button
             type="button"
             onClick={() => {
-              setEmployment(prev => [...prev, makeEmptyEmployment()])
+              setGapDeclarations(prev => [...prev, makeEmptyGap()])
               if (saveState === 'saved' || saveState === 'error') setSave('idle')
             }}
             className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
           >
-            + Add history
+            + Declare a gap
           </button>
         </div>
 
@@ -1536,6 +1741,22 @@ export default function ApplyContent() {
                 onChange={e => setDeclaration(prev => ({ ...prev, consent_data_processing: e.target.checked }))}
               />
               <span>I consent to Care Supreme Ltd processing my personal data for recruitment, onboarding, safer recruitment, and compliance purposes.</span>
+            </label>
+          </div>
+
+          {/* Employment History Declaration — CQC Reg 19 */}
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 space-y-3">
+            <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-blue-600 shrink-0"
+                checked={employmentHistoryDeclaration}
+                onChange={e => {
+                  setEmploymentHistoryDeclaration(e.target.checked)
+                  if (saveState === 'saved' || saveState === 'error') setSave('idle')
+                }}
+              />
+              <span className="font-medium">I confirm that I have provided my full employment history and explained all gaps. I understand that incomplete or false information may affect my application.</span>
             </label>
           </div>
 
