@@ -115,7 +115,18 @@ export default async function ApplicantsPage({
       <MobilePageHeader
         title="Talent Pipeline"
         subtitle="Applicant tracking, screening, and hiring decisions."
-        action={<InviteApplicantForm />}
+        action={
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/applicants/archived"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-lg text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-colors"
+              aria-label="Archived Applicants"
+            >
+              <span className="material-symbols-outlined text-xl leading-none">archive</span>
+            </Link>
+            <InviteApplicantForm />
+          </div>
+        }
       />
 
       {/* Desktop header */}

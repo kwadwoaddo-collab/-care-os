@@ -256,6 +256,7 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     canViewIncidents(userRole)    && { href: '/admin/incidents',     label: 'Incidents',     icon: <IconIncidents /> },
     canViewAuditLogs(userRole)    && { href: '/admin/audit-log',     label: 'Audit Log',     icon: <IconAudit /> },
     canViewNotifications(userRole)&& { href: '/admin/notifications', label: 'Notifications', icon: <IconNotifications /> },
+    can(userRole, 'applicants:read') && { href: '/admin/applicants/archived', label: 'Archived Applicants', icon: <IconSystem /> },
     can(userRole, 'clients:read') && { href: '/admin/clients',       label: 'Clients',       icon: <IconSystem /> },
     canViewSystemHealth(userRole) && { href: '/admin/system',        label: 'System Health', icon: <IconSystem /> },
   ].filter(Boolean) as MoreItem[]
