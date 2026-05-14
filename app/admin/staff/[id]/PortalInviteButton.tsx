@@ -42,25 +42,30 @@ export default function PortalInviteButton({ staffProfileId, lastSentAt }: { sta
 
   return (
     <>
-      <button
-        type="button"
-        onClick={handleClick}
-        className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-      >
-        <span className="flex flex-col items-start">
-          <span>{lastSentAt ? 'Resend Portal Invite' : 'Send Worker Portal Invite'}</span>
-          {lastSentAt && (
-            <span className="text-[10px] font-normal opacity-80 mt-0.5 leading-none">
-              Last sent: {new Date(lastSentAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-            </span>
-          )}
+      <div className="flex flex-col items-start gap-2">
+        <button
+          type="button"
+          onClick={handleClick}
+          className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          <span className="flex flex-col items-start">
+            <span>{lastSentAt ? 'Resend Access Link' : 'Enable Worker Self-Service Access'}</span>
+            {lastSentAt && (
+              <span className="text-[10px] font-normal opacity-80 mt-0.5 leading-none">
+                Last sent: {new Date(lastSentAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </span>
+        </button>
+        <span className="text-xs text-on-surface-variant max-w-[220px] leading-tight">
+          Generates a magic link for dedicated self-service portal access.
         </span>
-      </button>
+      </div>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h2 className="text-base font-semibold text-primary mb-4">Worker Portal Invite</h2>
+            <h2 className="text-base font-semibold text-primary mb-4">Worker Self-Service Access</h2>
 
             {loading && <p className="text-sm text-on-surface-variant">Sending invite…</p>}
 
@@ -78,7 +83,7 @@ export default function PortalInviteButton({ staffProfileId, lastSentAt }: { sta
             {!loading && result && (
               <div className="space-y-4">
                 <div className="rounded-md bg-green-50 p-3 text-sm text-green-700">
-                  Portal invite sent successfully.
+                  Access link generated successfully.
                 </div>
 
                 <dl className="space-y-2 text-sm">

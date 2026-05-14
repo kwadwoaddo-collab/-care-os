@@ -163,7 +163,12 @@ export default function RoleManagementPanel({
             <div>
               <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Worker Portal</dt>
               <dd className="flex items-center gap-2">
-                {portalTokenActive ? (
+                {profileId ? (
+                  <>
+                    <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
+                    <span className="text-sm font-medium text-primary">Worker tools available through current account</span>
+                  </>
+                ) : portalTokenActive ? (
                   <>
                     <span className="flex h-2 w-2 rounded-full bg-green-500" />
                     <span className="text-sm font-semibold text-primary">Active</span>
@@ -176,9 +181,11 @@ export default function RoleManagementPanel({
                 )}
               </dd>
             </div>
-            <div>
-              <PortalInviteButton staffProfileId={staffProfileId} lastSentAt={portalInviteSentAt} />
-            </div>
+            {!profileId && (
+              <div>
+                <PortalInviteButton staffProfileId={staffProfileId} lastSentAt={portalInviteSentAt} />
+              </div>
+            )}
           </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
