@@ -3,6 +3,7 @@ import { adminClient } from '@/lib/supabase/admin'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
 import type { OnboardingResponse } from '@/app/api/admin/onboarding/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import AdminDashboardDesktop from '@/components/admin/AdminDashboardDesktop'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -566,16 +567,44 @@ export default async function AdminDashboard() {
         </details>
       </div>
 
-      {/* ── Desktop header (hidden on mobile) ─────────────────────────────── */}
-      <div className="hidden lg:flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-primary">Dashboard</h1>
-          <p className="text-sm text-on-surface-variant mt-0.5">{fmt(today)} · Care OS Operations</p>
-        </div>
+      {/* ── Desktop command center (lg+) ─────────────────────────────────── */}
+      <div className="hidden lg:block">
+        <AdminDashboardDesktop
+          openShifts={openShifts}
+          nonCompliant={nonCompliant}
+          activeIncidents={incidents.length}
+          activeStaff={activeStaff}
+          activeClients={activeClients}
+          declinedShifts={declinedShifts}
+          runningLate={runningLate}
+          unacknowledged={unacknowledged}
+          hrIncomplete={hrIncomplete}
+          expiring7d={expiring7d}
+          draftNotes={draftNotes}
+          todayShifts={todayShifts}
+          incidents={incidents}
+          topAlerts={topAlerts}
+          auditEntries={auditEntries}
+          onboardingPct={onboardingPct}
+          inviteSuccessPct={inviteSuccessPct}
+          acceptancePct={acceptancePct}
+          completionPct={completionPct}
+          pilotOnboarded={pilotOnboarded}
+          pilotTotalStaff={pilotTotalStaff}
+          pilotInviteLogin={pilotInviteLogin}
+          pilotInvited={pilotInvited}
+          pilotAccepted={pilotAccepted}
+          pilotCompleted={pilotCompleted}
+          pilotTotalAssigned={pilotTotalAssigned}
+          today={today}
+          unassignedToday={unassignedToday}
+        />
       </div>
 
-      {/* ── Desktop-only Triage Hero (hidden on mobile) ─────────────────── */}
-      <div className="hidden lg:grid grid-cols-3 gap-6 mb-6">
+    </div>
+  )
+}
+
         {/* Urgent Incidents */}
         <a href="/admin/incidents" className={`rounded-lg p-6 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md ${incidents.length > 0 ? 'bg-error-container' : 'bg-surface-container-lowest border border-outline-variant'}`}>
           <div className="flex items-center justify-between">
