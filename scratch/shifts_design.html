@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Care OS | Shift Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#4b41e1",
+                        "primary-fixed": "#d8e3fb",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-surface-variant": "#45474c",
+                        "surface-variant": "#e4e2e3",
+                        "surface-dim": "#dcd9db",
+                        "on-tertiary-fixed-variant": "#564427",
+                        "on-primary-fixed": "#111c2d",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "secondary-fixed": "#e2dfff",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-tertiary-fixed": "#271902",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1b1b1d",
+                        "on-secondary": "#ffffff",
+                        "outline": "#75777d",
+                        "inverse-surface": "#303032",
+                        "inverse-primary": "#bcc7de",
+                        "tertiary": "#1e1200",
+                        "inverse-on-surface": "#f3f0f2",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-container-high": "#eae7e9",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-tint": "#545f73",
+                        "on-tertiary-container": "#a38c6a",
+                        "background": "#fbf8fa",
+                        "surface-container-low": "#f5f3f4",
+                        "secondary-container": "#645efb",
+                        "tertiary-container": "#35260c",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#fbf8fa",
+                        "surface-container-highest": "#e4e2e3",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#c5c6cd",
+                        "on-secondary-container": "#fffbff",
+                        "primary-container": "#1e293b",
+                        "primary": "#091426",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ddc39d",
+                        "surface-container": "#f0edef",
+                        "on-primary-container": "#8590a6",
+                        "tertiary-fixed": "#fadfb8",
+                        "surface-bright": "#fbf8fa",
+                        "on-background": "#1b1b1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "24px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "margin-desktop": "40px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf8fa; }
+        .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .card-shadow { shadow-sm; box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low dark:bg-surface-dim flex flex-col p-gutter gap-4 z-50">
+<div class="flex flex-col gap-1 mb-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary" data-icon="clinical_notes">clinical_notes</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Care OS</h1>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider mt-1">Staffing Oversight</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-primary-fixed-variant hover:bg-surface-variant dark:hover:bg-primary-container px-4 py-3 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-lg px-4 py-3 translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="event_busy">event_busy</span>
+<span class="font-label-md text-label-md">Unassigned Shifts</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-primary-fixed-variant hover:bg-surface-variant dark:hover:bg-primary-container px-4 py-3 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="emergency_home">emergency_home</span>
+<span class="font-label-md text-label-md">Urgent Incidents</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-primary-fixed-variant hover:bg-surface-variant dark:hover:bg-primary-container px-4 py-3 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-label-md text-label-md">Compliance</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-primary-fixed-variant hover:bg-surface-variant dark:hover:bg-primary-container px-4 py-3 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">Staff Directory</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant dark:text-on-primary-fixed-variant hover:bg-surface-variant dark:hover:bg-primary-container px-4 py-3 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-2 pt-4 border-t border-outline-variant">
+<button class="w-full bg-primary text-on-primary rounded-xl py-3 font-label-md flex items-center justify-center gap-2 mb-4">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                New Request
+            </button>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-2 hover:bg-surface-variant rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-2 hover:bg-surface-variant rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-gutter py-4 w-full sticky top-0 z-50 bg-surface dark:bg-surface-container-highest shadow-sm">
+<div class="flex items-center gap-8">
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary dark:text-primary-fixed">Shift Management</h2>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-md focus:ring-2 focus:ring-secondary" placeholder="Search shifts, staff, or clients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">Admin User</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Facility Lead</p>
+</div>
+<img alt="Administrator profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" data-alt="A professional headshot of a middle-aged female healthcare administrator with a calm and confident expression. She is wearing professional attire in a modern, brightly lit office environment. The lighting is soft and corporate, reflecting a high-end medical facility aesthetic with a clean, light-mode color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNqqtAOpn37B-VYaR94FGuidezVyWicgfIfLkpWaKrBTv_jtH4679wyB1XhAH3PyLJpiELn4h10AV8WpSQbhQG8Drz0whcC_06m7mjxq0khHxYZARybenB_Rtda0tQJSGMwM9K2BP89uCCsRswHyHQD40yL2gWPQZrxZjRctplqjTvNMZzldEY0V5cjk_NudTpRbqguG8Xa_sCGjBJAJ0_kfNpBz02DI9iRIM6IE9d3TXbhnh1YdyHZ38ULjW18jUnDsws2xViW5W9"/>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="p-gutter flex flex-col gap-gutter max-w-container-max mx-auto w-full">
+<!-- Triage Row Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow border-l-4 border-error flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Unassigned Shifts</p>
+<h3 class="font-display-lg text-display-lg text-error">24</h3>
+<p class="text-[12px] text-error flex items-center gap-1 mt-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="priority_high">priority_high</span> 
+                            High Priority Attention
+                        </p>
+</div>
+<div class="w-12 h-12 bg-error-container rounded-full flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow border-l-4 border-secondary flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Today's Coverage</p>
+<h3 class="font-display-lg text-display-lg text-primary">94%</h3>
+<p class="text-[12px] text-on-surface-variant flex items-center gap-1 mt-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span> 
+                            +2% from yesterday
+                        </p>
+</div>
+<div class="w-12 h-12 bg-secondary-fixed rounded-full flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-card-padding rounded-xl card-shadow border-l-4 border-primary flex items-center justify-between">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Active Care Packages</p>
+<h3 class="font-display-lg text-display-lg text-primary">158</h3>
+<p class="text-[12px] text-on-surface-variant flex items-center gap-1 mt-1 font-medium">
+<span class="material-symbols-outlined text-[14px]" data-icon="inventory_2">inventory_2</span> 
+                            8 new this week
+                        </p>
+</div>
+<div class="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+</div>
+</div>
+</div>
+<!-- Search and Filter Bar -->
+<div class="bg-surface-container-lowest p-4 rounded-xl card-shadow flex flex-wrap gap-4 items-center">
+<div class="flex-grow flex gap-4">
+<div class="flex flex-col gap-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Role Type</label>
+<select class="bg-surface-container-low border-outline-variant rounded-lg text-body-md py-2 focus:ring-secondary focus:border-secondary">
+<option>All Roles</option>
+<option>Registered Nurse (RN)</option>
+<option>Clinical Lead</option>
+<option>Care Assistant</option>
+</select>
+</div>
+<div class="flex flex-col gap-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Shift Date</label>
+<input class="bg-surface-container-low border-outline-variant rounded-lg text-body-md py-2 focus:ring-secondary focus:border-secondary" type="date"/>
+</div>
+<div class="flex flex-col gap-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Location</label>
+<select class="bg-surface-container-low border-outline-variant rounded-lg text-body-md py-2 focus:ring-secondary focus:border-secondary">
+<option>All Facilities</option>
+<option>St. Jude's Wing</option>
+<option>North Clinic</option>
+<option>East Residential</option>
+</select>
+</div>
+</div>
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded-lg font-label-md flex items-center gap-2 h-fit mt-5">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+                    Apply Filters
+                </button>
+</div>
+<!-- Shift Power Cards Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Card 1: Unassigned High Priority -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-error/5 p-4 border-b border-error/10 flex justify-between items-center">
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Unassigned</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-9021</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Margaret Higgins</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    St. Jude's Wing, Room 402
+                                </p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+<p class="font-label-md text-label-md text-primary">09:00 - 15:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Role Required</p>
+<p class="font-label-md text-label-md text-secondary">Senior RN</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<p class="text-body-md text-error font-medium">Critical: Insulin Admin Required</p>
+</div>
+<button class="w-full bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all active:scale-[0.98]">
+                            Assign Professional
+                        </button>
+</div>
+</div>
+<!-- Card 2: Assigned -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-surface-container-low p-4 border-b border-outline-variant/30 flex justify-between items-center">
+<span class="bg-primary text-on-primary text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Assigned</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-8842</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Arthur P. Shelby</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    North Clinic, Ward B
+                                </p>
+</div>
+<img alt="Arthur Shelby profile" class="w-12 h-12 rounded-xl object-cover" data-alt="A portrait of an elderly gentleman with white hair and a kind expression, sitting in a bright ward setting. The background is slightly blurred to emphasize the subject, featuring medical equipment and soft blue tones consistent with a high-end clinic interior. The overall lighting is natural and inviting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOlsVvGCMT-9C0epZRJuEkyTZ1UrN2pODJCTgrltxrQc3D8VD71C-Pixs7AG9aoCdDlxogJAPxckgkasjr3VfjJxUDvXaS-JG25JlnjeZbMz2TsuHLTAvjRqouWBYSNqRQyzQu5vKi4TTn0roqTDlfCbxuUGGcgDRBdJF05BaDxRR0Xr45zXIQ1aWKL6WJGJNM4hPC2FJeazT7u1IEp5lnIDOM4TGW18vF6aBV9qcNmCT4dCYCOOr8G2YwgoGhwD3GLlX9w43_35oA"/>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+<p class="font-label-md text-label-md text-primary">14:00 - 22:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Assigned To</p>
+<p class="font-label-md text-label-md text-secondary">Nurse J. Miller</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle">check_circle</span>
+<p class="text-body-md text-on-surface-variant">Check-in confirmed at 13:55</p>
+</div>
+<button class="w-full border border-outline-variant text-primary font-bold py-3 rounded-xl hover:bg-surface-container-low transition-all">
+                            Edit Assignment
+                        </button>
+</div>
+</div>
+<!-- Card 3: Unassigned Warning -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-tertiary-fixed/20 p-4 border-b border-tertiary-fixed/30 flex justify-between items-center">
+<span class="bg-tertiary-container text-tertiary-fixed text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Unassigned</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-7210</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Sarah Chen</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    East Residential, Suite 12
+                                </p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person_search">person_search</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+<p class="font-label-md text-label-md text-primary">07:00 - 15:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Role Required</p>
+<p class="font-label-md text-label-md text-secondary">Care Assistant</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="history">history</span>
+<p class="text-body-md text-on-surface-variant">Shift starts in <span class="font-bold">12 hours</span></p>
+</div>
+<button class="w-full bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all">
+                            Assign Professional
+                        </button>
+</div>
+</div>
+<!-- Card 4: Unassigned Priority High -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-error/5 p-4 border-b border-error/10 flex justify-between items-center">
+<span class="bg-error text-on-error text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Unassigned</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-9045</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Robert J. Wilson</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    St. Jude's Wing, Room 102
+                                </p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="emergency">emergency</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+<p class="font-label-md text-label-md text-primary">22:00 - 06:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Role Required</p>
+<p class="font-label-md text-label-md text-secondary">Clinical Lead</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error" data-icon="error">error</span>
+<p class="text-body-md text-error font-medium">Night Shift - Urgent Coverage</p>
+</div>
+<button class="w-full bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all">
+                            Assign Professional
+                        </button>
+</div>
+</div>
+<!-- Card 5: Assigned Check-in Pending -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-tertiary-fixed/10 p-4 border-b border-outline-variant/30 flex justify-between items-center">
+<span class="bg-primary text-on-primary text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Assigned</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-8902</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Elizabeth Thorne</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    Home Care - Residence 4B
+                                </p>
+</div>
+<img alt="Elizabeth Thorne profile" class="w-12 h-12 rounded-xl object-cover" data-alt="A detailed portrait of a senior woman with expressive eyes and grey hair, wearing a cozy knit sweater in a soft-lit residential living room setting. The atmosphere is warm and dignified, conveying a sense of home-based professional care. The color palette is composed of neutrals and soft blues, aligning with clinical luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTFAHNKXQP0N98YM69pmvnawvY7XqQeggIxBBSWt2SKFNfptqDlda-uaSh4Abay8tX9PGNO_Qpc2Aj_XIg5OwWPnECHgUOLFcxG0eLJJd_F5oJ-IwgCcUZjjl8MAPs79ygviHsa75WgtU8r7_ZFifYLgkkbG9jpnNZGIIc0Y2PZVcs8ubHMZvR4uZd8w8LFOV7BWUZq18tO_WjwOW0WNtlY_NgWsyvgKzGAe3V88VXvVE61cExhUj2-eRulJQh4WU7zFXJTCA-yWLg"/>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+<p class="font-label-md text-label-md text-primary">08:00 - 12:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Assigned To</p>
+<p class="font-label-md text-label-md text-secondary">Care G. Adams</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="hourglass_empty">hourglass_empty</span>
+<p class="text-body-md text-on-surface-variant">Check-in pending (Starts in 2h)</p>
+</div>
+<button class="w-full border border-outline-variant text-primary font-bold py-3 rounded-xl hover:bg-surface-container-low transition-all">
+                            Edit Assignment
+                        </button>
+</div>
+</div>
+<!-- Card 6: Multi-Shift Warning -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden card-shadow group">
+<div class="bg-surface-container-low p-4 border-b border-outline-variant/30 flex justify-between items-center">
+<span class="bg-on-surface-variant text-surface-container-lowest text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Recurring</span>
+<span class="text-on-surface-variant font-label-md text-[11px]">ID: SH-8811</span>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">Daniel Kim</h4>
+<p class="text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="pin_drop">pin_drop</span>
+                                    Rehabilitation Unit, Room 2
+                                </p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="rebase_edit">rebase_edit</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Next Shift</p>
+<p class="font-label-md text-label-md text-primary">Mon, 18:00</p>
+</div>
+<div>
+<p class="font-label-md text-[10px] text-on-surface-variant uppercase">Status</p>
+<p class="font-label-md text-label-md text-error">Unassigned</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+<p class="text-body-md text-on-surface-variant">Recurring weekly care package</p>
+</div>
+<button class="w-full bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all">
+                            Bulk Assign Series
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB (Suppressed based on context: Details or Transactional screens usually hide this, but on Shift Management it acts as a quick create) -->
+<div class="fixed bottom-8 right-8 z-[60]">
+<button class="bg-secondary text-on-secondary w-14 h-14 rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[28px]" data-icon="add">add</span>
+</button>
+</div>
+</body></html>

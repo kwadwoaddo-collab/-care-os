@@ -1,6 +1,6 @@
 import Link           from 'next/link'
 import OpenShiftsTable, { type OpenShiftRow, type Urgency } from './OpenShiftsTable'
-import { type Shift } from '../ShiftsTable'
+import { type Shift } from '../ShiftsGrid'
 import { adminFetch } from '@/lib/admin/serverFetch'
 import { type SchedulingMetrics } from '@/lib/shifts/types'
 

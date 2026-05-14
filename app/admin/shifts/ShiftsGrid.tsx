@@ -164,7 +164,7 @@ function VisitNoteButton({ shiftId }: { shiftId: string }) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
+export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
   const [filter, setFilter] = useState<FilterKey>('all')
 
   const today = new Date().toISOString().slice(0, 10)
@@ -224,128 +224,127 @@ export default function ShiftsTable({ shifts }: { shifts: Shift[] }) {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
           No shifts match this filter.
         </div>
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Staff</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Title</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Time</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Client</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Worker Ack</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Note</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.map((shift) => (
-                  <tr
-                    key={shift.id}
-                    className={[
-                      'hover:bg-gray-50 transition-colors',
-                      isToday(shift.shift_date) ? 'bg-blue-50/40' : '',
-                    ].join(' ')}
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {shift.staff_profiles ? (
-                        <a
-                          href={`/admin/staff/${shift.assigned_staff_id}`}
-                          className="text-sm font-medium text-indigo-700 hover:underline"
-                        >
-                          {staffName(shift)}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filtered.map((shift) => {
+            const isUnassigned = !shift.assigned_staff_id;
+            const shiftIsToday = isToday(shift.shift_date);
+            const clientName = shift.clients ? `${shift.clients.first_name} ${shift.clients.last_name}` : (shift.client_name ?? '—');
+            const shiftIdTruncated = `SH-${shift.id.slice(0, 4).toUpperCase()}`;
+            
+            // Determine styling based on state
+            let headerBg = 'bg-surface-container-low';
+            let headerBorder = 'border-outline-variant/30';
+            let pillBg = 'bg-primary';
+            let pillText = 'text-on-primary';
+            let statusLabel = 'Assigned';
+            let contextIcon = 'check_circle';
+            let contextIconColor = 'text-primary';
+            let contextText = shift.status.replace(/_/g, ' ');
+            let contextTextColor = 'text-on-surface-variant';
+            
+            if (isUnassigned) {
+              statusLabel = 'Unassigned';
+              if (shiftIsToday) {
+                // High Priority Unassigned
+                headerBg = 'bg-error/5';
+                headerBorder = 'border-error/10';
+                pillBg = 'bg-error';
+                pillText = 'text-on-error';
+                contextIcon = 'warning';
+                contextIconColor = 'text-error';
+                contextText = 'Urgent Coverage Needed';
+                contextTextColor = 'text-error';
+              } else {
+                // Future Unassigned
+                headerBg = 'bg-tertiary-fixed/20';
+                headerBorder = 'border-tertiary-fixed/30';
+                pillBg = 'bg-tertiary-container';
+                pillText = 'text-tertiary-fixed';
+                contextIcon = 'history';
+                contextIconColor = 'text-tertiary-container';
+                contextText = `Starts ${formatDate(shift.shift_date)}`;
+                contextTextColor = 'text-on-surface-variant';
+              }
+            } else if (shift.status === 'completed') {
+              pillBg = 'bg-gray-500';
+              contextText = 'Completed';
+            }
+
+            return (
+              <div key={shift.id} className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col group">
+                <div className={`${headerBg} p-4 border-b ${headerBorder} flex justify-between items-center`}>
+                  <span className={`${pillBg} ${pillText} text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider`}>
+                    {statusLabel}
+                  </span>
+                  <span className="text-on-surface-variant font-label-md text-[11px]">ID: {shiftIdTruncated}</span>
+                </div>
+                
+                <div className="p-card-padding flex flex-col gap-4 flex-grow">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <h4 className="font-headline-md text-headline-md text-primary truncate">{shift.title}</h4>
+                      <p className="text-body-md text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <span className="material-symbols-outlined text-[16px] flex-shrink-0">pin_drop</span>
+                        <span className="truncate">{shift.location || 'No location'}</span>
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-surface-container-low flex items-center justify-center">
+                      <span className="material-symbols-outlined text-on-surface-variant">{isUnassigned ? 'person_search' : 'person'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
+                    <div>
+                      <p className="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
+                      <p className="font-label-md text-label-md text-primary">
+                        {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
+                      </p>
+                      {shiftIsToday && <p className="text-[10px] text-blue-600 font-medium mt-0.5">Today</p>}
+                    </div>
+                    <div>
+                      <p className="font-label-md text-[10px] text-on-surface-variant uppercase">
+                        {isUnassigned ? 'Role Required' : 'Assigned To'}
+                      </p>
+                      <p className="font-label-md text-label-md text-secondary truncate">
+                        {isUnassigned ? (shift.shift_type || 'Any') : staffName(shift)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className={`material-symbols-outlined ${contextIconColor}`}>{contextIcon}</span>
+                    <p className={`text-body-md font-medium ${contextTextColor}`}>{contextText}</p>
+                  </div>
+                  
+                  <div className="mt-auto pt-4 flex flex-col gap-2">
+                    {isUnassigned ? (
+                      <a href={`/admin/shifts/${shift.id}`} className="w-full text-center bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all">
+                        Assign Professional
+                      </a>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <a href={`/admin/shifts/${shift.id}`} className="w-full text-center border border-outline-variant text-primary font-bold py-2.5 rounded-xl hover:bg-surface-container-low transition-all">
+                          Edit Assignment
                         </a>
-                      ) : (
-                        <span className="text-sm text-gray-400">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-primary">{shift.title}</span>
-                      {shift.care_packages && (
-                        <span className="ml-1.5 text-xs text-indigo-500">
-                          {shift.care_packages.title}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {formatDate(shift.shift_date)}
-                      {isToday(shift.shift_date) && (
-                        <span className="ml-1.5 text-xs text-blue-600 font-medium">Today</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">
-                      {formatTime(shift.start_time)} – {formatTime(shift.end_time)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                      {shift.clients ? (
-                        <a
-                          href={`/admin/clients/${shift.clients.id}`}
-                          className="text-indigo-700 hover:underline"
-                        >
-                          {shift.clients.first_name} {shift.clients.last_name}
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">{shift.client_name ?? '—'}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 max-w-[160px] truncate">
-                      {shift.location ?? '—'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {shift.shift_type
-                        ? <Badge value={shift.shift_type} map={TYPE_CLS} />
-                        : <span className="text-gray-400">—</span>
-                      }
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <Badge value={shift.status} map={STATUS_CLS} />
-                        {shift.timesheet_status && (
-                          <Badge value={shift.timesheet_status} map={TIMESHEET_STATUS_CLS} />
-                        )}
+                        <div className="flex justify-between items-center px-1">
+                          <VisitNoteButton shiftId={shift.id} />
+                          {shift.status !== 'completed' && shift.status !== 'cancelled' && (
+                            <UnassignButton shiftId={shift.id} staffName={staffName(shift)} />
+                          )}
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {shift.worker_ack_status ? (
-                        <Badge value={shift.worker_ack_status} map={ACK_CLS} />
-                      ) : shift.assigned_staff_id &&
-                          shift.status !== 'completed' &&
-                          shift.status !== 'cancelled' ? (
-                        <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-50 text-on-surface-variant ring-gray-300">
-                          not responded
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <VisitNoteButton shiftId={shift.id} />
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {shift.assigned_staff_id &&
-                        shift.status !== 'completed' &&
-                        shift.status !== 'cancelled' && (
-                        <UnassignButton
-                          shiftId={shift.id}
-                          staffName={staffName(shift)}
-                        />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

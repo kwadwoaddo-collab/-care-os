@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import ShiftsTable, { type Shift } from './ShiftsTable'
+import ShiftsGrid, { type Shift } from './ShiftsGrid'
 import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
@@ -132,77 +132,98 @@ export default async function ShiftsPage({
         <CreateShiftForm companyId={companyId} readyStaff={readyStaff} activeClients={activeClients} />
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Total</p>
-          <p className="text-2xl font-semibold tabular-nums text-primary">{meta.total}</p>
+      {/* Triage Row Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total */}
+        <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-primary flex items-center justify-between">
+          <div>
+            <p className="font-label-md text-label-md text-on-surface-variant mb-1">Total Shifts</p>
+            <h3 className="font-display-lg text-display-lg text-primary tabular-nums">{meta.total}</h3>
+            <p className="text-[12px] text-on-surface-variant flex items-center gap-1 mt-1 font-medium">
+              <span className="material-symbols-outlined text-[14px]">calendar_month</span> 
+              All active records
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-primary-fixed rounded-full flex items-center justify-center text-on-primary-fixed-variant">
+            <span className="material-symbols-outlined">dataset</span>
+          </div>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Today</p>
-          <p className={`text-2xl font-semibold tabular-nums ${todayCount > 0 ? 'text-blue-600' : 'text-primary'}`}>
-            {todayCount}
-          </p>
+
+        {/* Today */}
+        <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-secondary flex items-center justify-between">
+          <div>
+            <p className="font-label-md text-label-md text-on-surface-variant mb-1">Today's Schedule</p>
+            <h3 className="font-display-lg text-display-lg text-secondary tabular-nums">{todayCount}</h3>
+            <p className="text-[12px] text-on-surface-variant flex items-center gap-1 mt-1 font-medium">
+              <span className="material-symbols-outlined text-[14px]">today</span> 
+              Scheduled for today
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-secondary-fixed rounded-full flex items-center justify-center text-on-secondary-fixed-variant">
+            <span className="material-symbols-outlined">calendar_today</span>
+          </div>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">In Progress</p>
-          <p className={`text-2xl font-semibold tabular-nums ${inProgressCount > 0 ? 'text-green-600' : 'text-primary'}`}>
-            {inProgressCount}
-          </p>
+
+        {/* In Progress */}
+        <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-green-600 flex items-center justify-between">
+          <div>
+            <p className="font-label-md text-label-md text-on-surface-variant mb-1">In Progress</p>
+            <h3 className="font-display-lg text-display-lg text-green-600 tabular-nums">{inProgressCount}</h3>
+            <p className="text-[12px] text-green-700 flex items-center gap-1 mt-1 font-medium">
+              <span className="material-symbols-outlined text-[14px]">update</span> 
+              Currently active
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-700">
+            <span className="material-symbols-outlined">hourglass_top</span>
+          </div>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4">
-          <p className="text-xs font-medium text-on-surface-variant mb-1">Missing Coverage</p>
-          <p className={`text-2xl font-semibold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-primary'}`}>
-            {openCount}
-          </p>
+
+        {/* Missing Coverage */}
+        <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-error flex items-center justify-between">
+          <div>
+            <p className="font-label-md text-label-md text-on-surface-variant mb-1">Unassigned Shifts</p>
+            <h3 className="font-display-lg text-display-lg text-error tabular-nums">{openCount}</h3>
+            <p className="text-[12px] text-error flex items-center gap-1 mt-1 font-medium">
+              <span className="material-symbols-outlined text-[14px]">priority_high</span> 
+              {openCount > 0 ? 'High Priority Attention' : 'All shifts covered'}
+            </p>
+          </div>
+          <div className="w-12 h-12 bg-error-container rounded-full flex items-center justify-center text-on-error-container">
+            <span className="material-symbols-outlined">pending_actions</span>
+          </div>
         </div>
       </div>
 
-      {/* Open shifts callout */}
-      <Link
-        href="/admin/shifts/operations"
-        className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-5 py-4 hover:bg-orange-100 transition-colors group"
-      >
-        <div>
-          <p className="text-sm font-semibold text-orange-800">
-            {openCount === 0
-              ? 'All shifts are assigned'
-              : `${openCount} shift${openCount !== 1 ? 's' : ''} missing coverage`}
-          </p>
-          <p className="text-xs text-orange-600 mt-0.5">View operations dashboard →</p>
-        </div>
-        <span className={`text-3xl font-bold tabular-nums ${openCount > 0 ? 'text-orange-600' : 'text-orange-300'}`}>
-          {openCount}
-        </span>
-      </Link>
-
       {/* Filters */}
-      <ListFilters fields={[
-        { type: 'text',   name: 'search',     placeholder: 'Search title, location, client…', label: 'Search' },
-        { type: 'select', name: 'status',     label: 'Status', options: [
-            { value: 'open',        label: 'Open' },
-            { value: 'offered',     label: 'Offered' },
-            { value: 'accepted',    label: 'Accepted' },
-            { value: 'in_progress', label: 'In Progress' },
-            { value: 'completed',   label: 'Completed' },
-            { value: 'declined',    label: 'Declined' },
-            { value: 'cancelled',   label: 'Cancelled' },
-            { value: 'missed',      label: 'Missed' },
-        ]},
-        { type: 'select', name: 'shift_type', label: 'Shift type', options: [
-            { value: 'day',       label: 'Day' },
-            { value: 'night',     label: 'Night' },
-            { value: 'sleep_in',  label: 'Sleep-in' },
-            { value: 'live_in',   label: 'Live-in' },
-            { value: 'emergency', label: 'Emergency' },
-        ]},
-        { type: 'select', name: 'assigned',   label: 'Assignment', options: [
-            { value: 'assigned',   label: 'Assigned' },
-            { value: 'unassigned', label: 'Unassigned' },
-        ]},
-        { type: 'date',   name: 'date_from',  label: 'From date' },
-        { type: 'date',   name: 'date_to',    label: 'To date' },
-      ]} />
+      <div className="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-outline-variant">
+        <ListFilters fields={[
+          { type: 'text',   name: 'search',     placeholder: 'Search title, location, client…', label: 'Search' },
+          { type: 'select', name: 'status',     label: 'Status', options: [
+              { value: 'open',        label: 'Open' },
+              { value: 'offered',     label: 'Offered' },
+              { value: 'accepted',    label: 'Accepted' },
+              { value: 'in_progress', label: 'In Progress' },
+              { value: 'completed',   label: 'Completed' },
+              { value: 'declined',    label: 'Declined' },
+              { value: 'cancelled',   label: 'Cancelled' },
+              { value: 'missed',      label: 'Missed' },
+          ]},
+          { type: 'select', name: 'shift_type', label: 'Shift type', options: [
+              { value: 'day',       label: 'Day' },
+              { value: 'night',     label: 'Night' },
+              { value: 'sleep_in',  label: 'Sleep-in' },
+              { value: 'live_in',   label: 'Live-in' },
+              { value: 'emergency', label: 'Emergency' },
+          ]},
+          { type: 'select', name: 'assigned',   label: 'Assignment', options: [
+              { value: 'assigned',   label: 'Assigned' },
+              { value: 'unassigned', label: 'Unassigned' },
+          ]},
+          { type: 'date',   name: 'date_from',  label: 'From date' },
+          { type: 'date',   name: 'date_to',    label: 'To date' },
+        ]} />
+      </div>
 
       {shifts.length === 0 ? (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
@@ -309,7 +330,7 @@ export default async function ShiftsPage({
 
           {/* ── Desktop table (hidden on mobile) ────────────────────────── */}
           <div className="hidden lg:block">
-            <ShiftsTable shifts={shifts} />
+            <ShiftsGrid shifts={shifts} />
           </div>
 
           <Pagination meta={meta} searchParams={raw} />
