@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { StaffProfileWithCompliance } from './StaffTable'
+import type { StaffProfileWithCompliance } from './StaffGrid'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
