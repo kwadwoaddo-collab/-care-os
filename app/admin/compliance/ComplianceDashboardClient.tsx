@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { StaffComplianceRow, StaffComplianceResponse } from '@/app/api/admin/compliance/staff/route'
 import { COMPLIANCE_STATE_CLS, COMPLIANCE_STATE_LABEL } from '@/lib/compliance/buildComplianceSnapshot'
 import { BAND_CLS, type ExpiryBand } from '@/lib/compliance/expiryBands'
+import { TerminationModal, type TerminationData } from '@/components/admin/TerminationModal'
+import { hasRole } from '@/lib/rbac/roles'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,7 +68,7 @@ function TriageCard({ label, count, description, cls, icon, iconCls, onClick }: 
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function ComplianceDashboardClient() {
+export default function ComplianceDashboardClient({ userRole }: { userRole?: string }) {
   const router       = useRouter()
   const pathname     = usePathname()
   const searchParams = useSearchParams()
@@ -82,6 +84,57 @@ export default function ComplianceDashboardClient() {
   const [bulkBusy,  setBulkBusy] = useState(false)
   const [bulkMsg,   setBulkMsg]  = useState<string | null>(null)
   const [search,    setSearch]   = useState(currentSearch)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const [staffToTerminate, setStaffToTerminate] = useState<StaffComplianceRow | null>(null)
+
+  useEffect(() => {
+    const clickHandler = () => setOpenMenuId(null)
+    document.addEventListener('click', clickHandler)
+    return () => document.removeEventListener('click', clickHandler)
+  }, [])
+
+  async function doStatusChange(staffId: string, newStatus: string, terminationData?: TerminationData) {
+    setBulkBusy(true)
+    setBulkMsg(null)
+    try {
+      const res = await fetch(`/api/admin/staff/${staffId}/status`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ status: newStatus, force: false, ...terminationData }),
+      })
+      if (!res.ok) throw new Error()
+      setBulkMsg(`✅ Worker status updated`)
+      fetchRows(currentFilter, currentSearch)
+    } catch {
+      setBulkMsg(`Failed to update worker status`)
+    } finally {
+      setBulkBusy(false)
+      setStaffToTerminate(null)
+    }
+  }
+
+  async function remindWorker(row: StaffComplianceRow) {
+    setBulkBusy(true)
+    setBulkMsg(null)
+    try {
+      const res = await fetch('/api/admin/compliance/reminders/worker', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ staffIds: [row.staffId] }),
+      })
+      const j = await res.json() as { sent: number; results?: Array<{ skipped: boolean; reason?: string }> }
+      const skipped = j.results?.[0]?.skipped
+      const reason  = j.results?.[0]?.reason
+      setBulkMsg(skipped
+        ? `Skipped: ${reason ?? 'already compliant'}`
+        : `✅ Reminder sent to ${row.staffName}`
+      )
+    } catch {
+      setBulkMsg('Failed to send reminder')
+    } finally {
+      setBulkBusy(false)
+    }
+  }
 
   // ── Fetch staff compliance rows ─────────────────────────────────────────────
   const fetchRows = useCallback((filter: string, q: string) => {
@@ -325,8 +378,8 @@ export default function ComplianceDashboardClient() {
               
               return (
                 <div key={row.staffId} className="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full relative group">
-                  {/* Select Checkbox */}
-                  <div className="absolute top-4 right-4">
+                  {/* Top Right Actions */}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
                     <input
                       type="checkbox"
                       aria-label={`Select ${row.staffName}`}
@@ -334,6 +387,26 @@ export default function ComplianceDashboardClient() {
                       onChange={() => toggleRow(row.staffId)}
                       className="rounded border-outline-variant text-primary focus:ring-primary"
                     />
+                    <div className="relative">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === row.staffId ? null : row.staffId); }}
+                        className="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                      </button>
+                      {openMenuId === row.staffId && (
+                        <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-outline-variant shadow-lg rounded-xl overflow-hidden z-10 py-1" onClick={e => e.stopPropagation()}>
+                          <Link href={`/admin/staff/${row.staffId}`} className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left">View Profile</Link>
+                          <button onClick={() => remindWorker(row)} className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left">Send Reminder</button>
+                          {hasRole(userRole || 'care_worker', 'coordinator') && (
+                            <button onClick={() => { setOpenMenuId(null); doStatusChange(row.staffId, 'suspended'); }} className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 w-full text-left">Suspend Worker</button>
+                          )}
+                          {hasRole(userRole || 'care_worker', 'company_admin') && (
+                            <button onClick={() => { setOpenMenuId(null); setStaffToTerminate(row); }} className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">Archive Worker</button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-4 mb-4 pr-6">
@@ -342,9 +415,14 @@ export default function ComplianceDashboardClient() {
                     </div>
                     <div>
                       <h3 className="font-headline-md text-headline-md text-primary truncate max-w-[150px]">{row.staffName}</h3>
-                      <span className="inline-block px-2 py-0.5 mt-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px]">
-                        {row.jobRole?.replace(/_/g, ' ') ?? 'Staff'}
-                      </span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px]">
+                          {row.jobRole?.replace(/_/g, ' ') ?? 'Staff'}
+                        </span>
+                        {row.status === 'active' && <span className="inline-block px-2 py-0.5 rounded bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-tighter">Active</span>}
+                        {row.status === 'suspended' && <span className="inline-block px-2 py-0.5 rounded bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-tighter">Suspended</span>}
+                        {row.status === 'terminated' && <span className="inline-block px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-tighter">Archived</span>}
+                      </div>
                     </div>
                   </div>
 
@@ -389,50 +467,21 @@ export default function ComplianceDashboardClient() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-6 pt-4 border-t border-surface-container">
-                    <button
-                      onClick={async () => {
-                        setBulkBusy(true)
-                        setBulkMsg(null)
-                        try {
-                          const res = await fetch('/api/admin/compliance/reminders/worker', {
-                            method:  'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body:    JSON.stringify({ staffIds: [row.staffId] }),
-                          })
-                          const j = await res.json() as { sent: number; results?: Array<{ skipped: boolean; reason?: string }> }
-                          const skipped = j.results?.[0]?.skipped
-                          const reason  = j.results?.[0]?.reason
-                          setBulkMsg(skipped
-                            ? `Skipped: ${reason ?? 'already compliant'}`
-                            : `✅ Reminder sent to ${row.staffName}`
-                          )
-                        } catch {
-                          setBulkMsg('Failed to send reminder')
-                        } finally {
-                          setBulkBusy(false)
-                        }
-                      }}
-                      disabled={bulkBusy}
-                      className="bg-secondary-container/10 text-secondary font-label-md py-2 px-3 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center justify-center gap-1 disabled:opacity-50"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">mail</span>
-                      Remind
-                    </button>
-                    <Link
-                      href={`/admin/staff/${row.staffId}`}
-                      className="bg-surface-container-highest text-primary font-label-md py-2 px-3 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                      Profile
-                    </Link>
-                  </div>
+
                 </div>
               )
             })}
           </div>
         )}
       </div>
+
+      {staffToTerminate && (
+        <TerminationModal
+          onConfirm={(data) => doStatusChange(staffToTerminate.staffId, 'terminated', data)}
+          onCancel={() => setStaffToTerminate(null)}
+          isLoading={bulkBusy}
+        />
+      )}
     </div>
   )
 }

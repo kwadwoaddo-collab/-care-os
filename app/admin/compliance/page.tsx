@@ -1,6 +1,8 @@
 import { Suspense }  from 'react'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ComplianceDashboardClient from './ComplianceDashboardClient'
+import { createClient } from '@/lib/supabase/server'
+import { normaliseRole } from '@/lib/rbac/roles'
 
 // ── GET /admin/compliance ─────────────────────────────────────────────────────
 //
@@ -12,7 +14,19 @@ export const metadata = {
   description: 'Staff compliance dashboard — monitor, filter, and act on compliance across your team.',
 }
 
-export default function CompliancePage() {
+export default async function CompliancePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  let userRole = ''
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    userRole = normaliseRole((profile?.role as string | null) ?? '')
+  }
+
   return (
     <div className="space-y-4">
       {/* Mobile header */}
@@ -59,7 +73,7 @@ export default function CompliancePage() {
           </div>
         }
       >
-        <ComplianceDashboardClient />
+        <ComplianceDashboardClient userRole={userRole} />
       </Suspense>
     </div>
   )
