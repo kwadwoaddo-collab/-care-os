@@ -6,10 +6,15 @@ import Link from 'next/link'
 interface Props {
   applicantId: string
   currentStatus: string
+  rejectedAt?: string | null
+  rejectionReason?: string | null
+  rejectionNotes?: string | null
+  canRestore?: boolean
 }
 
-type ActionStatus    = 'idle' | 'saving' | 'success' | 'error'
-type ConvertStatus   = 'idle' | 'loading' | 'done' | 'error'
+type ActionStatus  = 'idle' | 'saving' | 'success' | 'error'
+type ConvertStatus = 'idle' | 'loading' | 'done' | 'error'
+type RestoreStatus = 'idle' | 'saving' | 'success' | 'error'
 
 const STATUS_BADGE_MAP: Record<string, string> = {
   applied:              'bg-blue-50 text-blue-700 ring-blue-600/20',
@@ -29,7 +34,11 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-const ACTIONS: { label: string; targetStatus: string; btnCls: string }[] = [
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const PIPELINE_ACTIONS: { label: string; targetStatus: string; btnCls: string }[] = [
   {
     label:        'Shortlist',
     targetStatus: 'shortlisted',
@@ -45,14 +54,15 @@ const ACTIONS: { label: string; targetStatus: string; btnCls: string }[] = [
     targetStatus: 'hired',
     btnCls:       'bg-green-50 text-green-700 ring-green-600/20 hover:bg-green-100',
   },
-  {
-    label:        'Reject',
-    targetStatus: 'rejected',
-    btnCls:       'bg-red-50 text-red-700 ring-red-600/20 hover:bg-red-100',
-  },
 ]
 
-export default function ApplicantActions({ applicantId, currentStatus }: Props) {
+export default function ApplicantActions({
+  applicantId,
+  currentStatus,
+  rejectedAt,
+  rejectionReason,
+  canRestore = false,
+}: Props) {
   const [status, setStatus]             = useState(currentStatus)
   const [actionStatus, setActionStatus] = useState<ActionStatus>('idle')
   const [message, setMessage]           = useState<string | null>(null)
@@ -61,22 +71,35 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
   const [convertMessage, setConvertMessage] = useState<string | null>(null)
   const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
 
+  // Rejection modal state
+  const [showRejectModal, setShowRejectModal] = useState(false)
+  const [rejectReason, setRejectReason]       = useState('')
+  const [rejectNotes, setRejectNotes]         = useState('')
+
+  // Restore modal state
+  const [showRestoreModal, setShowRestoreModal]   = useState(false)
+  const [restoreNewStatus, setRestoreNewStatus]   = useState<'applied' | 'shortlisted'>('applied')
+  const [restoreNote, setRestoreNote]             = useState('')
+  const [restoreStatus, setRestoreStatus]         = useState<RestoreStatus>('idle')
+  const [restoreMessage, setRestoreMessage]       = useState<string | null>(null)
+
   async function handleAction(targetStatus: string) {
+    if (targetStatus === 'rejected') {
+      setShowRejectModal(true)
+      return
+    }
     setActionStatus('saving')
     setMessage(null)
-
     try {
       const res = await fetch(`/api/admin/applicants/${applicantId}/status`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ status: targetStatus }),
       })
-
       if (!res.ok) {
         const body = await res.json().catch(() => ({})) as { error?: string }
         throw new Error(body.error ?? `Request failed with status ${res.status}`)
       }
-
       setStatus(targetStatus)
       setActionStatus('success')
       setMessage(`Status updated to "${targetStatus.replace(/_/g, ' ')}"`)
@@ -86,145 +109,326 @@ export default function ApplicantActions({ applicantId, currentStatus }: Props) 
     }
   }
 
+  async function handleReject() {
+    setActionStatus('saving')
+    setMessage(null)
+    setShowRejectModal(false)
+    try {
+      const res = await fetch(`/api/admin/applicants/${applicantId}/status`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          status:           'rejected',
+          rejection_reason: rejectReason.trim() || null,
+          rejection_notes:  rejectNotes.trim()  || null,
+        }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(body.error ?? `Request failed with status ${res.status}`)
+      }
+      setStatus('rejected')
+      setActionStatus('success')
+      setMessage('Applicant rejected.')
+      setRejectReason('')
+      setRejectNotes('')
+    } catch (err) {
+      setActionStatus('error')
+      setMessage(err instanceof Error ? err.message : 'Something went wrong')
+    }
+  }
+
+  async function handleRestore() {
+    setRestoreStatus('saving')
+    setRestoreMessage(null)
+    try {
+      const res = await fetch(`/api/admin/applicants/${applicantId}/restore`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ new_status: restoreNewStatus, restore_note: restoreNote.trim() || null }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(body.error ?? `Request failed with status ${res.status}`)
+      }
+      setStatus(restoreNewStatus)
+      setRestoreStatus('success')
+      setRestoreMessage(`Applicant restored to "${restoreNewStatus === 'shortlisted' ? 'In Review' : 'Applied'}".`)
+      setShowRestoreModal(false)
+      setRestoreNote('')
+    } catch (err) {
+      setRestoreStatus('error')
+      setRestoreMessage(err instanceof Error ? err.message : 'Something went wrong')
+    }
+  }
+
   async function handleConvert() {
     setConvertStatus('loading')
     setConvertMessage(null)
     try {
-      const res = await fetch(`/api/admin/applicants/${applicantId}/convert`, {
-        method: 'POST',
-      })
+      const res = await fetch(`/api/admin/applicants/${applicantId}/convert`, { method: 'POST' })
       const body = await res.json() as {
         staff_profile?: { id: string }
         already_converted?: boolean
         error?: string
       }
-      if (!res.ok) {
-        throw new Error(body.error ?? `Request failed (${res.status})`)
-      }
+      if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`)
       setStaffProfileId(body.staff_profile?.id ?? null)
       setConvertStatus('done')
-      setConvertMessage(
-        body.already_converted ? 'Already converted — staff profile exists.' : 'Staff profile created.'
-      )
+      setConvertMessage(body.already_converted ? 'Already converted — staff profile exists.' : 'Staff profile created.')
     } catch (err) {
       setConvertStatus('error')
       setConvertMessage(err instanceof Error ? err.message : 'Something went wrong')
     }
   }
 
-  const isSaving = actionStatus === 'saving'
+  const isSaving   = actionStatus === 'saving'
   const isTerminal = status === 'hired' || status === 'rejected' || status === 'withdrawn'
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
-      <div className="flex flex-wrap items-center gap-3">
-        {/* Current status display */}
-        <div className="flex items-center gap-1.5 mr-2">
-          <span className="text-xs text-on-surface-variant font-medium">Status:</span>
-          <StatusBadge status={status} />
+    <>
+      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Current status */}
+          <div className="flex items-center gap-1.5 mr-2">
+            <span className="text-xs text-on-surface-variant font-medium">Status:</span>
+            <StatusBadge status={status} />
+          </div>
+
+          {/* Pipeline buttons */}
+          {!isTerminal && (
+            <>
+              <div className="h-4 w-px bg-gray-200" />
+              {PIPELINE_ACTIONS.map((action) => {
+                const isActive = status === action.targetStatus
+                return (
+                  <button
+                    key={action.targetStatus}
+                    id={`action-${action.targetStatus}`}
+                    onClick={() => handleAction(action.targetStatus)}
+                    disabled={isSaving || isActive}
+                    className={[
+                      'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                      action.btnCls,
+                      isActive ? 'opacity-40 cursor-not-allowed' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                    ].join(' ')}
+                  >
+                    {isSaving ? (
+                      <span className="flex items-center gap-1">
+                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        {action.label}
+                      </span>
+                    ) : action.label}
+                  </button>
+                )
+              })}
+              {/* Reject button — triggers modal */}
+              <button
+                id="action-rejected"
+                onClick={() => handleAction('rejected')}
+                disabled={isSaving}
+                className={[
+                  'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                  'bg-red-50 text-red-700 ring-red-600/20 hover:bg-red-100',
+                  isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                ].join(' ')}
+              >
+                Reject
+              </button>
+            </>
+          )}
+
+          {/* Rejected state */}
+          {status === 'rejected' && (
+            <>
+              <div className="h-4 w-px bg-gray-200" />
+              <span className="text-xs text-red-600 font-medium">Rejected</span>
+              {rejectedAt && (
+                <span className="text-xs text-on-surface-variant">on {formatDate(rejectedAt)}</span>
+              )}
+              {canRestore && (
+                <button
+                  onClick={() => setShowRestoreModal(true)}
+                  className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20 hover:bg-blue-100 cursor-pointer transition-colors"
+                >
+                  Restore Applicant
+                </button>
+              )}
+            </>
+          )}
+
+          {/* Other terminal states */}
+          {isTerminal && status !== 'hired' && status !== 'rejected' && (
+            <>
+              <div className="h-4 w-px bg-gray-200" />
+              <span className="text-xs text-on-surface-variant italic">Pipeline closed</span>
+            </>
+          )}
         </div>
 
-        {/* Pipeline buttons — hidden for terminal statuses */}
-        {!isTerminal && (
-          <>
-            <div className="h-4 w-px bg-gray-200" />
-            {ACTIONS.map((action) => {
-              const isActive = status === action.targetStatus
-              return (
-                <button
-                  key={action.targetStatus}
-                  id={`action-${action.targetStatus}`}
-                  onClick={() => handleAction(action.targetStatus)}
-                  disabled={isSaving || isActive}
-                  className={[
-                    'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-                    action.btnCls,
-                    isActive ? 'opacity-40 cursor-not-allowed' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
-                  ].join(' ')}
-                >
-                  {isSaving && !isActive ? (
-                    <span className="flex items-center gap-1">
-                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      {action.label}
-                    </span>
-                  ) : (
-                    action.label
-                  )}
-                </button>
-              )
-            })}
-          </>
+        {/* Rejection reason display */}
+        {status === 'rejected' && rejectionReason && (
+          <div className="mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+            <span className="font-medium">Reason: </span>{rejectionReason}
+          </div>
         )}
 
-        {/* Terminal state label */}
-        {isTerminal && status !== 'hired' && (
-          <>
-            <div className="h-4 w-px bg-gray-200" />
-            <span className="text-xs text-on-surface-variant italic">Pipeline closed</span>
-          </>
+        {/* Feedback messages */}
+        {message && (
+          <p className={`mt-2 text-xs ${actionStatus === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+            {actionStatus === 'success' ? '✓ ' : '✕ '}{message}
+          </p>
+        )}
+        {restoreMessage && (
+          <p className={`mt-2 text-xs ${restoreStatus === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+            {restoreStatus === 'success' ? '✓ ' : '✕ '}{restoreMessage}
+          </p>
+        )}
+
+        {/* Convert to Staff — only shown when hired */}
+        {status === 'hired' && (
+          <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
+            <button
+              id="btn-convert-to-staff"
+              onClick={handleConvert}
+              disabled={convertStatus === 'loading' || convertStatus === 'done'}
+              className={[
+                'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                convertStatus === 'done'
+                  ? 'bg-green-50 text-green-700 ring-green-600/20 opacity-60 cursor-not-allowed'
+                  : convertStatus === 'loading'
+                  ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
+                  : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
+              ].join(' ')}
+            >
+              {convertStatus === 'loading' ? (
+                <span className="flex items-center gap-1">
+                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Converting…
+                </span>
+              ) : convertStatus === 'done' ? '✓ Staff profile created' : 'Convert to Staff'}
+            </button>
+            {convertStatus === 'done' && staffProfileId && (
+              <Link
+                href={`/admin/staff/${staffProfileId}`}
+                className="text-xs text-indigo-600 underline hover:text-indigo-800 transition-colors"
+              >
+                View staff profile →
+              </Link>
+            )}
+            {convertMessage && convertStatus === 'error' && (
+              <p className="text-xs text-red-600">✕ {convertMessage}</p>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Feedback message */}
-      {message && (
-        <p
-          className={`mt-2 text-xs ${
-            actionStatus === 'success' ? 'text-green-600' : 'text-red-600'
-          }`}
-        >
-          {actionStatus === 'success' ? '✓ ' : '✕ '}
-          {message}
-        </p>
-      )}
-
-      {/* Convert to Staff — only shown when hired */}
-      {status === 'hired' && (
-        <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
-          <button
-            id="btn-convert-to-staff"
-            onClick={handleConvert}
-            disabled={convertStatus === 'loading' || convertStatus === 'done'}
-            className={[
-              'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-              convertStatus === 'done'
-                ? 'bg-green-50 text-green-700 ring-green-600/20 opacity-60 cursor-not-allowed'
-                : convertStatus === 'loading'
-                ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
-                : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
-            ].join(' ')}
-          >
-            {convertStatus === 'loading' ? (
-              <span className="flex items-center gap-1">
-                <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                Converting…
-              </span>
-            ) : convertStatus === 'done' ? (
-              '✓ Staff profile created'
-            ) : (
-              'Convert to Staff'
-            )}
-          </button>
-
-          {convertStatus === 'done' && staffProfileId && (
-            <Link
-              href={`/admin/staff/${staffProfileId}`}
-              className="text-xs text-indigo-600 underline hover:text-indigo-800 transition-colors"
-            >
-              View staff profile →
-            </Link>
-          )}
-
-          {convertMessage && convertStatus === 'error' && (
-            <p className="text-xs text-red-600">✕ {convertMessage}</p>
-          )}
+      {/* ── Rejection modal ──────────────────────────────────────────────────── */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-base font-semibold text-gray-900">Reject Applicant</h2>
+            <p className="text-sm text-on-surface-variant">
+              This applicant will be moved to the archived view. You can restore them later if needed.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-on-surface-variant mb-1">
+                Rejection reason <span className="text-on-surface-variant font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. Not enough experience, role filled…"
+                className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-on-surface-variant mb-1">
+                Additional notes <span className="text-on-surface-variant font-normal">(optional)</span>
+              </label>
+              <textarea
+                value={rejectNotes}
+                onChange={(e) => setRejectNotes(e.target.value)}
+                rows={2}
+                placeholder="Any further context…"
+                className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => { setShowRejectModal(false); setRejectReason(''); setRejectNotes('') }}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReject}
+                className="rounded-lg px-4 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
         </div>
       )}
-    </div>
+
+      {/* ── Restore modal ────────────────────────────────────────────────────── */}
+      {showRestoreModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <h2 className="text-base font-semibold text-gray-900">Restore Applicant</h2>
+            <p className="text-sm text-on-surface-variant">
+              Choose which stage to restore this applicant to in the pipeline.
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-on-surface-variant mb-1">Restore to</label>
+              <select
+                value={restoreNewStatus}
+                onChange={(e) => setRestoreNewStatus(e.target.value as 'applied' | 'shortlisted')}
+                className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              >
+                <option value="applied">Applied</option>
+                <option value="shortlisted">In Review (Shortlisted)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-on-surface-variant mb-1">
+                Reason for restoring <span className="text-on-surface-variant font-normal">(optional)</span>
+              </label>
+              <textarea
+                value={restoreNote}
+                onChange={(e) => setRestoreNote(e.target.value)}
+                rows={2}
+                placeholder="e.g. Reconsidering after further review…"
+                className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button
+                onClick={() => { setShowRestoreModal(false); setRestoreNote('') }}
+                disabled={restoreStatus === 'saving'}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRestore}
+                disabled={restoreStatus === 'saving'}
+                className="rounded-lg px-4 py-2 text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
+              >
+                {restoreStatus === 'saving' ? 'Restoring…' : 'Restore Applicant'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }

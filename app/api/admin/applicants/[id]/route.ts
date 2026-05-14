@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/rbac/permissions'
 
 export async function GET(
   _request: NextRequest,
@@ -91,4 +92,76 @@ export async function GET(
   }
 
   return NextResponse.json({ applicant, response, answers })
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId, userId, role } = auth.ctx
+
+  if (!can(role, 'applicants:delete')) {
+    return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+  }
+
+  const { id } = await params
+
+  // Only rejected applicants can be permanently deleted
+  const { data: existing, error: fetchError } = await adminClient
+    .from('applicants')
+    .select('id, status, company_id, first_name, last_name')
+    .eq('id', id)
+    .eq('company_id', companyId)
+    .is('deleted_at', null)
+    .maybeSingle()
+
+  if (fetchError) {
+    console.error('[admin/applicants/[id]] DELETE fetch failed:', fetchError)
+    return NextResponse.json({ error: 'Failed to fetch applicant' }, { status: 500 })
+  }
+  if (!existing) {
+    return NextResponse.json({ error: 'Applicant not found' }, { status: 404 })
+  }
+  if (existing.status !== 'rejected') {
+    return NextResponse.json({ error: 'Only rejected applicants can be permanently deleted' }, { status: 422 })
+  }
+
+  // Soft delete
+  const { error: deleteError } = await adminClient
+    .from('applicants')
+    .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('company_id', companyId)
+
+  if (deleteError) {
+    console.error('[admin/applicants/[id]] DELETE soft-delete failed:', deleteError)
+    return NextResponse.json({ error: 'Failed to delete applicant' }, { status: 500 })
+  }
+
+  // Audit log (fire-and-forget)
+  void (async () => {
+    try {
+      const { error } = await adminClient
+        .from('audit_logs')
+        .insert({
+          company_id:  companyId,
+          actor_id:    userId === 'dev-admin' ? null : userId,
+          action:      'applicant.permanently_deleted',
+          entity_type: 'applicant',
+          entity_id:   id,
+          metadata: {
+            first_name: existing.first_name,
+            last_name:  existing.last_name,
+            timestamp:  new Date().toISOString(),
+          },
+        })
+      if (error) console.error('[admin/applicants/[id]] DELETE audit log failed:', error)
+    } catch (err) {
+      console.error('[admin/applicants/[id]] DELETE audit log unexpected error:', err)
+    }
+  })()
+
+  return NextResponse.json({ success: true })
 }

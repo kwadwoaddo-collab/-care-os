@@ -6,6 +6,7 @@ import { getAssignableRoles, canManageRoles } from '@/lib/rbac/can'
 import { getAccessState } from '@/lib/rbac/access'
 import type { Role } from '@/lib/rbac/roles'
 import AdminAccessButton from './AdminAccessButton'
+import PortalInviteButton from './PortalInviteButton'
 
 // ── Role metadata ─────────────────────────────────────────────────────────────
 
@@ -68,6 +69,8 @@ export interface RoleManagementPanelProps {
   portalTokenActive: boolean
   /** When the worker last successfully logged into the portal */
   portalLastLoginAt: string | null
+  /** When the worker portal invite was sent */
+  portalInviteSentAt: string | null
   /** When the admin portal invite was sent */
   adminInviteSentAt: string | null
 }
@@ -84,6 +87,7 @@ export default function RoleManagementPanel({
   portalTokenActive,
   adminInviteSentAt,
   portalLastLoginAt,
+  portalInviteSentAt,
 }: RoleManagementPanelProps) {
   const router = useRouter()
 
@@ -155,20 +159,27 @@ export default function RoleManagementPanel({
       {/* ── Status overview ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Worker Portal</dt>
-          <dd className="flex items-center gap-2">
-            {portalTokenActive ? (
-              <>
-                <span className="flex h-2 w-2 rounded-full bg-green-500" />
-                <span className="text-sm font-semibold text-primary">Active</span>
-              </>
-            ) : (
-              <>
-                <span className="flex h-2 w-2 rounded-full bg-gray-300" />
-                <span className="text-sm font-medium text-on-surface-variant">Not configured</span>
-              </>
-            )}
-          </dd>
+          <div className="flex flex-col gap-3">
+            <div>
+              <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Worker Portal</dt>
+              <dd className="flex items-center gap-2">
+                {portalTokenActive ? (
+                  <>
+                    <span className="flex h-2 w-2 rounded-full bg-green-500" />
+                    <span className="text-sm font-semibold text-primary">Active</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="flex h-2 w-2 rounded-full bg-gray-300" />
+                    <span className="text-sm font-medium text-on-surface-variant">Not configured</span>
+                  </>
+                )}
+              </dd>
+            </div>
+            <div>
+              <PortalInviteButton staffProfileId={staffProfileId} lastSentAt={portalInviteSentAt} />
+            </div>
+          </div>
         </div>
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
           <dt className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-1">Admin Portal</dt>

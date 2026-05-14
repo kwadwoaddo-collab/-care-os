@@ -638,6 +638,7 @@ export default async function StaffDetailPage({
               lastChangedAt={lastChangedAt}
               portalTokenActive={portalTokenActive}
               portalLastLoginAt={sp.portal_last_login_at ?? null}
+              portalInviteSentAt={sp.portal_invite_sent_at ?? null}
               adminInviteSentAt={adminInviteSentAt}
             />
 

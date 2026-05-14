@@ -90,9 +90,10 @@ export async function POST(
   }
 
   // ── 6. Create Supabase Auth user ──────────────────────────────────────────
-  const { data: invited, error: inviteErr } = await adminClient.auth.admin.inviteUserByEmail(
+  const { data: invited, error: inviteErr } = await adminClient.auth.admin.generateLink({
+    type: 'invite',
     email,
-    {
+    options: {
       data: {
         // User metadata — passed to the profiles trigger if one exists.
         // Also used by our manual profiles insert below as a fallback.
@@ -101,10 +102,10 @@ export async function POST(
         first_name: sp.first_name ?? '',
         last_name:  sp.last_name  ?? '',
       },
-      // Redirect to the dedicated password setup page
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/admin/set-password`,
+      // Redirect to auth callback for PKCE code exchange, which will then forward to set-password
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/auth/callback?next=/admin/set-password`,
     }
-  )
+  })
 
   if (inviteErr || !invited?.user) {
     console.error('[admin-access] invite error:', inviteErr?.message)
@@ -192,6 +193,15 @@ export async function POST(
       entityId: staffProfileId,
       metadata: { profile_id: authUserId, email },
     })
+
+    if (invited.properties?.action_link) {
+      const { sendAdminInviteEmail } = await import('@/lib/email/resend')
+      await sendAdminInviteEmail({
+        to: email,
+        firstName: sp.first_name ?? 'Staff Member',
+        inviteLink: invited.properties.action_link,
+      })
+    }
   }
 
   return NextResponse.json({

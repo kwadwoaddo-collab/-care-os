@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/browser'
 
 export default function SetPasswordClient() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlError = searchParams.get('error')
   const [password, setPassword]       = useState('')
   const [confirm, setConfirm]         = useState('')
   const [loading, setLoading]         = useState(true)
@@ -17,6 +19,12 @@ export default function SetPasswordClient() {
 
   useEffect(() => {
     async function checkSession() {
+      if (urlError) {
+        setError('Invitation link expired or invalid. Please request a new invite.')
+        setLoading(false)
+        return
+      }
+
       // Supabase browser client handles fragments automatically.
       // We check if we have a session.
       const { data: { session }, error: sessionErr } = await supabase.auth.getSession()

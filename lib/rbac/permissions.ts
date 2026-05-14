@@ -20,6 +20,7 @@ export const PERMISSIONS = [
   'applicants:read',
   'applicants:invite',
   'applicants:update',
+  'applicants:delete',
 
   // Staff
   'staff:read',
@@ -144,6 +145,7 @@ const COMPANY_ADMIN_PERMISSIONS: PermSet = new Set<Permission>([
   'applicants:read',
   'applicants:invite',
   'applicants:update',
+  'applicants:delete',
   'staff:read',
   'staff:write',
   'staff:delete',

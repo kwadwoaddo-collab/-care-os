@@ -28,13 +28,15 @@ export async function GET(request: NextRequest) {
 
   if (errorParam) {
     console.error('[auth/callback] Supabase returned error:', errorParam, errorDesc)
+    const target = next.includes('set-password') ? next : '/admin/login'
     return NextResponse.redirect(
-      `${appUrl}/admin/login?error=${encodeURIComponent(errorDesc ?? errorParam)}`
+      `${appUrl}${target}?error=${encodeURIComponent(errorDesc ?? errorParam)}`
     )
   }
 
   if (!code) {
-    return NextResponse.redirect(`${appUrl}/admin/login`)
+    const target = next.includes('set-password') ? next : '/admin/login'
+    return NextResponse.redirect(`${appUrl}${target}?error=missing_code`)
   }
 
   const cookieStore = await cookies()
@@ -60,8 +62,9 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[auth/callback] code exchange failed:', error.message)
+    const target = next.includes('set-password') ? next : '/admin/login'
     return NextResponse.redirect(
-      `${appUrl}/admin/login?error=${encodeURIComponent(error.message)}`
+      `${appUrl}${target}?error=${encodeURIComponent(error.message)}`
     )
   }
 

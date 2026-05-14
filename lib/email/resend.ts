@@ -166,7 +166,7 @@ export async function sendWorkerPortalEmail(
     <p style="margin:0 0 16px;font-size:16px;color:#374151;">Hi ${firstName},</p>
     <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6;">
       You have been given access to the <strong>${companyName} Staff Portal</strong> for your
-      <strong>${jobRole}</strong> role. Use the link below to access your documents and complete your onboarding.
+      <strong>${jobRole}</strong> role. Use the password-less magic link below to instantly and securely log into your portal.
     </p>
     ${ctaButton(magicLink, 'Access My Portal →')}
     <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Or copy this link:</p>
@@ -192,6 +192,50 @@ export async function sendWorkerPortalEmail(
   ].join('\n')
 
   return sendEmail({ to, subject: `Your ${companyName} staff portal access`, html, text })
+}
+
+// ── Admin portal email ────────────────────────────────────────────────────────
+
+export interface SendAdminInviteEmailOptions {
+  to:          string
+  firstName:   string
+  inviteLink:  string
+  companyName?: string | null
+}
+
+export async function sendAdminInviteEmail(
+  opts: SendAdminInviteEmailOptions,
+): Promise<SendEmailResult> {
+  const { to, firstName, inviteLink } = opts
+  const companyName = safeCompanyName(opts.companyName)
+
+  const body = `
+    <p style="margin:0 0 16px;font-size:16px;color:#374151;">Hi ${firstName},</p>
+    <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6;">
+      You have been granted Administrative Access to the <strong>${companyName} Admin Portal</strong>. 
+      Please use the link below to securely set up your password and log into the admin dashboard.
+    </p>
+    ${ctaButton(inviteLink, 'Set Up Admin Password →')}
+    <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Or copy this link:</p>
+    <p style="margin:0 0 24px;font-size:12px;color:#4f46e5;word-break:break-all;">${inviteLink}</p>
+    <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;">
+      If you were not expecting this email, you can safely ignore it.
+    </p>`
+
+  const html = emailWrapper(companyName, 'Admin Portal', body)
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    `You have been granted Administrative Access to the ${companyName} Admin Portal.`,
+    '',
+    `Set up your admin password here: ${inviteLink}`,
+    '',
+    `If you were not expecting this email, you can safely ignore it.`,
+    '',
+    `© ${new Date().getFullYear()} ${companyName}`,
+  ].join('\n')
+
+  return sendEmail({ to, subject: `Set up your ${companyName} Admin Password`, html, text })
 }
 
 // ── Onboarding reminder email ─────────────────────────────────────────────────

@@ -22,11 +22,10 @@ export async function PATCH(
 ) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
-  const { companyId } = auth.ctx
+  const { companyId, userId } = auth.ctx
 
   const { id } = await params
 
-  // ── Parse body ───────────────────────────────────────────────────────────────
   let body: Record<string, unknown>
   try {
     body = await request.json() as Record<string, unknown>
@@ -34,7 +33,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { status } = body
+  const { status, rejection_reason, rejection_notes } = body
 
   if (!isAllowedStatus(status)) {
     return NextResponse.json(
@@ -43,13 +42,26 @@ export async function PATCH(
     )
   }
 
-  // ── Update applicant status ───────────────────────────────────────────────────
+  // Build the update payload
+  const updatePayload: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (status === 'rejected') {
+    updatePayload.rejected_at      = new Date().toISOString()
+    updatePayload.rejected_by      = userId === 'dev-admin' ? null : userId
+    updatePayload.rejection_reason = typeof rejection_reason === 'string' ? rejection_reason.trim() || null : null
+    updatePayload.rejection_notes  = typeof rejection_notes  === 'string' ? rejection_notes.trim()  || null : null
+  }
+
   const { data: applicant, error: updateError } = await adminClient
     .from('applicants')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updatePayload)
     .eq('id', id)
     .eq('company_id', companyId)
-    .select('id, first_name, last_name, email, job_role, status, company_id, created_at, updated_at')
+    .is('deleted_at', null)
+    .select('id, first_name, last_name, email, job_role, status, company_id, created_at, updated_at, rejected_at, rejection_reason')
     .maybeSingle()
 
   if (updateError) {
@@ -60,24 +72,22 @@ export async function PATCH(
     return NextResponse.json({ error: 'Applicant not found' }, { status: 404 })
   }
 
-  // ── Audit log (fire-and-forget) ──────────────────────────────────────────────
-  // Writes to audit_logs if the table exists. The insert is intentionally not
-  // awaited so a logging failure never blocks the response.
-  const action = `applicant.${status}` as string
+  // Audit log (fire-and-forget)
   void (async () => {
     try {
       const { error } = await adminClient
         .from('audit_logs')
         .insert({
           company_id:  applicant.company_id as string,
-          actor_id:    null, // TODO: replace with session user id once auth is restored
-          action,
+          actor_id:    userId === 'dev-admin' ? null : userId,
+          action:      `applicant.${status}`,
           entity_type: 'applicant',
           entity_id:   applicant.id as string,
           metadata: {
             status,
-            applicant_id: applicant.id,
-            timestamp:    new Date().toISOString(),
+            applicant_id:     applicant.id,
+            rejection_reason: updatePayload.rejection_reason ?? null,
+            timestamp:        new Date().toISOString(),
           },
         })
       if (error) console.error('[admin/applicants/[id]/status] audit log failed:', error)

@@ -23,6 +23,8 @@ interface ApplicantRow {
   job_role: string | null
   status: string
   created_at: string
+  rejected_at: string | null
+  rejection_reason: string | null
   form_status: string | null
   submitted_at: string | null
 }
@@ -127,6 +129,13 @@ export default async function ApplicantsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/applicants/archived"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-base leading-none">archive</span>
+            Archived Applicants
+          </Link>
           <InviteApplicantForm />
         </div>
       </div>
@@ -182,7 +191,6 @@ export default async function ApplicantsPage({
               { value: 'shortlisted',          label: 'Shortlisted' },
               { value: 'interview_scheduled',  label: 'Interview scheduled' },
               { value: 'hired',                label: 'Hired' },
-              { value: 'rejected',             label: 'Rejected' },
               { value: 'withdrawn',            label: 'Withdrawn' },
           ]},
           { type: 'select', name: 'form_status', label: 'Form status', options: [

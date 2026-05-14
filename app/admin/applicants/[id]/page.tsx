@@ -4,6 +4,8 @@ import ApplicantActions from './ApplicantActions'
 import DocumentsSection, { type Document } from './DocumentsSection'
 import InterviewsSection, { type Interview } from './InterviewsSection'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/rbac/permissions'
 import { getRoleCategory, getRequiredDocuments, getComplianceTemplate, CATEGORY_META, isSectionVisible, type ApplicationRole, type FormSection } from '@/lib/roles'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -18,6 +20,9 @@ interface Applicant {
   status: string
   created_at: string
   invited_by: string | null
+  rejected_at: string | null
+  rejection_reason: string | null
+  rejection_notes: string | null
 }
 
 interface FormResponse {
@@ -721,6 +726,9 @@ export default async function ApplicantDetailPage({
 }) {
   const { id } = await params
 
+  const auth = await requireAdmin()
+  const canRestore = auth.ok && can(auth.ctx.role, 'applicants:update')
+
   let data: ApiResponse
   try {
     data = await getApplicant(id)
@@ -766,8 +774,38 @@ export default async function ApplicantDetailPage({
         <p className="text-sm text-on-surface-variant mt-0.5">{applicant.email}</p>
       </div>
 
+      {/* Rejection banner */}
+      {applicant.status === 'rejected' && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex flex-wrap items-start gap-3">
+          <span className="material-symbols-outlined text-red-500 text-lg leading-none mt-0.5">cancel</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-800">This applicant has been rejected</p>
+            {applicant.rejected_at && (
+              <p className="text-xs text-red-600 mt-0.5">
+                Rejected on {formatDate(applicant.rejected_at)}
+              </p>
+            )}
+            {applicant.rejection_reason && (
+              <p className="text-xs text-red-700 mt-1">
+                <span className="font-medium">Reason:</span> {applicant.rejection_reason}
+              </p>
+            )}
+            {!canRestore && (
+              <p className="text-xs text-red-600 mt-1 italic">Read-only — contact an admin to restore this applicant.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Action bar — status display + pipeline buttons */}
-      <ApplicantActions applicantId={applicant.id} currentStatus={applicant.status} />
+      <ApplicantActions
+        applicantId={applicant.id}
+        currentStatus={applicant.status}
+        rejectedAt={applicant.rejected_at}
+        rejectionReason={applicant.rejection_reason}
+        rejectionNotes={applicant.rejection_notes}
+        canRestore={canRestore}
+      />
 
       <div className="space-y-4">
 
