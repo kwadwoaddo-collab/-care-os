@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import AddExistingStaffForm from './AddExistingStaffForm'
 import StaffGrid, { type StaffProfileWithCompliance } from './StaffGrid'
 import StaffMobileList from './StaffMobileList'
@@ -72,6 +73,13 @@ export default async function StaffPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/staff/archived"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 border border-gray-200 hover:bg-gray-200 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">archive</span>
+            Archived Staff
+          </Link>
           <AddExistingStaffForm />
         </div>
       </div>
@@ -135,7 +143,6 @@ export default async function StaffPage({
               { value: 'active',         label: 'Active' },
               { value: 'suspended',      label: 'Suspended' },
               { value: 'inactive',       label: 'Inactive' },
-              { value: 'terminated',     label: 'Terminated' },
           ]},
           { type: 'select', name: 'compliance', label: 'Compliance', options: [
               { value: 'compliant',     label: 'Compliant' },

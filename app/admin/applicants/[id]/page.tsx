@@ -4,6 +4,7 @@ import ApplicantActions from './ApplicantActions'
 import DocumentsSection, { type Document } from './DocumentsSection'
 import InterviewsSection, { type Interview } from './InterviewsSection'
 import { adminFetch } from '@/lib/admin/serverFetch'
+import { getRoleCategory, getRequiredDocuments, getComplianceTemplate, CATEGORY_META, isSectionVisible, type ApplicationRole, type FormSection } from '@/lib/roles'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -450,6 +451,93 @@ function CriminalRecordSection({ data }: { data: unknown }) {
   )
 }
 
+// ── Role Compliance Status ────────────────────────────────────────────────
+
+function RoleComplianceStatus({ answers, documents }: { answers: Record<string, unknown>; documents: Document[] }) {
+  const role = (answers.applying_for || answers.job_role) as string | undefined
+  if (!role) return null
+  const category = getRoleCategory(role)
+  const meta = CATEGORY_META[category]
+  const template = getComplianceTemplate(role)
+  const requiredDocs = getRequiredDocuments(role)
+  const uploadedTypes = documents.map(d => (d.document_type ?? '').toLowerCase())
+
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center gap-3">
+        <h2 className="text-sm font-semibold text-gray-700">Role & Compliance</h2>
+        <span className={`text-xs font-semibold rounded px-2 py-0.5 ${meta.colour} ${meta.bg} border ${meta.border}`}>
+          {meta.label} — {role}
+        </span>
+      </div>
+      <div className="p-4 space-y-4">
+        {/* Compliance template */}
+        <div>
+          <p className="text-xs font-medium text-on-surface-variant mb-2">{template.name}</p>
+          <ul className="space-y-1">
+            {template.items.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-primary">
+                <span className="text-gray-400 mt-0.5">◦</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Required documents checklist */}
+        <div>
+          <p className="text-xs font-medium text-on-surface-variant mb-2">Required Documents</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            {requiredDocs.map((doc, i) => {
+              const found = uploadedTypes.some(t => t.includes(doc.toLowerCase().split(' ')[0]))
+              return (
+                <div key={i} className={`flex items-center gap-2 text-sm rounded px-2 py-1 ${found ? 'text-green-700 bg-green-50' : 'text-amber-700 bg-amber-50'}`}>
+                  <span>{found ? '✓' : '○'}</span>
+                  {doc}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Office Experience Section ─────────────────────────────────────────────
+
+interface OfficeExperience { office_software?: string; scheduling_experience?: string; customer_service?: string; administration_experience?: string; hr_payroll_systems?: string }
+
+function OfficeExperienceSection({ data }: { data: unknown }) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const oe = data as OfficeExperience
+  const hasContent = oe.office_software || oe.scheduling_experience || oe.customer_service || oe.administration_experience || oe.hr_payroll_systems
+  if (!hasContent) return null
+  const items: [string, string | undefined][] = [
+    ['Office Software', oe.office_software],
+    ['Scheduling / Rostering', oe.scheduling_experience],
+    ['Customer Service', oe.customer_service],
+    ['Administration', oe.administration_experience],
+    ['HR / Payroll / Compliance', oe.hr_payroll_systems],
+  ]
+  return (
+    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
+        <h2 className="text-sm font-semibold text-gray-700">Office & Administration Experience</h2>
+      </div>
+      <div className="p-4">
+        <dl className="space-y-3">
+          {items.filter(([, v]) => v).map(([label, value]) => (
+            <div key={label}>
+              <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
+              <dd className="mt-0.5 text-sm text-primary">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  )
+}
+
 // ── Helpers: check if structured data is "empty" ─────────────────────────────
 
 function isEmptyEntry(obj: Record<string, unknown>): boolean {
@@ -662,10 +750,19 @@ export default async function ApplicantDetailPage({
 
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-xl font-semibold text-primary">
-          {applicant.first_name ?? ''} {applicant.last_name ?? ''}
-          {!applicant.first_name && !applicant.last_name && applicant.email}
-        </h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold text-primary">
+            {applicant.first_name ?? ''} {applicant.last_name ?? ''}
+            {!applicant.first_name && !applicant.last_name && applicant.email}
+          </h1>
+          {(() => {
+            const role = (answers.applying_for || answers.job_role) as string | undefined
+            if (!role) return null
+            const cat = getRoleCategory(role)
+            const m = CATEGORY_META[cat]
+            return <span className={`text-xs font-semibold rounded px-2 py-0.5 ${m.colour} ${m.bg} border ${m.border}`}>{role}</span>
+          })()}
+        </div>
         <p className="text-sm text-on-surface-variant mt-0.5">{applicant.email}</p>
       </div>
 
@@ -686,7 +783,7 @@ export default async function ApplicantDetailPage({
           <Field label="Last name"          value={answers.last_name ?? applicant.last_name} />
           <Field label="Email"              value={answers.email ?? applicant.email} />
           <Field label="Phone"              value={answers.phone ?? applicant.phone} />
-          <Field label="Job role"           value={answers.job_role ?? applicant.job_role} />
+          <Field label="Job role"           value={answers.applying_for ?? answers.job_role ?? applicant.job_role} />
           <Field label="Address line 1"     value={answers.address_line_1} />
           <Field label="Address line 2"     value={answers.address_line_2} />
           <Field label="Town / City"        value={answers.town_city} />
@@ -694,6 +791,9 @@ export default async function ApplicantDetailPage({
           <Field label="Date of birth"      value={answers.date_of_birth} />
           <Field label="National Insurance" value={answers.national_insurance} />
         </Section>
+
+        {/* ── Role & Compliance ─────────────────────────────────────────── */}
+        <RoleComplianceStatus answers={answers} documents={documents} />
 
         {/* ── Safer Recruitment Status ─────────────────────────────────────── */}
         <SaferRecruitmentStatus answers={answers} />
@@ -741,14 +841,17 @@ export default async function ApplicantDetailPage({
         </div>
 
         {/* ── Care Experience ───────────────────────────────────────────────── */}
+        {isSectionVisible((answers.applying_for ?? answers.job_role) as string | undefined, 'care_experience') && (
         <Section title="Care Experience">
           <Field label="Previous care experience"  value={answers.previous_care_experience} />
           <Field label="Care experience details"   value={answers.care_experience_details} />
           <Field label="Preferred work setting"    value={answers.preferred_work_setting} />
           <Field label="Available start date"      value={answers.available_start_date} />
         </Section>
+        )}
 
         {/* ── Training & Qualifications ─────────────────────────────────────── */}
+        {isSectionVisible((answers.applying_for ?? answers.job_role) as string | undefined, 'training_qualifications') && (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
             <h2 className="text-sm font-semibold text-gray-700">Training & Qualifications</h2>
@@ -757,12 +860,22 @@ export default async function ApplicantDetailPage({
             <TrainingQualifications data={answers.training_qualifications} />
           </div>
         </div>
+        )}
 
         {/* ── Professional Qualifications ───────────────────────────────────── */}
+        {isSectionVisible((answers.applying_for ?? answers.job_role) as string | undefined, 'professional_qualifications') && (
         <ProfessionalQualificationsSection data={answers.professional_qualifications} />
+        )}
 
         {/* ── Professional Registration ─────────────────────────────────────── */}
+        {isSectionVisible((answers.applying_for ?? answers.job_role) as string | undefined, 'professional_registration') && (
         <ProfessionalRegistrationSection data={answers.professional_registration} />
+        )}
+
+        {/* ── Office & Administration Experience ────────────────────────────── */}
+        {isSectionVisible((answers.applying_for ?? answers.job_role) as string | undefined, 'office_experience') && (
+        <OfficeExperienceSection data={answers.office_experience} />
+        )}
 
         {/* ── Work Availability ─────────────────────────────────────────────── */}
         <WorkAvailabilitySection data={answers.work_availability} />

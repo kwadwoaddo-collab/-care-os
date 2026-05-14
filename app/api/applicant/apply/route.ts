@@ -11,6 +11,7 @@ const FIELD_DEFS = [
   { slug: 'email',                        label: 'Email',                           field_type: 'email',    is_required: true,  sort_order: 3  },
   { slug: 'phone',                        label: 'Phone',                           field_type: 'phone',    is_required: false, sort_order: 4  },
   { slug: 'job_role',                     label: 'Job role',                        field_type: 'text',     is_required: false, sort_order: 5  },
+  { slug: 'applying_for',                label: 'Applying for role',               field_type: 'text',     is_required: false, sort_order: 5.5 },
   { slug: 'address_line_1',              label: 'Address line 1',                  field_type: 'text',     is_required: true,  sort_order: 6  },
   { slug: 'address_line_2',              label: 'Address line 2',                  field_type: 'text',     is_required: false, sort_order: 7  },
   { slug: 'town_city',                    label: 'Town / City',                     field_type: 'text',     is_required: true,  sort_order: 8  },
@@ -57,6 +58,9 @@ const FIELD_DEFS = [
 
   // Section — Professional Registration (stored as single JSONB array)
   { slug: 'professional_registration',   label: 'Professional Registration',       field_type: 'textarea', is_required: false, sort_order: 47 },
+
+  // Section — Office & Administration Experience (stored as single JSONB object)
+  { slug: 'office_experience',           label: 'Office & Admin Experience',       field_type: 'textarea', is_required: false, sort_order: 47.5 },
 
   // Section — Application Source (stored as single JSONB object)
   { slug: 'application_source',          label: 'Source',                          field_type: 'textarea', is_required: false, sort_order: 48 },

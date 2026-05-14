@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
-  if (status) query = query.eq('status', status)
+  if (status) {
+    query = query.eq('status', status)
+  } else {
+    // Exclude terminated (archived) staff from default active list
+    query = query.neq('status', 'terminated')
+  }
   if (search) {
     query = query.or(
       `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,job_role.ilike.%${search}%`

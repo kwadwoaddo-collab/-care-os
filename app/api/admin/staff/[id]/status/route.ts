@@ -12,7 +12,7 @@ export async function PATCH(
 ) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
-  const { companyId } = auth.ctx
+  const { companyId, userId } = auth.ctx
 
   const { id: staffProfileId } = await params
 
@@ -26,9 +26,12 @@ export async function PATCH(
 
   const b = (body && typeof body === 'object') ? (body as Record<string, unknown>) : {}
 
-  const status         = b.status
-  const force          = b.force           === true
-  const unassignShifts = b.unassign_shifts === true
+  const status              = b.status
+  const force               = b.force           === true
+  const unassignShifts      = b.unassign_shifts === true
+  const terminationDate     = typeof b.termination_date   === 'string' ? b.termination_date.trim()   : null
+  const terminationReason   = typeof b.termination_reason === 'string' ? b.termination_reason.trim() : null
+  const terminationNotes    = typeof b.termination_notes  === 'string' ? b.termination_notes.trim()  : null
 
   if (typeof status !== 'string' || !ALLOWED_STATUSES.has(status)) {
     return NextResponse.json(
@@ -118,10 +121,31 @@ export async function PATCH(
     }
   }
 
+  // ── Validate termination fields ─────────────────────────────────────────────
+  if (status === 'terminated') {
+    if (!terminationDate) {
+      return NextResponse.json({ error: 'termination_date is required when terminating a staff member.' }, { status: 422 })
+    }
+    if (!terminationReason) {
+      return NextResponse.json({ error: 'termination_reason is required when terminating a staff member.' }, { status: 422 })
+    }
+  }
+
+  // ── Build update payload ────────────────────────────────────────────────────
+  const updatePayload: Record<string, unknown> = { status, updated_at: new Date().toISOString() }
+
+  if (status === 'terminated') {
+    updatePayload.left_at        = terminationDate
+    updatePayload.exit_reason    = terminationReason
+    updatePayload.exit_notes     = terminationNotes || null
+    updatePayload.terminated_at  = new Date().toISOString()
+    updatePayload.terminated_by  = userId
+  }
+
   // ── Update status ───────────────────────────────────────────────────────────
   const { data: updated, error: updateError } = await adminClient
     .from('staff_profiles')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updatePayload)
     .eq('id', staffProfileId)
     .select('id, status, updated_at')
     .single()
@@ -173,18 +197,30 @@ export async function PATCH(
   // ── Audit log — status updated (fire-and-forget) ────────────────────────────
   void (async () => {
     try {
+      const isTermination = status === 'terminated'
+      const isRestore     = staffProfile.status === 'terminated' && status !== 'terminated'
+      const action = isTermination ? 'staff.terminated'
+                   : isRestore    ? 'staff.restored'
+                   :                'staff.status_updated'
+
+      const metadata: Record<string, unknown> = {
+        previous_status:  staffProfile.status,
+        new_status:       status,
+        unassigned_count: unassignedCount,
+        timestamp:        new Date().toISOString(),
+      }
+      if (isTermination) {
+        metadata.termination_date   = terminationDate
+        metadata.termination_reason = terminationReason
+      }
+
       const { error } = await adminClient.from('audit_logs').insert({
         company_id:  companyId,
-        actor_id:    null,
-        action:      'staff.status_updated',
+        actor_id:    userId,
+        action,
         entity_type: 'staff_profile',
         entity_id:   staffProfileId,
-        metadata: {
-          previous_status:  staffProfile.status,
-          new_status:       status,
-          unassigned_count: unassignedCount,
-          timestamp:        new Date().toISOString(),
-        },
+        metadata,
       })
       if (error) console.error('[staff/status] audit log failed:', error)
     } catch (err) {

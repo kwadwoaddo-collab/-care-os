@@ -1,0 +1,3 @@
+ALTER TABLE staff_profiles
+  ADD COLUMN IF NOT EXISTS terminated_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS terminated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;

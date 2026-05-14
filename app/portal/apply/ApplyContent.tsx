@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import SignatureCanvas from 'react-signature-canvas'
+import { APPLICATION_ROLES, isSectionVisible, getRoleCategory, CATEGORY_META, type ApplicationRole, type FormSection } from '@/lib/roles'
 
 interface Applicant {
   id: string
@@ -276,6 +277,26 @@ function makeEmptyAvailability(): WorkAvailability {
   }
 }
 
+// ── Office & Administration Experience types ──────────────────────────────────
+
+type OfficeExperience = {
+  office_software: string
+  scheduling_experience: string
+  customer_service: string
+  administration_experience: string
+  hr_payroll_systems: string
+}
+
+function makeEmptyOfficeExperience(): OfficeExperience {
+  return {
+    office_software: '',
+    scheduling_experience: '',
+    customer_service: '',
+    administration_experience: '',
+    hr_payroll_systems: '',
+  }
+}
+
 // ── Application Declarations types ────────────────────────────────────────────
 
 type ApplicationDeclarations = {
@@ -491,6 +512,7 @@ export default function ApplyContent() {
   const [page, setPage]               = useState<PageState>({ phase: 'loading' })
   const [form, setForm]               = useState<FormValues>(EMPTY)
   const [training, setTraining]       = useState<TrainingQualifications>({ default: makeDefaultTraining(), other: [] })
+  const [applyingFor, setApplyingFor] = useState<ApplicationRole | ''>('')
   const [employment, setEmployment]   = useState<EmploymentEntry[]>([makeEmptyEmployment()])
   const [gapDeclarations, setGapDeclarations] = useState<EmploymentGapEntry[]>([])
   const [hasNeverWorked, setHasNeverWorked]   = useState(false)
@@ -501,6 +523,7 @@ export default function ApplyContent() {
   const [registration, setRegistration]     = useState<ProfessionalRegistration[]>([makeEmptyRegistration()])
   const [appSource, setAppSource]           = useState<ApplicationSource>({ source: '', other_details: '' })
   const [medicalHistory, setMedicalHistory] = useState<MedicalHistory>(makeEmptyMedicalHistory())
+  const [officeExperience, setOfficeExperience] = useState<OfficeExperience>(makeEmptyOfficeExperience())
   const [availability, setAvailability]     = useState<WorkAvailability>(makeEmptyAvailability())
   const [declaration, setDeclaration]       = useState<DeclarationConsent>(makeEmptyDeclaration())
   const [appDeclarations, setAppDeclarations] = useState<ApplicationDeclarations>(makeEmptyApplicationDeclarations())
@@ -516,6 +539,13 @@ export default function ApplyContent() {
     setForm(prev => ({ ...prev, [field]: value }))
     if (saveState === 'saved' || saveState === 'error') setSave('idle')
   }
+
+  // Role-based section visibility
+  function showSection(section: FormSection): boolean {
+    return isSectionVisible(applyingFor || undefined, section)
+  }
+  const roleCategory = applyingFor ? getRoleCategory(applyingFor) : null
+  const roleMeta = roleCategory ? CATEGORY_META[roleCategory] : null
 
   useEffect(() => {
     if (!token) {
@@ -547,7 +577,7 @@ export default function ApplyContent() {
     if (!token || saveState === 'saving' || isSubmitted) return
     setSave('saving'); setSaveError(null)
     try {
-      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
+      const answers: Record<string, unknown> = { ...form, applying_for: applyingFor, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, office_experience: officeExperience, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
       const res = await fetch('/api/applicant/apply', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, answers }),
@@ -561,7 +591,7 @@ export default function ApplyContent() {
     if (!token || submitState === 'submitting' || isSubmitted) return
     setSubmitState('submitting'); setSubmitError(null)
     try {
-      const answers: Record<string, unknown> = { ...form, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
+      const answers: Record<string, unknown> = { ...form, applying_for: applyingFor, training_qualifications: training, employment_history: employment, employment_gap_declarations: gapDeclarations, has_never_worked: hasNeverWorked, employment_history_declaration: employmentHistoryDeclaration, references, criminal_record: criminalRecord, professional_qualifications: qualifications, professional_registration: registration, office_experience: officeExperience, application_source: appSource, medical_history: medicalHistory, work_availability: availability, declaration_consent: declaration, application_declarations: appDeclarations }
       const res = await fetch('/api/applicant/apply', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, answers, submit: true }),
@@ -610,6 +640,39 @@ export default function ApplyContent() {
           </div>
         )}
 
+        {/* ── Role Selector ─────────────────────────────────────────────── */}
+        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Applying For</h2>
+            <p className="mt-1 text-sm text-gray-500">Select the role you are applying for. The form will adapt to show only the sections relevant to your role.</p>
+          </div>
+          <Field label="Role" required>
+            <select
+              className={inputCls}
+              value={applyingFor}
+              onChange={e => {
+                const role = e.target.value as ApplicationRole | ''
+                setApplyingFor(role)
+                set('job_role', role)
+              }}
+            >
+              <option value="">Select a role…</option>
+              {APPLICATION_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </Field>
+          {roleMeta && (
+            <div className={`rounded-lg border ${roleMeta.border} ${roleMeta.bg} px-4 py-2.5 flex items-center gap-2`}>
+              <span className={`text-xs font-semibold ${roleMeta.colour} rounded px-2 py-0.5 ${roleMeta.bg} border ${roleMeta.border}`}>{roleMeta.label}</span>
+              <span className="text-xs text-gray-600">
+                {roleCategory === 'care' && 'Your form includes care-specific sections such as training, qualifications, and care experience.'}
+                {roleCategory === 'admin' && 'Your form includes office and administration experience sections.'}
+                {roleCategory === 'operational' && 'Your form shows the core sections required for operational roles.'}
+                {roleCategory === 'other' && 'All form sections are shown. Complete those relevant to your role.'}
+              </span>
+            </div>
+          )}
+        </div>
+
         {/* Section 1 */}
         <SectionCard title="Personal Details">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -632,12 +695,13 @@ export default function ApplyContent() {
                 onChange={e => set('phone', e.target.value)} autoComplete="tel" />
             </Field>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Job role">
-              <input type="text" className={inputCls} value={form.job_role}
-                onChange={e => set('job_role', e.target.value)} />
-            </Field>
-          </div>
+          {applyingFor && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Role applied for">
+                <input type="text" className={inputCls + ' bg-gray-50 text-gray-500'} value={applyingFor} readOnly />
+              </Field>
+            </div>
+          )}
           <Field label="Address line 1" required>
             <input type="text" className={inputCls} value={form.address_line_1}
               onChange={e => set('address_line_1', e.target.value)} autoComplete="address-line1" />
@@ -1206,7 +1270,8 @@ export default function ApplyContent() {
           )}
         </SectionCard>
 
-        {/* Section 3 — Care Experience */}
+        {/* Section 3 — Care Experience (care roles only) */}
+        {showSection('care_experience') && (
         <SectionCard title="Care Experience">
           <Field label="Do you have previous care experience?">
             <YesNo value={form.previous_care_experience} onChange={v => set('previous_care_experience', v)} />
@@ -1226,8 +1291,10 @@ export default function ApplyContent() {
               onChange={e => set('available_start_date', e.target.value)} />
           </Field>
         </SectionCard>
+        )}
 
-        {/* Section 3 — Training */}
+        {/* Section 3 — Training (care roles only) */}
+        {showSection('training_qualifications') && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Training &amp; Qualifications</h2>
@@ -1335,8 +1402,10 @@ export default function ApplyContent() {
             </button>
           </div>
         </div>
+        )}
 
-        {/* Section — Professional Qualifications */}
+        {/* Section — Professional Qualifications (care roles only) */}
+        {showSection('professional_qualifications') && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Professional Qualifications</h2>
@@ -1427,34 +1496,11 @@ export default function ApplyContent() {
             + Add qualification
           </button>
         </div>
-
-        {/* Section 3 — Emergency Contact */}
-        <SectionCard title="Emergency Contact">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Full name" required>
-              <input type="text" className={inputCls} value={form.emergency_contact_name}
-                onChange={e => set('emergency_contact_name', e.target.value)} />
-            </Field>
-            <Field label="Relationship to you">
-              <input type="text" className={inputCls} value={form.emergency_contact_relationship}
-                onChange={e => set('emergency_contact_relationship', e.target.value)}
-                placeholder="e.g. Partner, Parent, Sibling" />
-            </Field>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Phone number" required>
-              <input type="tel" className={inputCls} value={form.emergency_contact_phone}
-                onChange={e => set('emergency_contact_phone', e.target.value)} />
-            </Field>
-            <Field label="Email address">
-              <input type="email" className={inputCls} value={form.emergency_contact_email}
-                onChange={e => set('emergency_contact_email', e.target.value)} />
-            </Field>
-          </div>
-        </SectionCard>
+        )}
 
 
-        {/* Section — Professional Registration */}
+        {/* Section — Professional Registration (care roles only) */}
+        {showSection('professional_registration') && (
         <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Professional Registration</h2>
@@ -1525,6 +1571,73 @@ export default function ApplyContent() {
             + Add professional registration
           </button>
         </div>
+        )}
+
+        {/* Section — Office & Administration Experience (admin roles only) */}
+        {showSection('office_experience') && (
+        <SectionCard title="Office & Administration Experience">
+          <Field label="Office software experience" hint="e.g. Microsoft Office, Google Workspace, CRM systems">
+            <textarea className={textareaCls} value={officeExperience.office_software}
+              onChange={e => {
+                setOfficeExperience(prev => ({ ...prev, office_software: e.target.value }))
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }} />
+          </Field>
+          <Field label="Scheduling / rostering experience" hint="e.g. care planning software, rota management">
+            <textarea className={textareaCls} value={officeExperience.scheduling_experience}
+              onChange={e => {
+                setOfficeExperience(prev => ({ ...prev, scheduling_experience: e.target.value }))
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }} />
+          </Field>
+          <Field label="Customer service experience">
+            <textarea className={textareaCls} value={officeExperience.customer_service}
+              onChange={e => {
+                setOfficeExperience(prev => ({ ...prev, customer_service: e.target.value }))
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }} />
+          </Field>
+          <Field label="Administration experience" hint="e.g. filing, data entry, minute-taking">
+            <textarea className={textareaCls} value={officeExperience.administration_experience}
+              onChange={e => {
+                setOfficeExperience(prev => ({ ...prev, administration_experience: e.target.value }))
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }} />
+          </Field>
+          <Field label="HR, payroll, or compliance systems" hint="e.g. SAGE, Xero, BrightHR, Moorepay">
+            <textarea className={textareaCls} value={officeExperience.hr_payroll_systems}
+              onChange={e => {
+                setOfficeExperience(prev => ({ ...prev, hr_payroll_systems: e.target.value }))
+                if (saveState === 'saved' || saveState === 'error') setSave('idle')
+              }} />
+          </Field>
+        </SectionCard>
+        )}
+
+        {/* Section 3 — Emergency Contact */}
+        <SectionCard title="Emergency Contact">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Full name" required>
+              <input type="text" className={inputCls} value={form.emergency_contact_name}
+                onChange={e => set('emergency_contact_name', e.target.value)} />
+            </Field>
+            <Field label="Relationship to you">
+              <input type="text" className={inputCls} value={form.emergency_contact_relationship}
+                onChange={e => set('emergency_contact_relationship', e.target.value)}
+                placeholder="e.g. Partner, Parent, Sibling" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Phone number" required>
+              <input type="tel" className={inputCls} value={form.emergency_contact_phone}
+                onChange={e => set('emergency_contact_phone', e.target.value)} />
+            </Field>
+            <Field label="Email address">
+              <input type="email" className={inputCls} value={form.emergency_contact_email}
+                onChange={e => set('emergency_contact_email', e.target.value)} />
+            </Field>
+          </div>
+        </SectionCard>
 
         {/* Section — Source */}
         <SectionCard title="Source">

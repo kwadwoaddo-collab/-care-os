@@ -658,7 +658,7 @@ export default async function StaffDetailPage({
       </div>
 
       {/* ── Danger Zone ──────────────────────────────────────────────────────── */}
-      {can(callerRole, 'staff:delete') && (
+      {(callerRole === 'company_admin' || callerRole === 'super_admin') && sp.status === 'terminated' && (
         <div className="mt-6">
           <div className="bg-surface-container-lowest rounded-xl border border-red-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
             <div className="bg-red-50 border-b border-red-200 px-6 py-3 flex items-center gap-2">
@@ -667,9 +667,9 @@ export default async function StaffDetailPage({
             </div>
             <div className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-primary">Delete this staff member</p>
+                <p className="text-sm font-medium text-primary">Permanently delete this staff member</p>
                 <p className="text-xs text-on-surface-variant mt-0.5">
-                  Permanently remove this profile and all associated data. This cannot be undone.
+                  This staff member is archived. Permanent deletion removes all profile data and cannot be undone.
                 </p>
               </div>
               <DeleteStaffButton

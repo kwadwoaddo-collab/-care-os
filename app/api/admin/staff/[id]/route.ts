@@ -288,6 +288,11 @@ export async function DELETE(
     return NextResponse.json({ error: 'You do not have permission to delete staff members.' }, { status: 403 })
   }
 
+  // Permanent delete is restricted to company_admin and super_admin only
+  if (role !== 'company_admin' && role !== 'super_admin') {
+    return NextResponse.json({ error: 'Only company admins can permanently delete staff records.' }, { status: 403 })
+  }
+
   const { id: staffProfileId } = await params
 
   // Verify staff belongs to this company
@@ -300,6 +305,14 @@ export async function DELETE(
 
   if (fetchErr || !profile) {
     return NextResponse.json({ error: 'Staff profile not found' }, { status: 404 })
+  }
+
+  // Staff must be terminated before permanent deletion
+  if (profile.status !== 'terminated') {
+    return NextResponse.json(
+      { error: 'Staff must be set to Terminated status before permanent deletion.' },
+      { status: 422 }
+    )
   }
 
   // Safety check: warn about future shifts
@@ -341,7 +354,7 @@ export async function DELETE(
       await adminClient.from('audit_logs').insert({
         company_id:  companyId,
         actor_id:    userId,
-        action:      'staff.deleted',
+        action:      'staff.permanently_deleted',
         entity_type: 'staff_profile',
         entity_id:   staffProfileId,
         metadata: {
