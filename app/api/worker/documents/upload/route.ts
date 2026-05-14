@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
     mime_type:        file.type || null,
     expiry_date:      typeof expiryDate === 'string' && expiryDate ? expiryDate : null,
     issue_date:       typeof issueDate  === 'string' && issueDate  ? issueDate  : null,
-    uploaded_by:      'worker',
+    // uploaded_by is a UUID referencing profiles(id). Since workers don't necessarily have a profiles(id),
+    // and passing 'worker' causes a UUID syntax error, we omit it and rely on the audit log.
     // All worker-uploaded certs start as 'pending' — admin must approve
     reviewed_status:  'pending',
   }
@@ -112,15 +113,42 @@ export async function POST(request: NextRequest) {
 
   if (insertError || !document) {
     console.error('[worker/documents/upload] db insert failed:', {
+      workerId: authResult.worker.id,
       staffProfileId,
       documentType,
+      storagePath,
+      payload: insertPayload,
+      error: insertError,
       code:    insertError?.code,
       message: insertError?.message,
       details: insertError?.details,
       hint:    insertError?.hint,
     })
+    
+    // Attempt to map the database error to a friendly message
+    let friendlyError = 'Failed to save document record'
+    if (insertError?.code === '23503') { // Foreign key violation
+      if (insertError.message.includes('documents_staff_profile_id_fkey')) {
+        friendlyError = 'Your worker profile could not be found or is not linked correctly.'
+      } else if (insertError.message.includes('uploaded_by')) {
+        friendlyError = 'Upload succeeded but document registration failed due to an invalid uploaded_by reference.'
+      } else {
+        friendlyError = `Upload succeeded but document registration failed (FK: ${insertError.message}).`
+      }
+    } else if (insertError?.code === '23514') { // Check constraint violation
+      if (insertError.message.includes('training_category')) {
+        friendlyError = 'Document type or training category invalid.'
+      } else {
+        friendlyError = `Document constraint validation failed: ${insertError.message}`
+      }
+    } else if (insertError?.code === '42501') { // RLS policy failure
+      friendlyError = 'Permission denied.'
+    } else if (insertError?.message) {
+      friendlyError = `Database error: ${insertError.message}`
+    }
+
     await adminClient.storage.from('care-os-documents').remove([storagePath])
-    return NextResponse.json({ error: 'Failed to save document record' }, { status: 500 })
+    return NextResponse.json({ error: friendlyError, details: insertError }, { status: 500 })
   }
 
   void adminClient.from('audit_logs').insert({
