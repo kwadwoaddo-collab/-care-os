@@ -23,7 +23,10 @@ export default function AdminHeader() {
       <div className="hidden lg:flex items-center gap-4 flex-1">
         <div className="relative">
           <span className="absolute inset-y-0 left-3 flex items-center text-on-surface-variant pointer-events-none">
-            <span className="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+            <span
+              className="material-symbols-outlined overflow-hidden"
+              style={{ fontSize: '20px', width: '20px', height: '20px', lineHeight: '20px', display: 'block' }}
+            >search</span>
           </span>
           <input 
             type="text" 

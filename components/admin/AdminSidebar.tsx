@@ -117,12 +117,14 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
                 <span
-                  className="material-symbols-outlined shrink-0"
+                  className="material-symbols-outlined shrink-0 overflow-hidden"
                   style={{
-                    fontSize: '22px',
-                    width: '22px',
-                    height: '22px',
-                    lineHeight: '22px',
+                    fontSize: '20px',
+                    width: '20px',
+                    minWidth: '20px',
+                    maxWidth: '20px',
+                    height: '20px',
+                    lineHeight: '20px',
                     display: 'block',
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
@@ -156,12 +158,14 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
                 <span
-                  className="material-symbols-outlined shrink-0"
+                  className="material-symbols-outlined shrink-0 overflow-hidden"
                   style={{
-                    fontSize: '22px',
-                    width: '22px',
-                    height: '22px',
-                    lineHeight: '22px',
+                    fontSize: '20px',
+                    width: '20px',
+                    minWidth: '20px',
+                    maxWidth: '20px',
+                    height: '20px',
+                    lineHeight: '20px',
                     display: 'block',
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
