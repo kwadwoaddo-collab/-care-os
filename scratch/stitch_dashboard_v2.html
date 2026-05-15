@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Care OS - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1b1d",
+                      "surface-container-highest": "#e4e2e3",
+                      "surface": "#fbf8fa",
+                      "surface-dim": "#dcd9db",
+                      "on-secondary-fixed": "#0f0069",
+                      "tertiary": "#1e1200",
+                      "surface-variant": "#e4e2e3",
+                      "secondary": "#4b41e1",
+                      "surface-container": "#f0edef",
+                      "on-tertiary-fixed-variant": "#564427",
+                      "surface-container-low": "#f5f3f4",
+                      "on-tertiary-container": "#a38c6a",
+                      "background": "#fbf8fa",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-container": "#645efb",
+                      "primary-fixed": "#d8e3fb",
+                      "primary": "#091426",
+                      "on-surface": "#1b1b1d",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#35260c",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#e2dfff",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#8590a6",
+                      "inverse-on-surface": "#f3f0f2",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "inverse-primary": "#bcc7de",
+                      "surface-container-high": "#eae7e9",
+                      "outline": "#75777d",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed": "#111c2d",
+                      "surface-tint": "#545f73",
+                      "on-tertiary-fixed": "#271902",
+                      "on-surface-variant": "#45474c",
+                      "primary-fixed-dim": "#bcc7de",
+                      "tertiary-fixed-dim": "#ddc39d",
+                      "primary-container": "#1e293b",
+                      "on-secondary-container": "#fffbff",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "inverse-surface": "#303032",
+                      "surface-bright": "#fbf8fa",
+                      "on-tertiary": "#ffffff",
+                      "outline-variant": "#c5c6cd",
+                      "tertiary-fixed": "#fadfb8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "container-max": "1440px",
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "margin-desktop": "40px",
+                      "card-padding": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Top Banner -->
+<div class="bg-[#4f46e5] text-white text-center py-2 px-4 font-label-md text-label-md flex justify-center items-center gap-2">
+<span>🚀 Pilot mode: Care OS is being used for onboarding &amp; compliance only.</span>
+</div>
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-[260px] bg-[#0f172a] flex-shrink-0 flex flex-col h-full shadow-lg relative z-20">
+<div class="p-6 border-b border-white/10 flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-[#4f46e5] flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-white">Care OS</h1>
+<p class="font-label-md text-label-md text-slate-400">Healthcare Admin</p>
+</div>
+</div>
+<nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-[#4f46e5] text-white transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center text-white">grid_view</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">calendar_month</span>
+<span class="font-label-md text-label-md">Shifts</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">group</span>
+<span class="font-label-md text-label-md">Workforce</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">person</span>
+<span class="font-label-md text-label-md">Clients</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">verified_user</span>
+<span class="font-label-md text-label-md">Compliance</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">warning</span>
+<span class="font-label-md text-label-md">Incidents</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">history</span>
+<span class="font-label-md text-label-md">Audit Log</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined w-6 h-6 flex items-center justify-center">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full bg-surface-container-low overflow-hidden">
+<!-- Top Header -->
+<header class="bg-surface h-16 border-b border-surface-container-highest px-8 flex items-center justify-between shrink-0 shadow-sm z-10">
+<div class="flex-1 max-w-md relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container pl-10 pr-4 py-2 rounded-lg border-none text-body-md font-body-md focus:ring-2 focus:ring-primary focus:bg-surface transition-all" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">light_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-px h-6 bg-surface-container-highest mx-2"></div>
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors">
+<img alt="Profile" class="w-8 h-8 rounded-full border border-surface-container-highest" data-alt="A professional headshot of a person looking forward, brightly lit with a clean background. The styling is neat and corporate, reflecting a modern light-mode interface aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpaaadsRBjy2TDqyZHREHrNJlZCFnFBjlKQ3VnaD9qPnCv4gDv9D6BoTtezuJfGdIiRs64tRixXjIfCzl_VX84VMdIMdoc8RD8GQ1qb0On-842hPhgMKO0MODkoqLuMZfWgZHbujBBqSeKuZrNSrefzbYKdO4G_NYIKt4gIAN9sCrC45Kl6sNCmjeouhCoxwjTi9zwbpwNxHcB-Ko9I7QfGEw7IrVddAfaC9FCTcnpJbkCS59UkXKO3kKhzw7pe4v8cYTMleRzPuOQ"/>
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8">
+<div class="max-w-[1440px] mx-auto grid grid-cols-12 gap-gutter">
+<!-- Left Column (8/12) -->
+<div class="col-span-12 xl:col-span-8 space-y-gutter flex flex-col">
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface rounded-xl p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-[#4f46e5]">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase">Unassigned Shifts</h3>
+<div class="mt-2 flex items-end gap-2">
+<span class="font-display-lg text-display-lg text-primary">0</span>
+<span class="font-body-md text-body-md text-on-surface-variant pb-1">Next 24h</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-[#4f46e5]">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase">Urgent Incidents</h3>
+<div class="mt-2 flex items-end gap-2">
+<span class="font-display-lg text-display-lg text-primary">0</span>
+<span class="font-body-md text-body-md text-on-surface-variant pb-1">Pending review</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-amber-500">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase">Compliance Gaps</h3>
+<div class="mt-2 flex items-end gap-2">
+<span class="font-display-lg text-display-lg text-primary">7</span>
+<span class="font-body-md text-body-md text-on-surface-variant pb-1">Expiring soon</span>
+</div>
+</div>
+<div class="bg-surface rounded-xl p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 border-[#4f46e5]">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase">Staff Coverage</h3>
+<div class="mt-2 flex items-end gap-2">
+<span class="font-display-lg text-display-lg text-primary">3</span>
+<span class="font-body-md text-body-md text-on-surface-variant pb-1">Active staff</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter flex-1">
+<!-- Critical Shifts -->
+<div class="bg-surface rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col">
+<div class="p-6 border-b border-surface-container-highest">
+<h2 class="font-headline-md text-headline-md text-primary">Critical Shifts: Today</h2>
+</div>
+<div class="p-card-padding flex-1 flex flex-col items-center justify-center text-center text-on-surface-variant py-12">
+<span class="material-symbols-outlined text-4xl mb-4 text-surface-container-highest">event_available</span>
+<p class="font-body-lg text-body-lg">No shifts scheduled for today</p>
+</div>
+</div>
+<!-- Recent Incidents -->
+<div class="bg-surface rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col">
+<div class="p-6 border-b border-surface-container-highest">
+<h2 class="font-headline-md text-headline-md text-primary">Recent Incidents</h2>
+</div>
+<div class="p-card-padding flex-1 flex flex-col items-center justify-center text-center text-on-surface-variant py-12">
+<span class="material-symbols-outlined text-4xl mb-4 text-surface-container-highest">task_alt</span>
+<p class="font-body-lg text-body-lg">No open incidents</p>
+</div>
+</div>
+</div>
+<!-- Pilot Analytics -->
+<div class="bg-surface rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-primary mb-6">Pilot Analytics <span class="text-on-surface-variant font-normal">· Last 30 days</span></h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div>
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Onboarding</span>
+<span class="font-headline-md text-headline-md text-primary">17%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">3/6 staff</p>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-amber-500 rounded-full" style="width: 17%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Portal Logins</span>
+<span class="font-headline-md text-headline-md text-primary">0%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">-</p>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-surface-container-highest rounded-full" style="width: 0%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Shift Accepted</span>
+<span class="font-headline-md text-headline-md text-primary">0%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">-</p>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-surface-container-highest rounded-full" style="width: 0%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-baseline mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Shift Complete</span>
+<span class="font-headline-md text-headline-md text-primary">33%</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">-</p>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-green-500 rounded-full" style="width: 33%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (4/12) -->
+<div class="col-span-12 xl:col-span-4 space-y-gutter flex flex-col">
+<!-- Quick Actions -->
+<div class="bg-surface rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-primary mb-6">Quick Actions</h2>
+<div class="space-y-4">
+<button class="w-full flex items-center gap-4 p-4 rounded-lg border border-surface-container-highest hover:border-primary hover:bg-surface-container-low transition-all text-left group">
+<div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">add</span>
+</div>
+<div>
+<h3 class="font-headline-md text-[16px] leading-[24px] text-primary group-hover:text-[#4f46e5]">Post New Shift</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Create an open shift</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-4 p-4 rounded-lg border border-surface-container-highest hover:border-amber-500 hover:bg-amber-50 transition-all text-left group">
+<div class="w-12 h-12 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<h3 class="font-headline-md text-[16px] leading-[24px] text-primary group-hover:text-amber-700">Compliance Audit</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Review missing docs</p>
+</div>
+</button>
+<button class="w-full flex items-center gap-4 p-4 rounded-lg border border-surface-container-highest hover:border-green-500 hover:bg-green-50 transition-all text-left group">
+<div class="w-12 h-12 rounded-lg bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<div>
+<h3 class="font-headline-md text-[16px] leading-[24px] text-primary group-hover:text-green-700">Onboard Staff</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Add new personnel</p>
+</div>
+</button>
+</div>
+</div>
+<!-- Compliance Alerts -->
+<div class="bg-surface rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-6 border-b border-surface-container-highest flex justify-between items-center bg-green-50/50">
+<h2 class="font-headline-md text-[18px] leading-[24px] text-green-800 flex items-center gap-2">
+<span class="material-symbols-outlined text-green-600">check_circle</span>
+                                    Compliance Alerts
+                                </h2>
+</div>
+<div class="p-card-padding">
+<div class="flex items-start gap-4">
+<div class="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0"></div>
+<div>
+<p class="font-headline-md text-[16px] leading-[24px] text-primary">All staff compliant</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">No active alerts</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="bg-surface rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex-1">
+<h2 class="font-headline-md text-headline-md text-primary mb-6">Recent Activity</h2>
+<div class="space-y-4">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">history</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary break-all">applicant.interview_scheduled</p>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">2 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
