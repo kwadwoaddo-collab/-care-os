@@ -232,10 +232,11 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
       allowed: canViewShifts(userRole),
     },
     {
-      href:    '/admin/applicants',
+      href:    '/admin/workforce',
       label:   'Workforce',
       icon:    'staff',
       match:   (p) =>
+        p === '/admin/workforce' ||
         p.startsWith('/admin/applicants') ||
         p.startsWith('/admin/staff') ||
         p.startsWith('/admin/compliance') ||
