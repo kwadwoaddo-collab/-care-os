@@ -249,23 +249,26 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
   // ── Build More drawer items ────────────────────────────────────────────────
 
   const moreItems: MoreItem[] = [
-    canViewCompliance(userRole)   && { href: '/admin/compliance',    label: 'Compliance',    icon: <IconCompliance /> },
-    canViewIncidents(userRole)    && { href: '/admin/incidents',     label: 'Incidents',     icon: <IconIncidents /> },
-    canViewAuditLogs(userRole)    && { href: '/admin/audit-log',     label: 'Audit Log',     icon: <IconAudit /> },
-    canViewNotifications(userRole)&& { href: '/admin/notifications', label: 'Notifications', icon: <IconNotifications /> },
-    can(userRole, 'applicants:read') && { href: '/admin/applicants/archived', label: 'Archived Applicants', icon: <IconSystem /> },
-    can(userRole, 'clients:read') && { href: '/admin/clients',       label: 'Clients',       icon: <IconSystem /> },
-    canViewSystemHealth(userRole) && { href: '/admin/system',        label: 'System Health', icon: <IconSystem /> },
+    can(userRole, 'applicants:read') && { href: '/admin/applicants',          label: 'Talent Pipeline',       icon: <IconApplicants /> },
+    can(userRole, 'applicants:read') && { href: '/admin/applicants/archived', label: 'Archived Applicants',   icon: <IconSystem /> },
+    canManageStaff(userRole)         && { href: '/admin/staff',               label: 'Active Staff',          icon: <IconStaff /> },
+    canManageStaff(userRole)         && { href: '/admin/staff/archived',      label: 'Archived Staff',        icon: <IconSystem /> },
+    canViewCompliance(userRole)      && { href: '/admin/compliance',           label: 'Compliance',            icon: <IconCompliance /> },
+    canManageStaff(userRole)         && { href: '/admin/onboarding',           label: 'Onboarding',            icon: <IconSystem /> },
+    canViewIncidents(userRole)       && { href: '/admin/incidents',            label: 'Incidents',             icon: <IconIncidents /> },
+    canViewAuditLogs(userRole)       && { href: '/admin/audit-log',            label: 'Audit Log',             icon: <IconAudit /> },
+    canViewNotifications(userRole)   && { href: '/admin/notifications',        label: 'Notifications',         icon: <IconNotifications /> },
+    can(userRole, 'clients:read')    && { href: '/admin/clients',              label: 'Clients',               icon: <IconSystem /> },
+    canViewSystemHealth(userRole)    && { href: '/admin/system',               label: 'System Health',         icon: <IconSystem /> },
   ].filter(Boolean) as MoreItem[]
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   function renderIcon(icon: string, active: boolean) {
     const props = { filled: active }
-    if (icon === 'dashboard')   return <IconDashboard   {...props} />
-    if (icon === 'shifts')      return <IconShifts      {...props} />
-    if (icon === 'applicants')  return <IconApplicants  {...props} />
-    if (icon === 'staff')       return <IconStaff       {...props} />
+    if (icon === 'dashboard')  return <IconDashboard {...props} />
+    if (icon === 'shifts')     return <IconShifts    {...props} />
+    if (icon === 'staff')      return <IconStaff     {...props} />
     return null
   }
 
