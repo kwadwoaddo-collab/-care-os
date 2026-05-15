@@ -194,6 +194,16 @@ export async function PATCH(
     })
   }
 
+  // ── Archive linked applicant when staff is terminated ──────────────────────
+  const TERMINAL_STAFF_STATUSES = new Set(['terminated', 'inactive'])
+  if (TERMINAL_STAFF_STATUSES.has(status) && staffProfile.applicant_id) {
+    void adminClient
+      .from('applicants')
+      .update({ status: 'rejected', updated_at: new Date().toISOString() })
+      .eq('id', staffProfile.applicant_id)
+      .in('status', ['hired']) // only archive if they were hired — don't overwrite other states
+  }
+
   // ── Audit log — status updated (fire-and-forget) ────────────────────────────
   void (async () => {
     try {

@@ -19,10 +19,12 @@ export async function GET(request: NextRequest) {
     .from('applicants')
     .select(
       `id, first_name, last_name, email, job_role, status, created_at,
-       form_responses ( status, submitted_at )`,
+       form_responses ( status, submitted_at ),
+       staff_profiles!staff_profiles_applicant_id_fkey ( id, status )`,
       { count: 'exact' }
     )
     .eq('company_id', companyId)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   if (archived) {
@@ -51,9 +53,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch applicants', details: error }, { status: 500 })
   }
 
+  const TERMINATED_STAFF_STATUSES = new Set(['terminated', 'inactive'])
+
   let applicants = (data ?? []).map((row) => {
     const responses    = row.form_responses as Array<{ status: string; submitted_at: string | null }> | null
     const formResponse = responses && responses.length > 0 ? responses[0] : null
+    const staffRows    = row.staff_profiles as Array<{ id: string; status: string }> | null
+    const linkedStaff  = staffRows && staffRows.length > 0 ? staffRows[0] : null
     return {
       id:               row.id,
       first_name:       row.first_name,
@@ -64,8 +70,18 @@ export async function GET(request: NextRequest) {
       created_at:       row.created_at,
       form_status:      formResponse?.status       ?? null,
       submitted_at:     formResponse?.submitted_at ?? null,
+      linked_staff_status: linkedStaff?.status     ?? null,
     }
   })
+
+  // Exclude hired applicants whose linked staff profile is terminated/inactive
+  // from the active pipeline — they should not show as "active" candidates
+  if (!archived) {
+    applicants = applicants.filter((a) => {
+      if (a.linked_staff_status && TERMINATED_STAFF_STATUSES.has(a.linked_staff_status)) return false
+      return true
+    })
+  }
 
   // form_status is computed post-join — filter in memory
   if (formStatus) applicants = applicants.filter((a) => a.form_status === formStatus)

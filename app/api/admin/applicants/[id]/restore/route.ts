@@ -65,6 +65,10 @@ export async function POST(
     .update({
       status:           new_status,
       updated_at:       new Date().toISOString(),
+      rejected_at:      null,
+      rejected_by:      null,
+      rejection_reason: null,
+      rejection_notes:  null,
     })
     .eq('id', id)
     .eq('company_id', companyId)

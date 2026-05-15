@@ -233,17 +233,14 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     },
     {
       href:    '/admin/applicants',
-      label:   'Applicants',
-      icon:    'applicants',
-      match:   (p) => p.startsWith('/admin/applicants'),
-      allowed: can(userRole, 'applicants:read'),
-    },
-    {
-      href:    '/admin/staff',
-      label:   'Staff',
+      label:   'Workforce',
       icon:    'staff',
-      match:   (p) => p.startsWith('/admin/staff') || p.startsWith('/admin/onboarding'),
-      allowed: canManageStaff(userRole),
+      match:   (p) =>
+        p.startsWith('/admin/applicants') ||
+        p.startsWith('/admin/staff') ||
+        p.startsWith('/admin/compliance') ||
+        p.startsWith('/admin/onboarding'),
+      allowed: canManageStaff(userRole) || can(userRole, 'applicants:read'),
     },
   ]
 

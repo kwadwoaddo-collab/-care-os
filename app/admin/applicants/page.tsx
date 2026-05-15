@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import InviteApplicantForm from './InviteApplicantForm'
 import ResendInviteButton from './ResendInviteButton'
+import ApplicantCardMenu from './ApplicantCardMenu'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ListFilters from '@/components/admin/ListFilters'
 import Pagination  from '@/components/admin/Pagination'
@@ -323,13 +324,11 @@ export default async function ApplicantsPage({
                     ) : (
                       <ResendInviteButton applicantId={a.id} />
                     )}
-                    <Link
-                      href={`/admin/applicants/${a.id}`}
-                      className="material-symbols-outlined text-outline hover:text-primary transition-colors"
-                      aria-label={`More options for ${name}`}
-                    >
-                      more_vert
-                    </Link>
+                    <ApplicantCardMenu
+                      applicantId={a.id}
+                      applicantName={name}
+                      status={a.status}
+                    />
                   </div>
                 </div>
               )
