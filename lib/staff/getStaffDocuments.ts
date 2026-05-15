@@ -11,6 +11,7 @@ export interface StaffDocument {
   expiry_date:       string | null
   issue_date:        string | null
   training_category: string | null
+  applicant_id:      string | null
   created_at:        string
   reviewed_status:   string | null
   review_notes:      string | null
@@ -28,7 +29,7 @@ export async function getStaffDocuments(
 ): Promise<StaffDocument[]> {
   const SELECT = [
     'id', 'document_type', 'file_name', 'file_path', 'file_size',
-    'mime_type', 'expiry_date', 'issue_date', 'training_category',
+    'mime_type', 'expiry_date', 'issue_date', 'training_category', 'applicant_id',
     'created_at', 'reviewed_status', 'review_notes', 'reviewed_by', 'reviewed_at',
   ].join(', ')
   const docs: StaffDocument[] = []

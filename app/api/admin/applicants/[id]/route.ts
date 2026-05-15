@@ -127,16 +127,25 @@ export async function DELETE(
     return NextResponse.json({ error: 'Only rejected applicants can be permanently deleted' }, { status: 422 })
   }
 
-  // Hard delete because deleted_at column is missing from remote schema
-  const { error: deleteError } = await adminClient
+  // Attempt soft delete if deleted_at is available, fallback to hard delete
+  const { error: softDeleteError } = await adminClient
     .from('applicants')
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)
     .eq('company_id', companyId)
 
-  if (deleteError) {
-    console.error('[admin/applicants/[id]] DELETE soft-delete failed:', deleteError)
-    return NextResponse.json({ error: 'Failed to delete applicant' }, { status: 500 })
+  if (softDeleteError) {
+    console.warn('[admin/applicants/[id]] Soft delete failed, falling back to hard delete. Error:', softDeleteError)
+    const { error: hardDeleteError } = await adminClient
+      .from('applicants')
+      .delete()
+      .eq('id', id)
+      .eq('company_id', companyId)
+
+    if (hardDeleteError) {
+      console.error('[admin/applicants/[id]] DELETE hard-delete failed:', hardDeleteError)
+      return NextResponse.json({ error: 'Failed to delete applicant' }, { status: 500 })
+    }
   }
 
   // Audit log (fire-and-forget)

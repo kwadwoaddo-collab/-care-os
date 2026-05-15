@@ -30,6 +30,7 @@ import AdminAccessButton    from './AdminAccessButton'
 import DeleteStaffButton    from './DeleteStaffButton'
 import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 import StaffProfileDesktop from '@/components/admin/StaffProfileDesktop'
+import RecruitmentFileTab  from './RecruitmentFileTab'
 import { can }             from '@/lib/rbac/permissions'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -500,10 +501,14 @@ function expiryTextCls(expiryDate: string | null): string {
 
 export default async function StaffDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { id } = await params
+  const { tab } = await searchParams
+  const isRecruitmentTab = tab === 'recruitment'
 
   // Start fetches in parallel
   const availabilityPromise    = getAvailability(id)
@@ -598,7 +603,39 @@ export default async function StaffDetailPage({
 
   return (
     <div>
-      {/* ── Mobile View (hidden on desktop) ──────────────────────────────── */}
+      {/* ── Tabs ───────────────────────────────────────────────────────────── */}
+      <div className="mb-6 border-b border-outline-variant">
+        <nav className="-mb-px flex space-x-8">
+          <Link
+            href={`/admin/staff/${id}`}
+            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+              !isRecruitmentTab
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-gray-700'
+            }`}
+          >
+            Profile
+          </Link>
+          {sp.applicant_id && (
+            <Link
+              href={`/admin/staff/${id}?tab=recruitment`}
+              className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                isRecruitmentTab
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-gray-700'
+              }`}
+            >
+              Recruitment File
+            </Link>
+          )}
+        </nav>
+      </div>
+
+      {isRecruitmentTab ? (
+        <RecruitmentFileTab staffProfileId={sp.id} applicantId={sp.applicant_id as string} documents={documents} />
+      ) : (
+        <>
+          {/* ── Mobile View (hidden on desktop) ──────────────────────────────── */}
       <div className="block lg:hidden -mx-4 -mt-4">
         <StaffProfileMobile
           staffProfile={sp}
@@ -680,6 +717,8 @@ export default async function StaffDetailPage({
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )
