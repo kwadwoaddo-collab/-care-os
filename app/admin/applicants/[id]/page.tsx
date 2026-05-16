@@ -33,10 +33,18 @@ interface FormResponse {
   updated_at: string
 }
 
+interface LinkedStaffProfile {
+  id: string
+  first_name: string | null
+  last_name:  string | null
+  created_at: string
+}
+
 interface ApiResponse {
   applicant: Applicant
   response: FormResponse | null
   answers: Record<string, unknown>
+  linked_staff_profile: LinkedStaffProfile | null
 }
 
 // ── Data Fetching ─────────────────────────────────────────────────────────────
@@ -104,7 +112,7 @@ export default async function ApplicantDetailPage({
     )
   }
 
-  const { applicant, response, answers } = data
+  const { applicant, response, answers, linked_staff_profile } = data
   const [interviews, documents] = await Promise.all([
     getInterviews(applicant.id),
     getDocuments(applicant.id),
@@ -169,6 +177,15 @@ export default async function ApplicantDetailPage({
         rejectionReason={applicant.rejection_reason}
         rejectionNotes={applicant.rejection_notes}
         canRestore={canRestore}
+        linkedStaffProfileId={linked_staff_profile?.id ?? null}
+        linkedStaffName={
+          linked_staff_profile
+            ? [linked_staff_profile.first_name, linked_staff_profile.last_name]
+                .filter(Boolean)
+                .join(' ') || null
+            : null
+        }
+        convertedAt={linked_staff_profile?.created_at ?? null}
       />
 
       <div className="space-y-4">

@@ -92,7 +92,19 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ applicant, response, answers })
+  // ── 6. Fetch linked staff profile (if applicant was converted) ──────────────
+  const { data: linkedStaffProfile } = await adminClient
+    .from('staff_profiles')
+    .select('id, first_name, last_name, created_at')
+    .eq('applicant_id', id)
+    .maybeSingle()
+
+  return NextResponse.json({
+    applicant,
+    response,
+    answers,
+    linked_staff_profile: linkedStaffProfile ?? null,
+  })
 }
 
 export async function DELETE(

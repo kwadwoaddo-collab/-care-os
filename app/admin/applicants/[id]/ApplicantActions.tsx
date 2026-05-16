@@ -10,6 +10,9 @@ interface Props {
   rejectionReason?: string | null
   rejectionNotes?: string | null
   canRestore?: boolean
+  linkedStaffProfileId?: string | null
+  linkedStaffName?: string | null
+  convertedAt?: string | null
 }
 
 type ActionStatus  = 'idle' | 'saving' | 'success' | 'error'
@@ -62,14 +65,21 @@ export default function ApplicantActions({
   rejectedAt,
   rejectionReason,
   canRestore = false,
+  linkedStaffProfileId = null,
+  linkedStaffName      = null,
+  convertedAt          = null,
 }: Props) {
   const [status, setStatus]             = useState(currentStatus)
   const [actionStatus, setActionStatus] = useState<ActionStatus>('idle')
   const [message, setMessage]           = useState<string | null>(null)
 
-  const [convertStatus, setConvertStatus]   = useState<ConvertStatus>('idle')
+  // Initialise from server-side conversion state so the button is never
+  // active for an already-converted applicant, even on a fresh page load.
+  const [convertStatus, setConvertStatus]   = useState<ConvertStatus>(linkedStaffProfileId ? 'done' : 'idle')
   const [convertMessage, setConvertMessage] = useState<string | null>(null)
-  const [staffProfileId, setStaffProfileId] = useState<string | null>(null)
+  const [staffProfileId, setStaffProfileId] = useState<string | null>(linkedStaffProfileId)
+  const [convertedAtDisplay, setConvertedAtDisplay] = useState<string | null>(convertedAt)
+  const [justConverted, setJustConverted] = useState(false)
 
   // Rejection modal state
   const [showRejectModal, setShowRejectModal] = useState(false)
@@ -168,14 +178,25 @@ export default function ApplicantActions({
     try {
       const res = await fetch(`/api/admin/applicants/${applicantId}/convert`, { method: 'POST' })
       const body = await res.json() as {
-        staff_profile?: { id: string }
-        already_converted?: boolean
+        staff_profile?: { id: string; created_at?: string }
         error?: string
       }
+
+      // 409 means already converted (race condition / second tab)
+      if (res.status === 409 && body.staff_profile) {
+        setStaffProfileId(body.staff_profile.id)
+        setConvertedAtDisplay(body.staff_profile.created_at ?? null)
+        setConvertStatus('done')
+        setConvertMessage(null)
+        return
+      }
+
       if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`)
+
       setStaffProfileId(body.staff_profile?.id ?? null)
+      setConvertedAtDisplay(body.staff_profile?.created_at ?? null)
+      setJustConverted(true)
       setConvertStatus('done')
-      setConvertMessage(body.already_converted ? 'Already converted — staff profile exists.' : 'Staff profile created.')
     } catch (err) {
       setConvertStatus('error')
       setConvertMessage(err instanceof Error ? err.message : 'Something went wrong')
@@ -288,42 +309,75 @@ export default function ApplicantActions({
           </p>
         )}
 
-        {/* Convert to Staff — only shown when hired */}
+        {/* Conversion section — only shown for hired applicants */}
         {status === 'hired' && (
-          <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
-            <button
-              id="btn-convert-to-staff"
-              onClick={handleConvert}
-              disabled={convertStatus === 'loading' || convertStatus === 'done'}
-              className={[
-                'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-                convertStatus === 'done'
-                  ? 'bg-green-50 text-green-700 ring-green-600/20 opacity-60 cursor-not-allowed'
-                  : convertStatus === 'loading'
-                  ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
-                  : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
-              ].join(' ')}
-            >
-              {convertStatus === 'loading' ? (
-                <span className="flex items-center gap-1">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Converting…
-                </span>
-              ) : convertStatus === 'done' ? '✓ Staff profile created' : 'Convert to Staff'}
-            </button>
-            {convertStatus === 'done' && staffProfileId && (
-              <Link
-                href={`/admin/staff/${staffProfileId}`}
-                className="text-xs text-indigo-600 underline hover:text-indigo-800 transition-colors"
-              >
-                View staff profile →
-              </Link>
-            )}
-            {convertMessage && convertStatus === 'error' && (
-              <p className="text-xs text-red-600">✕ {convertMessage}</p>
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            {convertStatus === 'done' ? (
+              <>
+                {/* Success banner shown immediately after clicking Convert */}
+                {justConverted && (
+                  <div className="mb-2 flex items-center gap-2 rounded-md bg-green-50 border border-green-200 px-3 py-2">
+                    <svg className="h-4 w-4 text-green-600 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-xs font-medium text-green-700">Applicant successfully converted to staff.</span>
+                  </div>
+                )}
+
+                {/* Converted state — profile summary */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">
+                    ✓ Converted to Staff
+                  </span>
+
+                  {linkedStaffName && (
+                    <span className="text-xs text-on-surface-variant font-medium">{linkedStaffName}</span>
+                  )}
+
+                  {convertedAtDisplay && (
+                    <span className="text-xs text-on-surface-variant">
+                      Converted {formatDate(convertedAtDisplay)}
+                    </span>
+                  )}
+
+                  {staffProfileId && (
+                    <Link
+                      href={`/admin/staff/${staffProfileId}`}
+                      className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/20 hover:bg-indigo-100 transition-colors"
+                    >
+                      View Staff Profile →
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Not yet converted — show action button */
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  id="btn-convert-to-staff"
+                  onClick={handleConvert}
+                  disabled={convertStatus === 'loading'}
+                  className={[
+                    'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                    convertStatus === 'loading'
+                      ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
+                      : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
+                  ].join(' ')}
+                >
+                  {convertStatus === 'loading' ? (
+                    <span className="flex items-center gap-1">
+                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Converting…
+                    </span>
+                  ) : 'Convert to Staff'}
+                </button>
+                {convertMessage && convertStatus === 'error' && (
+                  <p className="text-xs text-red-600">✕ {convertMessage}</p>
+                )}
+              </div>
             )}
           </div>
         )}

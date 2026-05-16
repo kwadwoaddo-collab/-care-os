@@ -94,7 +94,13 @@ export async function POST(
   }
 
   if (existing) {
-    return NextResponse.json({ staff_profile: existing, already_converted: true }, { status: 200 })
+    return NextResponse.json(
+      {
+        error:         'Applicant has already been converted to staff.',
+        staff_profile: existing,
+      },
+      { status: 409 }
+    )
   }
 
   // ── 3. Fetch form answers for this applicant ───────────────────────────────
