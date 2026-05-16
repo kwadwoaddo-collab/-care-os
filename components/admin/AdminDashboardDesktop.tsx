@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Icon from '@/components/ui/Icon'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -117,22 +118,22 @@ const SEVERITY_BORDER: Record<string, string> = {
   critical: 'border-l-red-600',
 }
 const SEVERITY_BADGE: Record<string, string> = {
-  low:      'bg-gray-50 text-gray-600',
-  medium:   'bg-yellow-50 text-yellow-700',
-  high:     'bg-orange-50 text-orange-700',
-  critical: 'bg-red-50 text-red-700',
+  low:      'bg-gray-100 text-gray-700',
+  medium:   'bg-amber-100 text-amber-800',
+  high:     'bg-orange-100 text-orange-800',
+  critical: 'bg-red-100 text-red-800',
 }
 const STATUS_BADGE: Record<string, string> = {
-  open:          'bg-red-50 text-red-700',
-  investigating: 'bg-blue-50 text-blue-700',
-  resolved:      'bg-green-50 text-green-700',
-  closed:        'bg-gray-50 text-gray-500',
+  open:          'bg-red-100 text-red-800',
+  investigating: 'bg-blue-100 text-blue-800',
+  resolved:      'bg-green-100 text-green-800',
+  closed:        'bg-gray-100 text-gray-600',
 }
 const AUDIT_CLS: Record<string, string> = {
-  staff: 'bg-indigo-50 text-indigo-700', shift: 'bg-blue-50 text-blue-700',
-  care_package: 'bg-green-50 text-green-700', applicant: 'bg-yellow-50 text-yellow-700',
-  document: 'bg-purple-50 text-purple-700', visit_note: 'bg-pink-50 text-pink-700',
-  incident: 'bg-red-50 text-red-700',
+  staff: 'bg-indigo-100 text-indigo-800', shift: 'bg-blue-100 text-blue-800',
+  care_package: 'bg-green-100 text-green-800', applicant: 'bg-amber-100 text-amber-800',
+  document: 'bg-purple-100 text-purple-800', visit_note: 'bg-pink-100 text-pink-800',
+  incident: 'bg-red-100 text-red-800',
 }
 function auditCls(action: string) {
   return AUDIT_CLS[action.split('.')[0] ?? ''] ?? 'bg-gray-50 text-gray-600'
@@ -185,12 +186,7 @@ function QuickAction({ icon, title, subtitle, href, iconColor, bg }: { icon: str
   return (
     <Link href={href} className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all text-left">
       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${bg} ${iconColor}`}>
-        <span
-          className="material-symbols-outlined overflow-hidden"
-          style={{ fontSize: '20px', width: '20px', height: '20px', lineHeight: '20px', display: 'block', fontVariationSettings: "'FILL' 1" }}
-        >
-          {icon}
-        </span>
+        <Icon name={icon} size="md" fill />
       </div>
       <div>
         <p className="text-sm font-semibold text-slate-900">{title}</p>
@@ -477,10 +473,7 @@ export default function AdminDashboardDesktop({
             <div className="divide-y divide-slate-50">
               {topAlerts.length === 0 ? (
                 <div className="px-6 py-6 text-center">
-                <span
-                  className="material-symbols-outlined text-green-500 overflow-hidden"
-                  style={{ fontSize: '32px', width: '32px', height: '32px', lineHeight: '32px', display: 'block', margin: '0 auto', fontVariationSettings: "'FILL' 1" }}
-                >check_circle</span>
+                <Icon name="check_circle" size="xl" fill className="text-green-500 mx-auto" aria-hidden />
                   <p className="text-sm text-green-600 font-semibold mt-1">All staff compliant</p>
                   <p className="text-xs text-slate-400 mt-0.5">No active alerts</p>
                 </div>

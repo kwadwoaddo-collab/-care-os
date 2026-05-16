@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Icon from '@/components/ui/Icon'
 
 interface Props {
   applicantId: string
@@ -140,9 +141,7 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-base leading-none" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 0" }}>
-                    {item.icon}
-                  </span>
+                  <Icon name={item.icon} size="sm" />
                   {item.label}
                 </a>
               )
@@ -166,9 +165,7 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                 ) : (
-                  <span className="material-symbols-outlined shrink-0" style={{ fontSize: '18px', fontVariationSettings: "'FILL' 0" }}>
-                    {item.icon}
-                  </span>
+                  <Icon name={item.icon} size="sm" className="shrink-0" />
                 )}
                 {item.label}
               </button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import StatusBadge, { reviewStatusVariant } from '@/components/ui/StatusBadge'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -23,17 +24,6 @@ function formatDate(iso: string | null | undefined): string {
   })
 }
 
-const STATUS_CLS: Record<string, string> = {
-  approved: 'bg-green-50 text-green-700 ring-green-600/20',
-  rejected: 'bg-red-50 text-red-700 ring-red-600/20',
-  pending:  'bg-gray-50 text-on-surface-variant ring-gray-400/20',
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  approved: '✓ Approved',
-  rejected: '✕ Rejected',
-  pending:  '· Pending review',
-}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -94,16 +84,17 @@ export default function DocumentApprovalButton({
     }
   }
 
-  const statusCls   = STATUS_CLS[status ?? 'pending']   ?? STATUS_CLS.pending
-  const statusLabel = STATUS_LABEL[status ?? 'pending'] ?? '· Unknown'
+  const currentStatus = status ?? 'pending'
 
   return (
     <div className="mt-2">
       {/* Current review status badge */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${statusCls}`}>
-          {statusLabel}
-        </span>
+        <StatusBadge
+          variant={reviewStatusVariant(currentStatus)}
+          label={currentStatus === 'under_review' ? 'Under Review' : currentStatus.replace(/_/g, ' ')}
+          ariaLabel={`Document status: ${currentStatus.replace(/_/g, ' ')}`}
+        />
 
         {at && (
           <span className="text-xs text-gray-400">

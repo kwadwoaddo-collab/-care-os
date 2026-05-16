@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import AdminNotificationBell from '@/components/shared/AdminNotificationBell'
 import ThemeToggle from './ThemeToggle'
+import Icon from '@/components/ui/Icon'
 
 export default function AdminHeader() {
   const pathname = usePathname()
@@ -23,10 +24,7 @@ export default function AdminHeader() {
       <div className="hidden lg:flex items-center gap-4 flex-1">
         <div className="relative">
           <span className="absolute inset-y-0 left-3 flex items-center text-on-surface-variant pointer-events-none">
-            <span
-              className="material-symbols-outlined overflow-hidden"
-              style={{ fontSize: '20px', width: '20px', height: '20px', lineHeight: '20px', display: 'block' }}
-            >search</span>
+            <Icon name="search" size="md" />
           </span>
           <input 
             type="text" 

@@ -1,4 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
+import StatusBadge, { staffStatusVariant } from '@/components/ui/StatusBadge'
 import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
 import { DAY_KEYS, type StaffAvailability, type DayKey } from '@/lib/staff/types'
 import type { ComplianceDocument } from '@/lib/compliance/calculateCompliance'
@@ -262,10 +266,13 @@ export default function StaffProfileDesktop({
               </div>
 
               {/* Status badge */}
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                {sp.status === 'active' ? 'Active Status' : sp.status.replace(/_/g, ' ')}
-              </span>
+              <StatusBadge
+                variant={staffStatusVariant(sp.status ?? 'inactive')}
+                label={sp.status === 'active' ? 'Active Status' : (sp.status ?? 'unknown').replace(/_/g, ' ')}
+                ariaLabel={`Staff status: ${(sp.status ?? 'unknown').replace(/_/g, ' ')}`}
+                dot
+                size="xs"
+              />
 
               {/* Name */}
               <div>

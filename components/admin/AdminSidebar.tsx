@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { can } from '@/lib/rbac/permissions'
 import { ENABLE_TIMESHEETS } from '@/lib/features'
+import Icon from '@/components/ui/Icon'
 import {
   canViewCompliance,
   canViewAuditLogs,
@@ -74,12 +75,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
         {/* ── Brand ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 shrink-0 mb-8">
           <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-            <span
-              className="material-symbols-outlined text-white"
-              style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}
-            >
-              shield
-            </span>
+            <Icon name="shield" size="md" fill className="text-white" />
           </div>
           <div>
             <span
@@ -116,21 +112,12 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 {isActive && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
-                <span
-                  className="material-symbols-outlined shrink-0 overflow-hidden"
-                  style={{
-                    fontSize: '20px',
-                    width: '20px',
-                    minWidth: '20px',
-                    maxWidth: '20px',
-                    height: '20px',
-                    lineHeight: '20px',
-                    display: 'block',
-                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
-                  }}
-                >
-                  {item.icon}
-                </span>
+                <Icon
+                  name={item.icon}
+                  size="md"
+                  fill={isActive}
+                  className="shrink-0"
+                />
                 <span className="text-sm font-medium normal-case truncate">
                   {item.label}
                 </span>
@@ -157,21 +144,12 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 {isActive && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
-                <span
-                  className="material-symbols-outlined shrink-0 overflow-hidden"
-                  style={{
-                    fontSize: '20px',
-                    width: '20px',
-                    minWidth: '20px',
-                    maxWidth: '20px',
-                    height: '20px',
-                    lineHeight: '20px',
-                    display: 'block',
-                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
-                  }}
-                >
-                  {item.icon}
-                </span>
+                <Icon
+                  name={item.icon}
+                  size="md"
+                  fill={isActive}
+                  className="shrink-0"
+                />
                 <span className="text-sm font-medium normal-case truncate">
                   {item.label}
                 </span>

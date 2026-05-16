@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import StatusBadge, { expiryVariant } from '@/components/ui/StatusBadge'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -72,19 +73,21 @@ function expiryStatus(expiryDate: string | null): 'expired' | 'expiring' | 'vali
 }
 
 function ExpiryBadge({ expiryDate }: { expiryDate: string | null }) {
-  if (!expiryDate) return <span className="text-gray-400 text-xs">—</span>
-  const status = expiryStatus(expiryDate)
-  const label  = formatDate(expiryDate)
-  const map = {
-    expired:  'bg-red-50 text-red-700 ring-red-600/20',
-    expiring: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-    valid:    'bg-green-50 text-green-700 ring-green-600/20',
+  if (!expiryDate) return <span className="text-gray-400 text-xs" aria-label="No expiry date">No expiry</span>
+  const variant = expiryVariant(expiryDate)
+  const label   = formatDate(expiryDate)
+  const ariaMap: Record<string, string> = {
+    expired:  `Expired on ${label}`,
+    expiring: `Expiring soon: ${label}`,
+    success:  `Valid until ${label}`,
   }
-  const cls = status ? map[status] : 'bg-gray-50 text-gray-600 ring-gray-500/20'
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}`}>
-      {label}
-    </span>
+    <StatusBadge
+      variant={variant}
+      label={label}
+      ariaLabel={ariaMap[variant] ?? `Expires ${label}`}
+      size="xs"
+    />
   )
 }
 

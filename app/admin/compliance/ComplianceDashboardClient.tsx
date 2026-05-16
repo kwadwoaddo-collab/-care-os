@@ -8,6 +8,7 @@ import { COMPLIANCE_STATE_CLS, COMPLIANCE_STATE_LABEL } from '@/lib/compliance/b
 import { BAND_CLS, type ExpiryBand } from '@/lib/compliance/expiryBands'
 import { TerminationModal, type TerminationData } from '@/components/admin/TerminationModal'
 import { hasRole } from '@/lib/rbac/roles'
+import StatusBadge, { staffStatusVariant } from '@/components/ui/StatusBadge'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -419,9 +420,14 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
                         <span className="inline-block px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-tighter truncate max-w-[150px]">
                           {row.jobRole?.replace(/_/g, ' ') ?? 'Staff'}
                         </span>
-                        {row.status === 'active' && <span className="inline-block px-2 py-0.5 rounded bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-tighter">Active</span>}
-                        {row.status === 'suspended' && <span className="inline-block px-2 py-0.5 rounded bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-tighter">Suspended</span>}
-                        {row.status === 'terminated' && <span className="inline-block px-2 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold uppercase tracking-tighter">Archived</span>}
+                        {(row.status === 'active' || row.status === 'suspended' || row.status === 'terminated') && (
+                          <StatusBadge
+                            variant={staffStatusVariant(row.status)}
+                            label={row.status === 'terminated' ? 'Archived' : row.status}
+                            ariaLabel={`Staff status: ${row.status === 'terminated' ? 'Archived' : row.status}`}
+                            size="xs"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
