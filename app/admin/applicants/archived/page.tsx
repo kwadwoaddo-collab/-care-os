@@ -22,6 +22,8 @@ interface ArchivedApplicantRow {
   job_role: string | null
   status: string
   created_at: string
+  rejected_at: string | null
+  rejection_reason: string | null
   form_status: string | null
   submitted_at: string | null
 }
@@ -168,6 +170,22 @@ export default async function ArchivedApplicantsPage({
                       </span>
                     </div>
                   </div>
+                  <div className="bg-red-50/50 rounded-lg p-3 text-xs space-y-1.5 border border-red-100/50">
+                    <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Applied</span>
+                      <span className="text-on-surface">{formatDate(a.created_at)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-on-surface-variant font-medium">Rejected</span>
+                      <span className="text-red-700 font-medium">{formatDate(a.rejected_at)}</span>
+                    </div>
+                    {a.rejection_reason && (
+                      <div className="pt-1 mt-1 border-t border-red-100/50">
+                        <span className="text-on-surface-variant font-medium block mb-0.5">Reason</span>
+                        <span className="text-red-700 line-clamp-2">{a.rejection_reason}</span>
+                      </div>
+                    )}
+                  </div>
                   <ArchivedApplicantActions
                     applicantId={a.id}
                     applicantName={name}
@@ -186,6 +204,8 @@ export default async function ArchivedApplicantsPage({
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Applicant</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Role</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Applied</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Rejected</th>
+                  <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Reason</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant">Form</th>
                   <th className="px-4 py-3 text-xs font-semibold text-on-surface-variant text-right">Actions</th>
                 </tr>
@@ -211,6 +231,12 @@ export default async function ArchivedApplicantsPage({
                       </td>
                       <td className="px-4 py-3 text-xs text-on-surface-variant whitespace-nowrap">
                         {formatDate(a.created_at)}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-red-600 whitespace-nowrap">
+                        {formatDate(a.rejected_at)}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-on-surface-variant max-w-[150px] truncate" title={a.rejection_reason ?? '—'}>
+                        {a.rejection_reason ?? '—'}
                       </td>
                       <td className="px-4 py-3">
                         {a.form_status ? (

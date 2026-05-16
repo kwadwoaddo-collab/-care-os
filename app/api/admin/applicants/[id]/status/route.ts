@@ -49,7 +49,10 @@ export async function PATCH(
   }
 
   if (status === 'rejected') {
-    // We cannot update missing database columns. Just put reason in audit log metadata.
+    updatePayload.rejected_at = new Date().toISOString()
+    updatePayload.rejected_by = userId === 'dev-admin' ? null : userId
+    updatePayload.rejection_reason = typeof rejection_reason === 'string' ? rejection_reason.trim() || null : null
+    updatePayload.rejection_notes = typeof rejection_notes === 'string' ? rejection_notes.trim() || null : null
   }
 
   const { data: applicant, error: updateError } = await adminClient

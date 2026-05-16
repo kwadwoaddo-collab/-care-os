@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     .from('applicants')
     .select(
       `id, first_name, last_name, email, job_role, status, created_at,
+       rejected_at, rejection_reason,
        form_responses ( status, submitted_at ),
        staff_profiles!staff_profiles_applicant_id_fkey ( id, status )`,
       { count: 'exact' }
@@ -68,6 +69,8 @@ export async function GET(request: NextRequest) {
       job_role:         row.job_role,
       status:           row.status,
       created_at:       row.created_at,
+      rejected_at:      row.rejected_at ?? null,
+      rejection_reason: row.rejection_reason ?? null,
       form_status:      formResponse?.status       ?? null,
       submitted_at:     formResponse?.submitted_at ?? null,
       linked_staff_status: linkedStaff?.status     ?? null,
