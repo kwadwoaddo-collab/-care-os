@@ -211,8 +211,19 @@ export default async function ApplicantsPage({
       </div>
 
       {applicants.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-on-surface-variant">
-          {hasFilters ? 'No results found. Try changing your filters.' : 'No applicants yet.'}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center space-y-3">
+          <p className="text-sm text-on-surface-variant">
+            {hasFilters ? 'No results found. Try changing your filters.' : 'No active applicants in the pipeline.'}
+          </p>
+          {!hasFilters && (
+            <p className="text-xs text-on-surface-variant">
+              Rejected or archived applicants are in{' '}
+              <Link href="/admin/applicants/archived" className="underline hover:text-primary transition-colors">
+                Archived Applicants
+              </Link>
+              .
+            </p>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

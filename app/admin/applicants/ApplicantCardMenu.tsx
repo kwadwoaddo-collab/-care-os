@@ -62,15 +62,6 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
     }
   }
 
-  async function deletePermanently() {
-    if (!confirm(`Permanently delete ${applicantName}? This cannot be undone.`)) return
-    setLoading('delete')
-    await fetch(`/api/admin/applicants/${applicantId}`, { method: 'DELETE' })
-    setLoading(null)
-    setOpen(false)
-    router.refresh()
-  }
-
   const isActive     = ['applied', 'shortlisted', 'interview_scheduled'].includes(status)
   const isHired      = status === 'hired'
   const isRejected   = status === 'rejected'
@@ -78,8 +69,8 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
 
   const actions: ActionItem[] = []
 
-  // Always: View Application
-  actions.push({ label: 'View Application', icon: 'open_in_new', href: `/admin/applicants/${applicantId}` })
+  // Always: View Application / Recruitment File
+  actions.push({ label: 'View Recruitment File', icon: 'folder_shared', href: `/admin/applicants/${applicantId}` })
 
   if (isActive) {
     if (status !== 'shortlisted') {
@@ -89,18 +80,18 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
       actions.push({ label: 'Schedule Interview', icon: 'event', action: () => patchStatus('interview_scheduled') })
     }
     actions.push({ label: 'Move to Hired', icon: 'check_circle', action: () => patchStatus('hired') })
-    actions.push({ label: 'Reject Applicant', icon: 'cancel', danger: true, action: () => patchStatus('rejected') })
+    actions.push({ label: 'Reject / Archive', icon: 'archive', danger: true, action: () => patchStatus('rejected') })
   }
 
   if (isHired) {
     actions.push({ label: 'Convert to Staff', icon: 'badge', action: convertToStaff })
-    actions.push({ label: 'View Recruitment File', icon: 'folder_shared', href: `/admin/applicants/${applicantId}` })
     actions.push({ label: 'Archive Applicant', icon: 'archive', danger: true, action: () => patchStatus('rejected') })
   }
 
   if (isRejected) {
     actions.push({ label: 'Restore Applicant', icon: 'restore', action: () => patchStatus('applied') })
-    actions.push({ label: 'Delete Permanently', icon: 'delete_forever', danger: true, action: deletePermanently })
+    // Permanent deletion requires the "type DELETE" confirmation — direct to the archived page.
+    actions.push({ label: 'Permanently Delete…', icon: 'delete_forever', danger: true, href: '/admin/applicants/archived' })
   }
 
   if (isWithdrawn) {

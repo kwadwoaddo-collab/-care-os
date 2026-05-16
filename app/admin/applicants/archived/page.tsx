@@ -135,14 +135,22 @@ export default async function ArchivedApplicantsPage({
 
       {/* Empty state */}
       {applicants.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center">
-          <span className="material-symbols-outlined text-4xl text-outline-variant block mb-2">archive</span>
-          <p className="text-sm text-on-surface-variant font-medium">
-            {hasFilters ? 'No archived applicants match your filters.' : 'No archived applicants yet.'}
-          </p>
-          <p className="text-xs text-on-surface-variant mt-1">
-            Rejected applicants will appear here.
-          </p>
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center space-y-3">
+          <span className="material-symbols-outlined text-4xl text-outline-variant block">archive</span>
+          <div>
+            <p className="text-sm text-on-surface-variant font-medium">
+              {hasFilters ? 'No archived applicants match your filters.' : 'No archived applicants yet.'}
+            </p>
+            <p className="text-xs text-on-surface-variant mt-1">
+              Applicants appear here after being rejected. Permanent deletion is only available from this page.
+            </p>
+          </div>
+          <Link
+            href="/admin/applicants"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            ← Back to Talent Pipeline
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">

@@ -309,6 +309,16 @@ export default function ApplicantActions({
           </p>
         )}
 
+        {/* Lifecycle helper — shown only for active applicants */}
+        {!isTerminal && (
+          <p className="mt-2 text-xs text-on-surface-variant border-t border-gray-100 pt-2">
+            Applicants can only be permanently deleted after they are rejected or archived.{' '}
+            <Link href="/admin/applicants/archived" className="underline hover:text-primary transition-colors">
+              View Archived Applicants →
+            </Link>
+          </p>
+        )}
+
         {/* Conversion section — only shown for hired applicants */}
         {status === 'hired' && (
           <div className="mt-3 pt-3 border-t border-gray-100">

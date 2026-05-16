@@ -76,20 +76,20 @@ export default function ArchivedApplicantActions({ applicantId, applicantName, c
           href={`/admin/applicants/${applicantId}`}
           className="inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-medium text-on-surface-variant border border-outline-variant hover:bg-surface-container transition-colors"
         >
-          View Details
+          View Recruitment File
         </Link>
         <button
           onClick={() => setShowRestore(true)}
           className="inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 hover:bg-blue-100 transition-colors"
         >
-          Restore
+          Restore Applicant
         </button>
         {canDelete && (
           <button
             onClick={() => setShowDelete(true)}
             className="inline-flex items-center rounded-md px-2.5 py-1.5 text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 hover:bg-red-100 transition-colors"
           >
-            Delete
+            Permanently Delete
           </button>
         )}
       </div>
