@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAssignableRoles, canManageRoles } from '@/lib/rbac/can'
 import { getAccessState } from '@/lib/rbac/access'
+import { isAdminCapableRole } from '@/lib/rbac/roles'
 import type { Role } from '@/lib/rbac/roles'
 import AdminAccessButton from './AdminAccessButton'
 import PortalInviteButton from './PortalInviteButton'
@@ -73,6 +74,8 @@ export interface RoleManagementPanelProps {
   portalInviteSentAt: string | null
   /** When the admin portal invite was sent */
   adminInviteSentAt: string | null
+  /** When the admin completed password setup (auth email_confirmed_at) */
+  adminPasswordSetAt?: string | null
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -88,6 +91,7 @@ export default function RoleManagementPanel({
   adminInviteSentAt,
   portalLastLoginAt,
   portalInviteSentAt,
+  adminPasswordSetAt = null,
 }: RoleManagementPanelProps) {
   const router = useRouter()
 
@@ -138,7 +142,12 @@ export default function RoleManagementPanel({
       if (!res.ok) {
         setBanner({ type: 'error', message: (json.error as string) ?? 'Failed to update role.' })
       } else {
-        setBanner({ type: 'success', message: `Role updated to ${roleMeta(selectedRole).label}.` })
+        const inviteSent = json.admin_invite_sent === true
+        const label = roleMeta(selectedRole).label
+        const msg = inviteSent
+          ? `Role updated to ${label}. Admin invite email sent — they can now set up their password.`
+          : `Role updated to ${label}.`
+        setBanner({ type: 'success', message: msg })
         closeModal()
         router.refresh()
       }
@@ -156,6 +165,88 @@ export default function RoleManagementPanel({
 
   return (
     <div className="space-y-6">
+      {/* ── Admin invite lifecycle steps ─────────────────────────────── */}
+      {profileId && (
+        <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4">
+          <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wider mb-3">Admin Setup Progress</p>
+          <ol className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+            {/* Step 1: Role Assigned */}
+            {(() => {
+              const done = !!currentRole && isAdminCapableRole(currentRole)
+              return (
+                <li className="flex-1 flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1 sm:pr-4">
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${done ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {done ? '✓' : '1'}
+                  </span>
+                  <div>
+                    <p className={`text-xs font-semibold ${done ? 'text-indigo-800' : 'text-gray-400'}`}>Role Assigned</p>
+                    {done && <p className="text-[11px] text-indigo-600">{meta.label}</p>}
+                  </div>
+                </li>
+              )
+            })()}
+            <li className="hidden sm:flex items-center text-gray-300 px-1 self-start mt-1.5">›</li>
+            {/* Step 2: Invite Sent */}
+            {(() => {
+              const done = !!adminInviteSentAt
+              return (
+                <li className="flex-1 flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1 sm:px-4">
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${done ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {done ? '✓' : '2'}
+                  </span>
+                  <div>
+                    <p className={`text-xs font-semibold ${done ? 'text-indigo-800' : 'text-gray-400'}`}>Invite Sent</p>
+                    {done && <p className="text-[11px] text-indigo-600">{formatDate(adminInviteSentAt)}</p>}
+                  </div>
+                </li>
+              )
+            })()}
+            <li className="hidden sm:flex items-center text-gray-300 px-1 self-start mt-1.5">›</li>
+            {/* Step 3: Password Set */}
+            {(() => {
+              const done = !!adminPasswordSetAt
+              return (
+                <li className="flex-1 flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1 sm:px-4">
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${done ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {done ? '✓' : '3'}
+                  </span>
+                  <div>
+                    <p className={`text-xs font-semibold ${done ? 'text-indigo-800' : 'text-gray-400'}`}>Password Set</p>
+                    {done && <p className="text-[11px] text-indigo-600">{formatDate(adminPasswordSetAt)}</p>}
+                  </div>
+                </li>
+              )
+            })()}
+            <li className="hidden sm:flex items-center text-gray-300 px-1 self-start mt-1.5">›</li>
+            {/* Step 4: Admin Activated */}
+            {(() => {
+              const done = !!adminPasswordSetAt && !!currentRole && isAdminCapableRole(currentRole)
+              return (
+                <li className="flex-1 flex items-center gap-2 sm:flex-col sm:items-start sm:gap-1 sm:pl-4">
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${done ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    {done ? '✓' : '4'}
+                  </span>
+                  <div>
+                    <p className={`text-xs font-semibold ${done ? 'text-green-800' : 'text-gray-400'}`}>Admin Activated</p>
+                    {done && <p className="text-[11px] text-green-600">Active</p>}
+                  </div>
+                </li>
+              )
+            })()}
+          </ol>
+
+          {/* Resend Admin Invite button — always available when profile_id exists */}
+          {canManageRoles(callerRole) && (
+            <div className="mt-4 pt-3 border-t border-indigo-100 flex items-center gap-3 flex-wrap">
+              <ResendInviteButton staffProfileId={staffProfileId} adminInviteSentAt={adminInviteSentAt} />
+              {!adminInviteSentAt && (
+                <p className="text-xs text-gray-500">No invite sent yet — assign an admin-capable role to auto-send, or resend manually.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Status overview ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -219,7 +310,7 @@ export default function RoleManagementPanel({
             </div>
           ) : (
             <p className="text-sm text-on-surface-variant italic">
-              {accessState === 'worker_only' 
+              {accessState === 'worker_only'
                 ? 'Standard worker portal access. Promote to an operational role by creating admin portal access above.'
                 : 'No portal access configured. Use the header actions to invite this staff member.'}
             </p>
@@ -419,3 +510,73 @@ export default function RoleManagementPanel({
     </div>
   )
 }
+
+// ── ResendInviteButton ────────────────────────────────────────────────────────
+// Inline sub-component for the "Resend Admin Invite" action.
+// Visible whenever a staff member has an admin account (profile_id exists).
+
+function ResendInviteButton({
+  staffProfileId,
+  adminInviteSentAt,
+}: {
+  staffProfileId: string
+  adminInviteSentAt: string | null
+}) {
+  const router = useRouter()
+  const [state,  setState]  = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [errMsg, setErrMsg] = useState<string | null>(null)
+
+  async function handleResend() {
+    setState('loading')
+    setErrMsg(null)
+    try {
+      const res  = await fetch(`/api/admin/staff/${staffProfileId}/admin-access`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ send_email: true, resend: true }),
+      })
+      const json = await res.json() as { ok?: boolean; error?: string }
+      if (!res.ok) {
+        setState('error')
+        setErrMsg(json.error ?? 'Failed to resend invite.')
+        return
+      }
+      setState('done')
+      setTimeout(() => {
+        setState('idle')
+        router.refresh()
+      }, 2000)
+    } catch {
+      setState('error')
+      setErrMsg('Network error — please try again.')
+    }
+  }
+
+  if (state === 'done') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-md">
+        <span className="material-symbols-outlined text-[13px]">check_circle</span>
+        Invite sent!
+      </span>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        id="resend-admin-invite-btn"
+        type="button"
+        disabled={state === 'loading'}
+        onClick={() => void handleResend()}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-wait"
+      >
+        <span className="material-symbols-outlined text-[13px]">send</span>
+        {state === 'loading' ? 'Sending…' : adminInviteSentAt ? 'Resend Admin Invite' : 'Send Admin Invite'}
+      </button>
+      {state === 'error' && errMsg && (
+        <p className="text-[11px] text-red-600">{errMsg}</p>
+      )}
+    </div>
+  )
+}
+

@@ -551,6 +551,7 @@ export default async function StaffDetailPage({
   let staffProfileRole: string | null = null
   let lastChangedBy:    string | null = null
   let lastChangedAt:    string | null = null
+  let adminPasswordSetAt: string | null = null
 
   // Portal access state (computed here server-side, presence only)
   const portalTokenActive = !!(sp.portal_token_hash)
@@ -569,6 +570,10 @@ export default async function StaffDetailPage({
           .eq('id', sp.profile_id)
           .maybeSingle()
         staffProfileRole = (linkedProfile?.role as string | null) ?? null
+
+        // Fetch auth user to determine if password has been set
+        const { data: { user: authUser } } = await adminClient.auth.admin.getUserById(sp.profile_id)
+        adminPasswordSetAt = (authUser?.email_confirmed_at as string | null) ?? null
 
         // Fetch last role change from audit log
         const { data: lastChange } = await adminClient
@@ -678,6 +683,7 @@ export default async function StaffDetailPage({
               portalLastLoginAt={sp.portal_last_login_at ?? null}
               portalInviteSentAt={sp.portal_invite_sent_at ?? null}
               adminInviteSentAt={adminInviteSentAt}
+              adminPasswordSetAt={adminPasswordSetAt}
             />
 
             {/* Admin Access invite (if no admin account yet) */}

@@ -52,12 +52,13 @@ export async function POST(
 
   const { id: staffProfileId } = await params
 
-  let body: { send_email?: boolean } = {}
+  let body: { send_email?: boolean; resend?: boolean } = {}
   try {
-    body = await request.json() as { send_email?: boolean }
+    body = await request.json() as { send_email?: boolean; resend?: boolean }
   } catch { /* body is optional */ }
 
   const sendEmail = body.send_email !== false   // default: send invite email
+  const isResend  = body.resend === true
 
   // ── 3. Fetch staff profile (tenant isolation) ─────────────────────────────
   const { data: sp, error: spErr } = await adminClient
@@ -81,12 +82,60 @@ export async function POST(
 
   const email = (sp.email as string).toLowerCase().trim()
 
-  // ── 5. Must NOT already have an admin account ──────────────────────────────
-  if (sp.profile_id) {
+  // ── 5. Handle resend vs. initial creation ────────────────────────────────
+  if (sp.profile_id && !isResend) {
+    // Existing account, not a resend request — return 409
     return NextResponse.json(
       { error: 'Admin portal account already exists for this staff member.' },
       { status: 409 }
     )
+  }
+
+  // ── Resend path: regenerate invite link for existing account ────────────────
+  if (sp.profile_id && isResend) {
+    const { data: reInvited, error: reInviteErr } = await adminClient.auth.admin.generateLink({
+      type:  'invite',
+      email,
+      options: {
+        data: {
+          company_id: companyId,
+          first_name: sp.first_name ?? '',
+          last_name:  sp.last_name  ?? '',
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/auth/callback?next=/admin/set-password`,
+      },
+    })
+
+    if (reInviteErr || !reInvited?.properties?.action_link) {
+      console.error('[admin-access/resend] generateLink failed:', reInviteErr?.message)
+      return NextResponse.json(
+        { error: `Failed to generate resend link: ${reInviteErr?.message ?? 'Unknown error'}` },
+        { status: 500 }
+      )
+    }
+
+    const now = new Date().toISOString()
+    await adminClient
+      .from('staff_profiles')
+      .update({ admin_invite_sent_at: now, admin_invite_email: email })
+      .eq('id', staffProfileId)
+      .eq('company_id', companyId)
+
+    const { sendAdminInviteEmail } = await import('@/lib/email/resend')
+    await sendAdminInviteEmail({
+      to:         email,
+      firstName:  sp.first_name ?? 'Staff Member',
+      inviteLink: reInvited.properties.action_link,
+    })
+
+    void writeAudit({
+      companyId, actorId,
+      action:   'admin_access.resent',
+      entityId: staffProfileId,
+      metadata: { profile_id: sp.profile_id, email, caller_role: callerRole },
+    })
+
+    return NextResponse.json({ ok: true, resent: true, email })
   }
 
   // ── 6. Create Supabase Auth user ──────────────────────────────────────────

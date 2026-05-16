@@ -12,6 +12,7 @@ import {
   normaliseRole,
   ASSIGNABLE_ROLES,
   hierarchyLevel,
+  isAdminCapableRole,
   type Role,
 } from '@/lib/rbac/roles'
 import { requiresAdminAccount }      from '@/lib/rbac/access'
@@ -226,12 +227,121 @@ export async function PATCH(
     }
   })()
 
-  return NextResponse.json({
-    ok:            true,
-    profile_id:    profileId,
-    new_role:      requestedRole,
-    previous_role: previousRole,
+  // ── Auto-invite if promoted to admin-capable role for the first time ────────
+  const autoInviteSent = await maybeAutoInvite({
+    staffProfileId,
+    profileId,
+    requestedRole,
+    companyId,
+    actorId: userId,
   })
+
+  return NextResponse.json({
+    ok:                true,
+    profile_id:        profileId,
+    new_role:          requestedRole,
+    previous_role:     previousRole,
+    admin_invite_sent: autoInviteSent,
+  })
+}
+
+// ── Auto-invite helper ────────────────────────────────────────────────────────
+//
+// Sends an admin portal invite email if ALL of the following are true:
+//   1. The new role is admin-capable (coordinator, compliance_manager, etc.)
+//   2. The staff member has never received an admin invite (admin_invite_sent_at IS NULL)
+//
+// This is fire-and-forget — role change succeeds regardless.
+// Returns true if an invite was sent, false otherwise.
+
+async function maybeAutoInvite(opts: {
+  staffProfileId: string
+  profileId:      string
+  requestedRole:  string
+  companyId:      string
+  actorId:        string
+}): Promise<boolean> {
+  const { staffProfileId, profileId, requestedRole, companyId, actorId } = opts
+
+  // Only fire for admin-capable roles
+  if (!isAdminCapableRole(requestedRole)) return false
+
+  // Fetch current invite state + contact details
+  const { data: sp } = await adminClient
+    .from('staff_profiles')
+    .select('email, first_name, admin_invite_sent_at')
+    .eq('id', staffProfileId)
+    .eq('company_id', companyId)
+    .maybeSingle()
+
+  if (!sp?.email) return false
+
+  // If already invited — skip (use Resend button for that)
+  if (sp.admin_invite_sent_at) return false
+
+  const email     = (sp.email as string).toLowerCase().trim()
+  const firstName = (sp.first_name as string | null) ?? 'Staff Member'
+
+  try {
+    // Generate a fresh Supabase invite link
+    const { data: invited, error: inviteErr } = await adminClient.auth.admin.generateLink({
+      type:  'invite',
+      email,
+      options: {
+        data: {
+          company_id: companyId,
+          role:       requestedRole,
+          first_name: firstName,
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/auth/callback?next=/admin/set-password`,
+      },
+    })
+
+    if (inviteErr || !invited?.properties?.action_link) {
+      console.error('[role/auto-invite] generateLink failed:', inviteErr?.message)
+      return false
+    }
+
+    // Send the email
+    const { sendAdminInviteEmail } = await import('@/lib/email/resend')
+    await sendAdminInviteEmail({
+      to:         email,
+      firstName,
+      inviteLink: invited.properties.action_link,
+    })
+
+    // Stamp the invite timestamp
+    const now = new Date().toISOString()
+    await adminClient
+      .from('staff_profiles')
+      .update({ admin_invite_sent_at: now, admin_invite_email: email })
+      .eq('id', staffProfileId)
+      .eq('company_id', companyId)
+
+    // Audit (fire-and-forget within fire-and-forget)
+    void (async () => {
+      try {
+        await adminClient.from('audit_logs').insert({
+          company_id:  companyId,
+          actor_id:    actorId,
+          action:      'admin_access.invited',
+          entity_type: 'staff_profile',
+          entity_id:   staffProfileId,
+          metadata: {
+            trigger:     'role_upgrade',
+            to_role:     requestedRole,
+            email,
+            profile_id:  profileId,
+          },
+        })
+      } catch { /* audit failures are non-fatal */ }
+    })()
+
+    return true
+  } catch (err) {
+    console.error('[role/auto-invite] unexpected error:', err)
+    return false
+  }
 }
 
 // ── GET /api/admin/staff/[id]/role ────────────────────────────────────────────

@@ -22,7 +22,11 @@ export default function AdminAccessButton({ staffProfileId, adminInviteSentAt }:
       const res  = await fetch(`/api/admin/staff/${staffProfileId}/admin-access`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ send_email: true }),
+        body:    JSON.stringify({
+          send_email: true,
+          // If already invited, use resend mode to bypass the 409 guard
+          ...(adminInviteSentAt ? { resend: true } : {}),
+        }),
       })
       const json = await res.json() as { ok?: boolean; error?: string }
       if (!res.ok) {

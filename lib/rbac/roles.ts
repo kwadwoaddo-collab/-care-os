@@ -88,6 +88,26 @@ export function isAdminRole(role: Role | string): boolean {
 }
 
 /**
+ * Roles that require admin portal access AND should trigger an admin invite
+ * email when first assigned. care_worker is excluded — worker portal token
+ * is sufficient. registered_manager is included as it accesses the admin panel.
+ */
+export const ADMIN_CAPABLE_ROLES = new Set<Role>([
+  'coordinator',
+  'compliance_manager',
+  'registered_manager',
+  'company_admin',
+  'super_admin',
+])
+
+/**
+ * Returns true if the role should trigger admin portal provisioning / invite.
+ */
+export function isAdminCapableRole(role: Role | string): boolean {
+  return ADMIN_CAPABLE_ROLES.has(normaliseRole(role))
+}
+
+/**
  * Check whether `actual` satisfies the required minimum level.
  * Uses numeric hierarchy so comparisons work across all 6 roles.
  */
