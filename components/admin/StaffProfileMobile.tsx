@@ -1,6 +1,13 @@
+'use client'
+
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { calculateCompliance, type ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import { DAY_KEYS, type StaffAvailability, type DayKey } from '@/lib/staff/types'
+import ComplianceActionDrawer, {
+  type DrawerAction,
+  type DrawerDoc,
+} from '@/components/admin/ComplianceActionDrawer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -100,6 +107,15 @@ export default function StaffProfileMobile({
   recentShifts,
   recentNotes,
 }: Props) {
+  const [drawerOpen,   setDrawerOpen]   = useState(false)
+  const [drawerAction, setDrawerAction] = useState<DrawerAction>('upload')
+  const [drawerDoc,    setDrawerDoc]    = useState<DrawerDoc | null>(null)
+
+  const openDrawer = useCallback((action: DrawerAction, doc?: DrawerDoc) => {
+    setDrawerAction(action)
+    setDrawerDoc(doc ?? null)
+    setDrawerOpen(true)
+  }, [])
   const displayName = [sp.first_name, sp.last_name].filter(Boolean).join(' ') || sp.email || 'Unknown'
   const initials = [sp.first_name?.[0], sp.last_name?.[0]].filter(Boolean).join('').toUpperCase() || 'U'
   const status = statusConfig(sp.status)
@@ -157,6 +173,7 @@ export default function StaffProfileMobile({
   }
 
   return (
+    <>
     <div className="flex flex-col bg-background min-h-screen pb-24">
 
       {/* ── Page Header Bar ──────────────────────────────────────────────── */}
@@ -284,7 +301,7 @@ export default function StaffProfileMobile({
             />
           </div>
 
-          {/* Urgent doc alerts */}
+          {/* Urgent doc alerts — tap to open in-context drawer */}
           {urgentDocs.length > 0 && (
             <div className="space-y-2">
               {urgentDocs.slice(0, 2).map((doc) => {
@@ -292,22 +309,39 @@ export default function StaffProfileMobile({
                 const daysLeft = doc.expiry_date
                   ? Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / 86400000)
                   : null
+                const drawerDocPayload: DrawerDoc = {
+                  id:              doc.id,
+                  document_type:   doc.document_type,
+                  file_name:       (doc as { file_name?: string }).file_name ?? doc.document_type,
+                  reviewed_status: (doc as { reviewed_status?: string | null }).reviewed_status ?? null,
+                  expiry_date:     doc.expiry_date ?? null,
+                  source:          'staff',
+                }
                 return (
                   <div
                     key={doc.id}
-                    className="flex items-start gap-3 bg-error-container rounded-lg p-3"
+                    className="flex items-start justify-between gap-3 bg-error-container rounded-lg p-3"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-on-error-container mt-0.5">warning</span>
-                    <div>
-                      <p className="text-sm font-bold text-on-error-container">
-                        {doc.document_type.replace(/_/g, ' ')} {expired ? 'Expired' : 'Expiring'}
-                      </p>
-                      <p className="text-xs text-on-error-container/80">
-                        {expired
-                          ? 'Document has expired. Please request a renewal.'
-                          : `Document expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Please request a renewal.`}
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-[18px] text-on-error-container mt-0.5">warning</span>
+                      <div>
+                        <p className="text-sm font-bold text-on-error-container">
+                          {doc.document_type.replace(/_/g, ' ')} {expired ? 'Expired' : 'Expiring'}
+                        </p>
+                        <p className="text-xs text-on-error-container/80">
+                          {expired
+                            ? 'Document has expired. Tap to renew.'
+                            : `Expires in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Tap to renew.`}
+                        </p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => openDrawer('upload', drawerDocPayload)}
+                      className="shrink-0 rounded-lg bg-error text-on-error text-xs font-bold px-3 py-1.5 hover:opacity-90 transition-opacity whitespace-nowrap"
+                      aria-label={`Renew ${doc.document_type.replace(/_/g, ' ')}`}
+                    >
+                      Renew
+                    </button>
                   </div>
                 )
               })}
@@ -449,5 +483,16 @@ export default function StaffProfileMobile({
 
       </div>
     </div>
+
+    {/* Compliance action drawer */}
+    <ComplianceActionDrawer
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+      onSuccess={() => setDrawerOpen(false)}
+      staffProfileId={sp.id}
+      action={drawerAction}
+      doc={drawerDoc}
+    />
+  </>
   )
 }

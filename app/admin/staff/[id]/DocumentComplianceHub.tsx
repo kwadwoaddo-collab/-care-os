@@ -1,4 +1,11 @@
+'use client'
+
+import { useState, useCallback } from 'react'
 import DocumentApprovalButton from './DocumentApprovalButton'
+import ComplianceActionDrawer, {
+  type DrawerAction,
+  type DrawerDoc,
+} from '@/components/admin/ComplianceActionDrawer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -55,16 +62,16 @@ const GROUP_ORDER = [
 type GroupName = (typeof GROUP_ORDER)[number]
 
 const TYPE_TO_GROUP: Record<string, GroupName> = {
-  dbs_certificate:       'DBS',
-  dbs:                   'DBS',
-  right_to_work:         'Right to Work',
-  share_code:            'Right to Work',
+  dbs_certificate:          'DBS',
+  dbs:                      'DBS',
+  right_to_work:            'Right to Work',
+  share_code:               'Right to Work',
   right_to_work_share_code: 'Right to Work',
-  passport:              'Passport',
-  training_certificate:  'Training Certificate',
-  training:              'Training Certificate',
-  manual_handling:       'Manual Handling',
-  safeguarding:          'Safeguarding',
+  passport:                 'Passport',
+  training_certificate:     'Training Certificate',
+  training:                 'Training Certificate',
+  manual_handling:          'Manual Handling',
+  safeguarding:             'Safeguarding',
 }
 
 function typeToGroup(docType: string): GroupName {
@@ -92,9 +99,7 @@ interface UnifiedDoc {
 function fmt(iso: string | null | undefined): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+    day: '2-digit', month: 'short', year: 'numeric',
   })
 }
 
@@ -123,7 +128,6 @@ function isExpiringSoon(iso: string | null): boolean {
 }
 
 // ── Accessible status badge ───────────────────────────────────────────────────
-// Uses WCAG 2.1 AA high-contrast colour pairings
 
 const REVIEW_STATUS_CLS: Record<string, string> = {
   approved:     'bg-green-100 text-green-800 ring-green-700/20',
@@ -132,7 +136,7 @@ const REVIEW_STATUS_CLS: Record<string, string> = {
   under_review: 'bg-blue-100 text-blue-800 ring-blue-700/20',
 }
 
-function StatusBadge({ status }: { status: string | null | undefined }) {
+function ReviewStatusBadge({ status }: { status: string | null | undefined }) {
   if (!status) return null
   const cls = REVIEW_STATUS_CLS[status] ?? 'bg-gray-100 text-gray-800 ring-gray-500/20'
   const label = status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -226,24 +230,35 @@ const GROUP_COLOUR: Record<GroupName, { header: string; border: string; icon: st
 function DocumentRow({
   doc,
   staffProfileId,
+  onDrawerOpen,
 }: {
   doc: UnifiedDoc
   staffProfileId: string
+  onDrawerOpen: (action: DrawerAction, doc: DrawerDoc) => void
 }) {
-  const viewAriaLabel  = `View document: ${doc.file_name} (${docTypeLabel(doc.document_type)})`
-  const dlAriaLabel    = `Download document: ${doc.file_name} (${docTypeLabel(doc.document_type)})`
+  const viewAriaLabel = `View document: ${doc.file_name} (${docTypeLabel(doc.document_type)})`
+  const dlAriaLabel   = `Download document: ${doc.file_name} (${docTypeLabel(doc.document_type)})`
+
+  const drawerDoc: DrawerDoc = {
+    id:              doc.id,
+    document_type:   doc.document_type,
+    file_name:       doc.file_name,
+    reviewed_status: doc.reviewed_status,
+    expiry_date:     doc.expiry_date,
+    source:          doc.source,
+  }
+
+  const needsAttention = isExpired(doc.expiry_date) || isExpiringSoon(doc.expiry_date)
+    || doc.reviewed_status === 'rejected' || doc.reviewed_status === null
 
   return (
-    <li className="flex flex-col gap-2.5 p-3.5 rounded-lg border border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm transition-all">
+    <li className={`flex flex-col gap-2.5 p-3.5 rounded-lg border bg-white hover:shadow-sm transition-all ${needsAttention ? 'border-amber-200' : 'border-gray-100 hover:border-gray-200'}`}>
       {/* Top row: file name + action buttons */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
           <span className="material-symbols-outlined text-[16px] text-gray-400 shrink-0 mt-0.5" aria-hidden="true">description</span>
           <div className="min-w-0">
-            <p
-              className="text-sm font-medium text-primary leading-tight truncate"
-              title={doc.file_name}
-            >
+            <p className="text-sm font-medium text-primary leading-tight truncate" title={doc.file_name}>
               {doc.file_name}
             </p>
             <p className="text-[11px] text-gray-400 mt-0.5">
@@ -282,20 +297,56 @@ function DocumentRow({
       {/* Second row: source + dates + status */}
       <div className="flex flex-wrap items-center gap-2">
         <SourceBadge source={doc.source} />
-
         <span className="text-gray-300" aria-hidden="true">·</span>
-
         <span className="flex items-center gap-1 text-xs text-gray-500">
           <span className="material-symbols-outlined text-[12px]" aria-hidden="true">upload</span>
           {fmt(doc.created_at)}
         </span>
-
         <ExpiryBadge expiryDate={doc.expiry_date} />
-
-        {doc.reviewed_status && <StatusBadge status={doc.reviewed_status} />}
+        {doc.reviewed_status && <ReviewStatusBadge status={doc.reviewed_status} />}
       </div>
 
-      {/* Approve / Reject — only for documents linked to this staff profile */}
+      {/* In-context action buttons */}
+      <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-gray-100">
+        <button
+          onClick={() => onDrawerOpen('upload', drawerDoc)}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors"
+          aria-label={`Upload replacement for ${doc.file_name}`}
+        >
+          <span className="material-symbols-outlined text-[12px]" aria-hidden="true">upload_file</span>
+          Replace
+        </button>
+        <button
+          onClick={() => onDrawerOpen('set_expiry', drawerDoc)}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors"
+          aria-label={`Set expiry date for ${doc.file_name}`}
+        >
+          <span className="material-symbols-outlined text-[12px]" aria-hidden="true">event</span>
+          Set expiry
+        </button>
+        {doc.reviewed_status !== 'approved' && (
+          <button
+            onClick={() => onDrawerOpen('approve', drawerDoc)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 transition-colors"
+            aria-label={`Approve ${doc.file_name}`}
+          >
+            <span className="material-symbols-outlined text-[12px]" aria-hidden="true">check_circle</span>
+            Approve
+          </button>
+        )}
+        {doc.reviewed_status !== 'rejected' && (
+          <button
+            onClick={() => onDrawerOpen('reject', drawerDoc)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors"
+            aria-label={`Reject ${doc.file_name}`}
+          >
+            <span className="material-symbols-outlined text-[12px]" aria-hidden="true">cancel</span>
+            Reject
+          </button>
+        )}
+      </div>
+
+      {/* Legacy approval button (still rendered for full feature parity) */}
       <DocumentApprovalButton
         staffProfileId={staffProfileId}
         docId={doc.id}
@@ -315,6 +366,18 @@ export default function DocumentComplianceHub({
   applicantDocs,
   staffDocs,
 }: Props) {
+  const [drawerOpen,   setDrawerOpen]   = useState(false)
+  const [drawerAction, setDrawerAction] = useState<DrawerAction>('upload')
+  const [drawerDoc,    setDrawerDoc]    = useState<DrawerDoc | null>(null)
+
+  const openDrawer = useCallback((action: DrawerAction, doc?: DrawerDoc) => {
+    setDrawerAction(action)
+    setDrawerDoc(doc ?? null)
+    setDrawerOpen(true)
+  }, [])
+
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
+
   // Normalise applicant docs → UnifiedDoc
   const fromApplicant: UnifiedDoc[] = applicantDocs.map((d) => ({
     id:              d.id,
@@ -346,12 +409,10 @@ export default function DocumentComplianceHub({
   }))
 
   const allDocs: UnifiedDoc[] = [...fromApplicant, ...fromStaff]
-
   const totalCount = allDocs.length
 
   // Group documents
   const grouped = new Map<GroupName, UnifiedDoc[]>(GROUP_ORDER.map((g) => [g, []]))
-
   for (const doc of allDocs) {
     const group = typeToGroup(doc.document_type)
     grouped.get(group)!.push(doc)
@@ -362,96 +423,123 @@ export default function DocumentComplianceHub({
     docs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
 
-  // Filter to only non-empty groups (keep order)
   const activeGroups = GROUP_ORDER.filter((g) => (grouped.get(g)?.length ?? 0) > 0)
 
   return (
-    <section aria-labelledby="compliance-hub-heading">
-      {/* Section header */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div className="bg-gray-50 border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="material-symbols-outlined text-gray-600 text-[20px]" aria-hidden="true">folder_special</span>
-            <div>
-              <h2
-                id="compliance-hub-heading"
-                className="text-sm font-semibold text-gray-800"
-              >
-                Document Compliance Hub
-              </h2>
-              <p className="text-[11px] text-gray-500 mt-0.5">
-                All compliance documents — applicant &amp; staff stage
-              </p>
-            </div>
-          </div>
-          <span
-            className="bg-gray-200 text-gray-700 text-xs font-semibold px-2.5 py-0.5 rounded-full"
-            aria-label={`${totalCount} total documents`}
-          >
-            {totalCount}
-          </span>
-        </div>
-
-        <div className="p-5">
-          {totalCount === 0 ? (
-            // ── Empty state ─────────────────────────────────────────────────
-            <div className="flex flex-col items-center gap-3 py-10 text-center" role="status" aria-live="polite">
-              <span className="material-symbols-outlined text-[40px] text-gray-300" aria-hidden="true">folder_off</span>
+    <>
+      <section aria-labelledby="compliance-hub-heading">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+          {/* Section header */}
+          <div className="bg-gray-50 border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-gray-600 text-[20px]" aria-hidden="true">folder_special</span>
               <div>
-                <p className="text-sm font-medium text-gray-600">No documents found for this staff member.</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Documents uploaded during the application stage or via the staff portal will appear here.
+                <h2 id="compliance-hub-heading" className="text-sm font-semibold text-gray-800">
+                  Document Compliance Hub
+                </h2>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  All compliance documents — applicant &amp; staff stage
                 </p>
               </div>
             </div>
-          ) : (
-            // ── Grouped document list ────────────────────────────────────────
-            <div className="space-y-5">
-              {activeGroups.map((groupName) => {
-                const docs = grouped.get(groupName)!
-                const colours = GROUP_COLOUR[groupName]
-                const icon = GROUP_ICON[groupName]
-
-                return (
-                  <div
-                    key={groupName}
-                    className={`rounded-lg border overflow-hidden ${colours.border}`}
-                  >
-                    {/* Group header */}
-                    <div className={`px-4 py-2.5 border-b flex items-center justify-between ${colours.header}`}>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`material-symbols-outlined text-[16px] ${colours.icon}`}
-                          aria-hidden="true"
-                        >
-                          {icon}
-                        </span>
-                        <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                          {groupName}
-                        </h3>
-                      </div>
-                      <span className="text-[11px] font-medium text-gray-500">
-                        {docs.length} {docs.length === 1 ? 'document' : 'documents'}
-                      </span>
-                    </div>
-
-                    {/* Document rows */}
-                    <ul className="divide-y divide-gray-50 p-3 space-y-2" aria-label={`${groupName} documents`}>
-                      {docs.map((doc) => (
-                        <DocumentRow
-                          key={`${doc.source}-${doc.id}`}
-                          doc={doc}
-                          staffProfileId={staffProfileId}
-                        />
-                      ))}
-                    </ul>
-                  </div>
-                )
-              })}
+            <div className="flex items-center gap-2">
+              <span
+                className="bg-gray-200 text-gray-700 text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                aria-label={`${totalCount} total documents`}
+              >
+                {totalCount}
+              </span>
+              {/* Quick actions */}
+              <button
+                onClick={() => openDrawer('upload')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors"
+                aria-label="Upload a new document"
+              >
+                <span className="material-symbols-outlined text-[14px]" aria-hidden="true">upload_file</span>
+                Upload
+              </button>
+              <button
+                onClick={() => openDrawer('review_notes')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 transition-colors"
+                aria-label="Add compliance review notes"
+              >
+                <span className="material-symbols-outlined text-[14px]" aria-hidden="true">rate_review</span>
+                Add review
+              </button>
             </div>
-          )}
+          </div>
+
+          <div className="p-5">
+            {totalCount === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-10 text-center" role="status" aria-live="polite">
+                <span className="material-symbols-outlined text-[40px] text-gray-300" aria-hidden="true">folder_off</span>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">No documents found for this staff member.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Documents uploaded during the application stage or via the staff portal will appear here.
+                  </p>
+                </div>
+                <button
+                  onClick={() => openDrawer('upload')}
+                  className="mt-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">upload_file</span>
+                  Upload first document
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {activeGroups.map((groupName) => {
+                  const docs    = grouped.get(groupName)!
+                  const colours = GROUP_COLOUR[groupName]
+                  const icon    = GROUP_ICON[groupName]
+
+                  return (
+                    <div key={groupName} className={`rounded-lg border overflow-hidden ${colours.border}`}>
+                      {/* Group header */}
+                      <div className={`px-4 py-2.5 border-b flex items-center justify-between ${colours.header}`}>
+                        <div className="flex items-center gap-2">
+                          <span className={`material-symbols-outlined text-[16px] ${colours.icon}`} aria-hidden="true">
+                            {icon}
+                          </span>
+                          <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                            {groupName}
+                          </h3>
+                        </div>
+                        <span className="text-[11px] font-medium text-gray-500">
+                          {docs.length} {docs.length === 1 ? 'document' : 'documents'}
+                        </span>
+                      </div>
+
+                      {/* Document rows */}
+                      <ul className="divide-y divide-gray-50 p-3 space-y-2" aria-label={`${groupName} documents`}>
+                        {docs.map((doc) => (
+                          <DocumentRow
+                            key={`${doc.source}-${doc.id}`}
+                            doc={doc}
+                            staffProfileId={staffProfileId}
+                            onDrawerOpen={openDrawer}
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Compliance action drawer */}
+      <ComplianceActionDrawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        onSuccess={closeDrawer}
+        staffProfileId={staffProfileId}
+        action={drawerAction}
+        doc={drawerDoc}
+      />
+    </>
   )
 }
