@@ -9,6 +9,7 @@ import {
   ProfessionalRegistrationSection, WorkAvailabilitySection, MedicalHistorySection,
   ApplicationSourceSection, DeclarationSection
 } from '@/components/admin/ApplicationFormShared'
+import DocumentComplianceHub from './DocumentComplianceHub'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,33 +68,6 @@ const SIGNED_URL_EXPIRY = 3600 // 1 hour
 function fmt(iso: string | null | undefined): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function fileSize(bytes: number | null | undefined): string {
-  if (!bytes) return ''
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function docTypeLabel(type: string): string {
-  return type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-
-function ReviewBadge({ status }: { status: string | null | undefined }) {
-  if (!status) return null
-  const cls: Record<string, string> = {
-    approved:   'bg-green-50 text-green-700 ring-green-600/20',
-    rejected:   'bg-red-50 text-red-700 ring-red-600/20',
-    pending:    'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-    under_review: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-  }
-  const base = cls[status] ?? 'bg-gray-50 text-gray-600 ring-gray-400/20'
-  return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ring-1 ring-inset uppercase ${base}`}>
-      {status.replace(/_/g, ' ')}
-    </span>
-  )
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -296,194 +270,19 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
           <DeclarationSection declaration={answers.declaration} declarations={answers.declarations} />
         </div>
 
-        {/* ── Right column: Documents & interviews ──────────────────────── */}
+        {/* ── Right column: Document Compliance Hub + Interviews ────────── */}
         <div className="xl:col-span-1 space-y-6">
 
           {/* ════════════════════════════════════════════════════════════════
-              APPLICANT UPLOADED DOCUMENTS
-              Documents uploaded during the applicant stage (before conversion).
+              UNIFIED DOCUMENT COMPLIANCE HUB
+              All documents — applicant-stage and staff-stage — in one place,
+              grouped by document type for CQC audit readiness.
               ════════════════════════════════════════════════════════════════ */}
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-            {/* Section header */}
-            <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-indigo-700 text-[18px]">folder_open</span>
-                <div>
-                  <h2 className="text-sm font-semibold text-indigo-800">Applicant Uploaded Documents</h2>
-                  <p className="text-[10px] text-indigo-600 mt-0.5">Uploaded during the application stage</p>
-                </div>
-              </div>
-              <span className="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset ring-indigo-300">
-                {applicantDocs.length}
-              </span>
-            </div>
-
-            <div className="p-4">
-              {applicantDocs.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-6 text-center">
-                  <span className="material-symbols-outlined text-[32px] text-on-surface-variant/40">folder_off</span>
-                  <p className="text-sm text-on-surface-variant">No applicant-stage documents were uploaded.</p>
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  {applicantDocs.map((doc) => (
-                    <li
-                      key={doc.id}
-                      className="flex flex-col gap-2 p-3 border border-indigo-100 rounded-lg bg-indigo-50/30 hover:bg-indigo-50/60 transition-colors"
-                    >
-                      {/* Document name + action buttons */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="material-symbols-outlined text-[16px] text-indigo-500 shrink-0">description</span>
-                          <span
-                            className="text-sm font-medium text-primary truncate"
-                            title={doc.file_name}
-                          >
-                            {doc.file_name}
-                          </span>
-                        </div>
-                        {/* View + Download buttons */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          {doc.signed_url && (
-                            <>
-                              <a
-                                href={doc.signed_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
-                                title="View document"
-                              >
-                                <span className="material-symbols-outlined text-[14px]">visibility</span>
-                                View
-                              </a>
-                              <a
-                                href={doc.signed_url}
-                                download={doc.file_name}
-                                className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                                title="Download document"
-                              >
-                                <span className="material-symbols-outlined text-[14px]">download</span>
-                                Download
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Metadata row */}
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
-                        {/* Document type */}
-                        <span className="bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">
-                          {docTypeLabel(doc.document_type)}
-                        </span>
-
-                        {/* Upload date */}
-                        <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[12px]">upload</span>
-                          {fmt(doc.created_at)}
-                        </span>
-
-                        {/* Expiry date */}
-                        {doc.expiry_date && (
-                          <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[12px]">event</span>
-                            Exp: {fmt(doc.expiry_date)}
-                          </span>
-                        )}
-
-                        {/* File size */}
-                        {doc.file_size && (
-                          <span className="text-gray-400">{fileSize(doc.file_size)}</span>
-                        )}
-                      </div>
-
-                      {/* Review status */}
-                      {doc.reviewed_status && (
-                        <div className="flex items-center gap-2">
-                          <ReviewBadge status={doc.reviewed_status} />
-                          {doc.reviewed_at && (
-                            <span className="text-[10px] text-on-surface-variant">
-                              {fmt(doc.reviewed_at)}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          {/* ════════════════════════════════════════════════════════════════
-              STAFF DOCUMENTS
-              Documents uploaded after the person was converted to staff.
-              Only shown if there are any.
-              ════════════════════════════════════════════════════════════════ */}
-          {staffDocsWithUrls.length > 0 && (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-              <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-gray-500 text-[18px]">badge</span>
-                  <div>
-                    <h2 className="text-sm font-semibold text-gray-700">Staff Documents</h2>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Uploaded after becoming staff</p>
-                  </div>
-                </div>
-                <span className="bg-gray-200 text-gray-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {staffDocsWithUrls.length}
-                </span>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  {staffDocsWithUrls.map((doc) => (
-                    <li
-                      key={doc.id}
-                      className="flex flex-col gap-1.5 p-3 border border-gray-100 rounded-lg hover:border-gray-200 hover:bg-gray-50/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium text-primary truncate" title={doc.file_name}>
-                          {doc.file_name}
-                        </span>
-                        {doc.file_url && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            <a
-                              href={doc.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                              title="View document"
-                            >
-                              <span className="material-symbols-outlined text-[14px]">visibility</span>
-                              View
-                            </a>
-                            <a
-                              href={doc.file_url}
-                              download={doc.file_name}
-                              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
-                              title="Download document"
-                            >
-                              <span className="material-symbols-outlined text-[14px]">download</span>
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
-                        <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                          {docTypeLabel(doc.document_type)}
-                        </span>
-                        <span>{fmt(doc.created_at)}</span>
-                        {doc.expiry_date && <span>Exp: {fmt(doc.expiry_date)}</span>}
-                      </div>
-                      {doc.reviewed_status && (
-                        <ReviewBadge status={doc.reviewed_status} />
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
+          <DocumentComplianceHub
+            staffProfileId={staffProfileId}
+            applicantDocs={applicantDocs}
+            staffDocs={staffDocsWithUrls}
+          />
 
           {/* ── Interview Records ─────────────────────────────────────────── */}
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
