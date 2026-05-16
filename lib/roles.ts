@@ -7,12 +7,10 @@ export const APPLICATION_ROLES = [
   'Care Worker',
   'Senior Carer',
   'Support Worker',
-  'Nurse',
-  'Team Leader',
   'Coordinator',
   'Admin Officer',
-  'HR',
-  'Finance',
+  'Compliance Manager',
+  'Finance/Admin',
   'Domestic Staff',
   'Driver',
   'Other',
@@ -25,18 +23,16 @@ export type ApplicationRole = (typeof APPLICATION_ROLES)[number]
 export type RoleCategory = 'care' | 'admin' | 'operational' | 'other'
 
 const ROLE_CATEGORIES: Record<ApplicationRole, RoleCategory> = {
-  'Care Worker':    'care',
-  'Senior Carer':   'care',
-  'Support Worker': 'care',
-  'Nurse':          'care',
-  'Team Leader':    'care',
-  'Coordinator':    'admin',
-  'Admin Officer':  'admin',
-  'HR':             'admin',
-  'Finance':        'admin',
-  'Domestic Staff': 'operational',
-  'Driver':         'operational',
-  'Other':          'other',
+  'Care Worker':         'care',
+  'Senior Carer':        'care',
+  'Support Worker':      'care',
+  'Coordinator':         'admin',
+  'Admin Officer':       'admin',
+  'Compliance Manager':  'admin',
+  'Finance/Admin':       'admin',
+  'Domestic Staff':      'operational',
+  'Driver':              'operational',
+  'Other':               'other',
 }
 
 export function getRoleCategory(role: ApplicationRole | string): RoleCategory {

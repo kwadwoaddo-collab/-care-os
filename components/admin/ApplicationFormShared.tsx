@@ -273,12 +273,19 @@ export function SaferRecruitmentStatus({ answers }: { answers: Record<string, un
 // ── References Section ────────────────────────────────────────────────────────
 
 interface Reference {
-  name?: string
-  jobTitle?: string
+  // New field names
+  full_name?: string
+  position?: string
   organisation?: string
   email?: string
   phone?: string
   relationship?: string
+  reference_type?: string
+  is_most_recent_employer?: boolean
+  permission_to_contact?: boolean
+  // Legacy field names
+  name?: string
+  jobTitle?: string
   canContact?: boolean
 }
 
@@ -288,45 +295,69 @@ export function References({ entries }: { entries: unknown }) {
   }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {(entries as Reference[]).map((ref, i) => (
-        <div key={i} className="border border-gray-200 rounded p-3 text-sm space-y-1">
-          <p className="font-medium text-primary">{ref.name ?? '—'}</p>
-          {ref.jobTitle && <p className="text-xs text-on-surface-variant">{ref.jobTitle}</p>}
-          {ref.organisation && <p className="text-xs text-gray-600">{ref.organisation}</p>}
-          {ref.relationship && <p className="text-xs text-on-surface-variant">Relationship: {ref.relationship}</p>}
-          {ref.email && <p className="text-xs text-gray-600">{ref.email}</p>}
-          {ref.phone && <p className="text-xs text-gray-600">{ref.phone}</p>}
-          {ref.canContact !== undefined && (
-            <p className="text-xs text-on-surface-variant">Can contact: {ref.canContact ? 'Yes' : 'No'}</p>
-          )}
-        </div>
-      ))}
+      {(entries as Reference[]).map((ref, i) => {
+        const name = ref.full_name || ref.name || '—'
+        const title = ref.position || ref.jobTitle
+        const canContact = ref.permission_to_contact ?? ref.canContact
+        return (
+          <div key={i} className="border border-gray-200 rounded p-3 text-sm space-y-1">
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-medium text-primary">{name}</p>
+              {ref.reference_type && (
+                <span className="text-[10px] bg-gray-100 text-gray-600 rounded px-1.5 py-0.5 whitespace-nowrap">{ref.reference_type}</span>
+              )}
+            </div>
+            {title && <p className="text-xs text-on-surface-variant">{title}</p>}
+            {ref.organisation && <p className="text-xs text-gray-600">{ref.organisation}</p>}
+            {ref.relationship && <p className="text-xs text-on-surface-variant">Relationship: {ref.relationship}</p>}
+            {ref.email && <p className="text-xs text-gray-600">{ref.email}</p>}
+            {ref.phone && <p className="text-xs text-gray-600">{ref.phone}</p>}
+            <div className="flex items-center gap-2 flex-wrap pt-0.5">
+              {ref.is_most_recent_employer && (
+                <span className="text-[10px] bg-blue-50 text-blue-700 rounded px-1.5 py-0.5">Most recent employer</span>
+              )}
+              {canContact !== undefined && (
+                <span className={`text-[10px] rounded px-1.5 py-0.5 ${canContact ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {canContact ? 'Can contact' : 'Do not contact'}
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
 // ── Training & Qualifications Section ────────────────────────────────────────
 
-interface TrainingItem {
+interface TrainingItemNew {
   name?: string
+  selected?: boolean
+  completed_date?: string | null
+  // legacy
   completed?: boolean
   completionDate?: string | null
 }
 
-interface TrainingQualifications {
-  items?: TrainingItem[]
-  other?: TrainingItem[]
+interface TrainingQualificationsData {
+  // new schema
+  default?: TrainingItemNew[]
+  other?: TrainingItemNew[]
+  // legacy schema
+  items?: TrainingItemNew[]
 }
 
 export function TrainingQualifications({ data }: { data: unknown }) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return <p className="text-sm text-gray-400">No training data recorded.</p>
   }
-  const tq = data as TrainingQualifications
-  const allItems = [
-    ...(tq.items ?? []).filter((i) => i.completed || i.completionDate),
-    ...(tq.other ?? []),
-  ]
+  const tq = data as TrainingQualificationsData
+  const defaultItems = (tq.default ?? tq.items ?? []).filter(
+    (i) => i.selected || i.completed || i.completed_date || i.completionDate
+  )
+  const otherItems = (tq.other ?? [])
+  const allItems = [...defaultItems, ...otherItems]
   if (allItems.length === 0) {
     return <p className="text-sm text-gray-400">No training items completed.</p>
   }
@@ -335,7 +366,9 @@ export function TrainingQualifications({ data }: { data: unknown }) {
       {allItems.map((item, i) => (
         <div key={i} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-100 last:border-0">
           <span className="text-primary">{item.name ?? '—'}</span>
-          <span className="text-xs text-on-surface-variant">{item.completionDate ?? (item.completed ? 'Completed' : 'Not completed')}</span>
+          <span className="text-xs text-on-surface-variant">
+            {item.completed_date || item.completionDate || (item.selected || item.completed ? 'Completed' : 'Not completed')}
+          </span>
         </div>
       ))}
     </div>
@@ -345,6 +378,22 @@ export function TrainingQualifications({ data }: { data: unknown }) {
 // ── Criminal Record Section ───────────────────────────────────────────────────
 
 interface CriminalRecord {
+  // New detailed fields
+  has_convictions?: boolean
+  conviction_details?: string
+  has_unfiltered_convictions?: boolean
+  unfiltered_details?: string
+  has_investigations?: boolean
+  investigation_details?: string
+  overseas_police_check?: boolean
+  overseas_details?: string
+  has_dbs?: boolean
+  dbs_number?: string
+  dbs_date?: string
+  dbs_organisation?: string
+  dbs_update_service?: boolean
+  dbs_update_number?: string
+  // Legacy fields
   hasCriminalRecord?: boolean
   details?: string
   hasDbsBarred?: boolean
@@ -357,6 +406,41 @@ export function CriminalRecordSection({ data }: { data: unknown }) {
     return <p className="text-sm text-gray-400">No declaration recorded.</p>
   }
   const cr = data as CriminalRecord
+
+  // New detailed schema
+  if (cr.has_convictions !== undefined || cr.has_dbs !== undefined) {
+    return (
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <div><dt className="text-xs font-medium text-on-surface-variant">Unspent convictions</dt><dd className="mt-0.5 text-primary">{cr.has_convictions ? 'Yes' : 'No'}</dd></div>
+        {cr.has_convictions && cr.conviction_details && (
+          <div className="col-span-full"><dt className="text-xs font-medium text-on-surface-variant">Conviction details</dt><dd className="mt-0.5 text-primary">{cr.conviction_details}</dd></div>
+        )}
+        <div><dt className="text-xs font-medium text-on-surface-variant">Unfiltered convictions</dt><dd className="mt-0.5 text-primary">{cr.has_unfiltered_convictions ? 'Yes' : 'No'}</dd></div>
+        <div><dt className="text-xs font-medium text-on-surface-variant">Under investigation</dt><dd className="mt-0.5 text-primary">{cr.has_investigations ? 'Yes' : 'No'}</dd></div>
+        {cr.has_investigations && cr.investigation_details && (
+          <div className="col-span-full"><dt className="text-xs font-medium text-on-surface-variant">Investigation details</dt><dd className="mt-0.5 text-primary">{cr.investigation_details}</dd></div>
+        )}
+        <div><dt className="text-xs font-medium text-on-surface-variant">Overseas police check required</dt><dd className="mt-0.5 text-primary">{cr.overseas_police_check ? 'Yes' : 'No'}</dd></div>
+        {cr.overseas_police_check && cr.overseas_details && (
+          <div className="col-span-full"><dt className="text-xs font-medium text-on-surface-variant">Overseas details</dt><dd className="mt-0.5 text-primary">{cr.overseas_details}</dd></div>
+        )}
+        <div><dt className="text-xs font-medium text-on-surface-variant">Holds current DBS</dt><dd className="mt-0.5 text-primary">{cr.has_dbs ? 'Yes' : 'No'}</dd></div>
+        {cr.has_dbs && (
+          <>
+            {cr.dbs_number && <div><dt className="text-xs font-medium text-on-surface-variant">DBS number</dt><dd className="mt-0.5 text-primary">{cr.dbs_number}</dd></div>}
+            {cr.dbs_date && <div><dt className="text-xs font-medium text-on-surface-variant">DBS issue date</dt><dd className="mt-0.5 text-primary">{cr.dbs_date}</dd></div>}
+            {cr.dbs_organisation && <div className="col-span-full"><dt className="text-xs font-medium text-on-surface-variant">Issuing organisation</dt><dd className="mt-0.5 text-primary">{cr.dbs_organisation}</dd></div>}
+          </>
+        )}
+        <div><dt className="text-xs font-medium text-on-surface-variant">DBS Update Service</dt><dd className="mt-0.5 text-primary">{cr.dbs_update_service ? 'Yes' : 'No'}</dd></div>
+        {cr.dbs_update_service && cr.dbs_update_number && (
+          <div><dt className="text-xs font-medium text-on-surface-variant">Update Service number</dt><dd className="mt-0.5 text-primary">{cr.dbs_update_number}</dd></div>
+        )}
+      </dl>
+    )
+  }
+
+  // Legacy schema fallback
   return (
     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
       <div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { APPLICATION_ROLES } from '@/lib/roles'
 
 interface InviteResult {
   applicant_id: string
@@ -207,13 +208,18 @@ export default function InviteApplicantForm() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Job role</label>
-                  <input
+                  <select
                     name="job_role"
                     value={fields.job_role}
-                    onChange={handleChange}
+                    onChange={(e) => setFields((prev) => ({ ...prev, job_role: e.target.value }))}
                     required
                     className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
+                  >
+                    <option value="">Select a role…</option>
+                    {APPLICATION_ROLES.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex gap-2 pt-1">
