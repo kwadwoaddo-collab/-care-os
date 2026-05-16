@@ -16,6 +16,31 @@ export interface ArchivedStaffMember {
   terminated_at: string | null
 }
 
+type RestoreStatus = 'pre_employment' | 'active' | 'suspended' | 'inactive'
+
+const RESTORE_OPTIONS: { value: RestoreStatus; label: string; description: string }[] = [
+  {
+    value:       'pre_employment',
+    label:       'Pre-employment',
+    description: 'Recommended — staff must complete onboarding again before going active.',
+  },
+  {
+    value:       'active',
+    label:       'Active',
+    description: 'Restore directly to active. Requires full compliance — will be blocked if not met.',
+  },
+  {
+    value:       'suspended',
+    label:       'Suspended',
+    description: 'Restore in a suspended state while reviewing re-hire eligibility.',
+  },
+  {
+    value:       'inactive',
+    label:       'Inactive',
+    description: 'Restore as inactive, e.g. returning from extended leave.',
+  },
+]
+
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -31,11 +56,13 @@ function RestoreModal({
   error,
 }: {
   staffName: string
-  onConfirm: () => void
+  onConfirm: (status: RestoreStatus) => void
   onCancel:  () => void
   isLoading: boolean
   error:     string | null
 }) {
+  const [targetStatus, setTargetStatus] = useState<RestoreStatus>('pre_employment')
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
@@ -47,8 +74,35 @@ function RestoreModal({
           <h3 className="text-base font-semibold text-primary">Restore Staff Member</h3>
         </div>
         <p className="text-sm text-gray-600">
-          Restore <span className="font-semibold">{staffName}</span> to active status? Their compliance will be re-evaluated and they will reappear in the active staff list.
+          Reinstate <span className="font-semibold">{staffName}</span>. Choose which status to restore them to:
         </p>
+
+        <div className="space-y-2">
+          {RESTORE_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                targetStatus === opt.value
+                  ? 'border-green-500 bg-green-50'
+                  : 'border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <input
+                type="radio"
+                name="restore_status"
+                value={opt.value}
+                checked={targetStatus === opt.value}
+                onChange={() => setTargetStatus(opt.value)}
+                className="mt-0.5 accent-green-600"
+              />
+              <div>
+                <p className="text-sm font-medium text-primary">{opt.label}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+
         {error && (
           <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{error}</div>
         )}
@@ -63,11 +117,11 @@ function RestoreModal({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={() => onConfirm(targetStatus)}
             disabled={isLoading}
             className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {isLoading ? 'Restoring…' : 'Restore to Active'}
+            {isLoading ? 'Restoring…' : `Restore to ${RESTORE_OPTIONS.find(o => o.value === targetStatus)?.label}`}
           </button>
         </div>
       </div>
@@ -167,14 +221,14 @@ function StaffRow({ member, canDelete }: { member: ArchivedStaffMember; canDelet
 
   const displayName = [member.first_name, member.last_name].filter(Boolean).join(' ') || member.email || 'Unknown'
 
-  async function handleRestore() {
+  async function handleRestore(targetStatus: RestoreStatus) {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch(`/api/admin/staff/${member.id}/status`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ status: 'active', force: false }),
+        body:    JSON.stringify({ status: targetStatus, force: false }),
       })
       const json = await res.json() as { error?: string; compliance?: { missingDocuments?: string[] } }
       if (!res.ok) {
@@ -258,7 +312,7 @@ function StaffRow({ member, canDelete }: { member: ArchivedStaffMember; canDelet
       {restoreOpen && (
         <RestoreModal
           staffName={displayName}
-          onConfirm={() => void handleRestore()}
+          onConfirm={(status) => void handleRestore(status)}
           onCancel={() => setRestoreOpen(false)}
           isLoading={loading}
           error={error}

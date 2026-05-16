@@ -66,7 +66,7 @@ export async function PATCH(
       .select('id, shift_date')
       .eq('assigned_staff_id', staffProfileId)
       .gte('shift_date', today)
-      .in('status', ['scheduled', 'confirmed'])
+      .in('status', ['open', 'offered', 'accepted', 'in_progress'])
       .order('shift_date', { ascending: true })
 
     if (futureShifts && futureShifts.length > 0) {
@@ -142,6 +142,15 @@ export async function PATCH(
     updatePayload.terminated_by  = userId
   }
 
+  // When restoring from terminated, clear the termination metadata so it does
+  // not linger on a reinstated staff member's profile.
+  const isRestoreFromTerminated = staffProfile.status === 'terminated' && status !== 'terminated'
+  if (isRestoreFromTerminated) {
+    updatePayload.terminated_at = null
+    updatePayload.terminated_by = null
+    // Preserve left_at / exit_reason as historical record (do not wipe)
+  }
+
   // ── Update status ───────────────────────────────────────────────────────────
   const { data: updated, error: updateError } = await adminClient
     .from('staff_profiles')
@@ -161,24 +170,16 @@ export async function PATCH(
     const today = new Date().toISOString().slice(0, 10)
     const now   = new Date().toISOString()
 
-    // Revert confirmed → scheduled and clear assignment
-    await adminClient
+    // Revert accepted/in_progress → open and clear assignment
+    const { data: clearedAssigned } = await adminClient
       .from('shifts')
-      .update({ assigned_staff_id: null, status: 'scheduled', updated_at: now })
+      .update({ assigned_staff_id: null, status: 'open', updated_at: now })
       .eq('assigned_staff_id', staffProfileId)
       .gte('shift_date', today)
-      .eq('status', 'confirmed')
-
-    // Clear scheduled shifts
-    const { data: clearedScheduled } = await adminClient
-      .from('shifts')
-      .update({ assigned_staff_id: null, updated_at: now })
-      .eq('assigned_staff_id', staffProfileId)
-      .gte('shift_date', today)
-      .eq('status', 'scheduled')
+      .in('status', ['accepted', 'in_progress', 'open'])
       .select('id')
 
-    unassignedCount = clearedScheduled?.length ?? 0
+    unassignedCount = clearedAssigned?.length ?? 0
 
     void adminClient.from('audit_logs').insert({
       company_id:  companyId,

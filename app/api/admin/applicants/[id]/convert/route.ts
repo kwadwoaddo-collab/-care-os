@@ -9,6 +9,7 @@ import { requireAdmin } from '@/lib/auth/requireAdmin'
 //
 //   Slug                         → Column
 //   ─────────────────────────────────────
+//   applying_for                 → job_role
 //   national_insurance           → ni_number
 //   town_city                    → city
 //   address_line_1               → address_line_1  (same)
@@ -26,6 +27,7 @@ import { requireAdmin } from '@/lib/auth/requireAdmin'
 // pre-populated with data the applicant already provided.
 //
 const SLUG_TO_COLUMN: Record<string, string> = {
+  applying_for:                      'job_role',
   national_insurance:                'ni_number',
   town_city:                         'city',
   address_line_1:                    'address_line_1',
@@ -40,6 +42,7 @@ const SLUG_TO_COLUMN: Record<string, string> = {
 
 // Fields that are stored as text values
 const STRING_COLUMNS = new Set([
+  'job_role',
   'ni_number', 'city', 'address_line_1', 'address_line_2', 'postcode',
   'nationality', 'emergency_contact_name', 'emergency_contact_phone',
   'emergency_contact_relationship',

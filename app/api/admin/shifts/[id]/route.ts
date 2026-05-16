@@ -3,7 +3,8 @@ import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { createNotification } from '@/lib/notifications/createNotification'
 
-const ALLOWED_STATUSES = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'] as const
+// Statuses as defined by migration 031_operational_shifts.sql
+const ALLOWED_STATUSES = ['open', 'offered', 'accepted', 'declined', 'in_progress', 'completed', 'missed', 'cancelled'] as const
 const ALLOWED_TYPES    = ['day', 'night', 'sleep_in', 'live_in', 'emergency', null] as const
 
 type ShiftStatus = typeof ALLOWED_STATUSES[number]

@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
     .from('staff_profiles')
     .select('id, first_name, last_name, email, job_role, status, applicant_id')
     .eq('company_id', companyId)
-    .not('status', 'eq', 'terminated')
+    .in('status', ['pre_employment', 'active'])
     .order('first_name', { ascending: true })
 
   if (staffErr || !staff) {

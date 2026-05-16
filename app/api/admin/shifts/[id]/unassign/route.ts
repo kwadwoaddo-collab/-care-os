@@ -35,7 +35,8 @@ export async function PATCH(
     )
   }
 
-  const newStatus        = shiftStatus === 'confirmed' ? 'scheduled' : shiftStatus
+  // When unassigning an accepted shift, revert to open (unassigned pool)
+  const newStatus = shiftStatus === 'accepted' ? 'open' : (shiftStatus === 'in_progress' ? 'open' : shiftStatus)
   const previousStaffId  = shift.assigned_staff_id as string
 
   const { data: updated, error: updateErr } = await adminClient

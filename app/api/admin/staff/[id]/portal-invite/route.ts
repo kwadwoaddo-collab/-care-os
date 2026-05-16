@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
 import { sendWorkerPortalEmail } from '@/lib/email/resend'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can } from '@/lib/auth/permissions'
 
 export async function POST(
   _request: NextRequest,
@@ -10,7 +11,14 @@ export async function POST(
 ) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
-  const { companyId } = auth.ctx
+  const { companyId, role } = auth.ctx
+
+  if (!can(role, 'staff:read')) {
+    return NextResponse.json(
+      { error: 'Insufficient permissions to send portal invites.' },
+      { status: 403 }
+    )
+  }
 
   const { id } = await params
 

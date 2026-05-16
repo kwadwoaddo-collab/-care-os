@@ -315,22 +315,22 @@ export async function DELETE(
     )
   }
 
-  // Safety check: warn about future shifts
+  // Safety check: unassign any future shifts still linked to this staff member
+  const today = new Date().toISOString().split('T')[0]
   const { count: futureShiftCount } = await adminClient
     .from('shifts')
     .select('id', { count: 'exact', head: true })
-    .eq('assigned_to', staffProfileId)
-    .gte('shift_date', new Date().toISOString().split('T')[0])
-    .in('status', ['scheduled', 'confirmed'])
+    .eq('assigned_staff_id', staffProfileId)
+    .gte('shift_date', today)
+    .in('status', ['open', 'offered', 'accepted', 'in_progress'])
 
   if ((futureShiftCount ?? 0) > 0) {
-    // Unassign future shifts first
     await adminClient
       .from('shifts')
-      .update({ assigned_to: null, status: 'unassigned', updated_at: new Date().toISOString() })
-      .eq('assigned_to', staffProfileId)
-      .gte('shift_date', new Date().toISOString().split('T')[0])
-      .in('status', ['scheduled', 'confirmed'])
+      .update({ assigned_staff_id: null, status: 'open', updated_at: new Date().toISOString() })
+      .eq('assigned_staff_id', staffProfileId)
+      .gte('shift_date', today)
+      .in('status', ['open', 'offered', 'accepted', 'in_progress'])
   }
 
   // Delete related records (compliance items, documents references, etc.)

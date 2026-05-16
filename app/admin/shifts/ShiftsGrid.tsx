@@ -63,12 +63,16 @@ function isUpcoming(dateStr: string): boolean {
   return dateStr > today
 }
 
+// Statuses per migration 031_operational_shifts.sql
 const STATUS_CLS: Record<string, string> = {
-  scheduled: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  confirmed: 'bg-green-50  text-green-700  ring-green-600/20',
-  completed: 'bg-gray-50   text-gray-600   ring-gray-500/20',
-  cancelled: 'bg-red-50    text-red-700    ring-red-600/20',
-  no_show:   'bg-orange-50 text-orange-700 ring-orange-600/20',
+  open:        'bg-blue-50   text-blue-700   ring-blue-600/20',
+  offered:     'bg-purple-50 text-purple-700 ring-purple-600/20',
+  accepted:    'bg-green-50  text-green-700  ring-green-600/20',
+  declined:    'bg-red-50    text-red-700    ring-red-600/20',
+  in_progress: 'bg-sky-50    text-sky-700    ring-sky-600/20',
+  completed:   'bg-gray-50   text-gray-600   ring-gray-500/20',
+  missed:      'bg-orange-50 text-orange-700 ring-orange-600/20',
+  cancelled:   'bg-red-50    text-red-700    ring-red-600/20',
 }
 
 const TIMESHEET_STATUS_CLS: Record<string, string> = {
