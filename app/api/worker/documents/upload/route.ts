@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: authResult.error }, { status: authResult.status })
   }
 
-  const { id: staffProfileId, company_id } = authResult.worker
+  const { id: staffProfileId, company_id, applicant_id } = authResult.worker
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: 'file is required' }, { status: 422 })
@@ -89,10 +89,15 @@ export async function POST(request: NextRequest) {
     mime_type:        file.type || null,
     expiry_date:      typeof expiryDate === 'string' && expiryDate ? expiryDate : null,
     issue_date:       typeof issueDate  === 'string' && issueDate  ? issueDate  : null,
-    // uploaded_by is a UUID referencing profiles(id). Since workers don't necessarily have a profiles(id),
-    // and passing 'worker' causes a UUID syntax error, we omit it and rely on the audit log.
-    // All worker-uploaded certs start as 'pending' — admin must approve
+    // All worker-uploaded docs start as 'pending' — admin must approve.
     reviewed_status:  'pending',
+  }
+
+  // Include applicant_id when the worker was converted from an applicant.
+  // This satisfies the legacy documents_check constraint on older Supabase
+  // environments where migration 027 has not yet been applied.
+  if (applicant_id) {
+    insertPayload.applicant_id = applicant_id
   }
 
   // Persist training category when present
@@ -138,6 +143,10 @@ export async function POST(request: NextRequest) {
     } else if (insertError?.code === '23514') { // Check constraint violation
       if (insertError.message.includes('training_category')) {
         friendlyError = 'Document type or training category invalid.'
+      } else if (insertError.message.includes('documents_check')) {
+        friendlyError = 'Upload succeeded but document record could not be saved — your worker profile is not fully linked. Please contact your administrator.'
+      } else if (insertError.message.includes('reviewed_status')) {
+        friendlyError = 'Upload succeeded but document record could not be saved — invalid document status. Please contact your administrator.'
       } else {
         friendlyError = `Document constraint validation failed: ${insertError.message}`
       }
