@@ -118,6 +118,7 @@ interface Document {
   expiry_date:       string | null
   issue_date:        string | null
   training_category: string | null
+  applicant_id:      string | null
   created_at:        string
   reviewed_status:   string | null
   review_notes:      string | null
@@ -632,7 +633,7 @@ export default async function StaffDetailPage({
       </div>
 
       {isRecruitmentTab ? (
-        <RecruitmentFileTab staffProfileId={sp.id} applicantId={sp.applicant_id as string} documents={documents} />
+        <RecruitmentFileTab staffProfileId={sp.id} applicantId={sp.applicant_id as string} documents={documents} convertedAt={sp.created_at} />
       ) : (
         <>
           {/* ── Mobile View (hidden on desktop) ──────────────────────────────── */}

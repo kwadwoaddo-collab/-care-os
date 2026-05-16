@@ -59,6 +59,7 @@ interface RecruitmentFileTabProps {
   staffProfileId: string
   applicantId: string
   documents: StaffDocument[]
+  convertedAt?: string | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -72,7 +73,7 @@ function fmt(iso: string | null | undefined): string {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-export default async function RecruitmentFileTab({ staffProfileId, applicantId, documents }: RecruitmentFileTabProps) {
+export default async function RecruitmentFileTab({ staffProfileId, applicantId, documents, convertedAt }: RecruitmentFileTabProps) {
   const auth = await requireAdmin()
   if (!auth.ok) {
     return <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">Unauthorized</div>
@@ -154,6 +155,22 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
     .eq('applicant_id', applicantId)
     .order('created_at', { ascending: false })
 
+  // ── 5. Fetch audit trail for conversion events ──────────────────────────────
+  const { data: auditLogs } = await adminClient
+    .from('audit_logs')
+    .select('id, action, actor_id, metadata, created_at')
+    .or(`entity_id.eq.${applicantId},entity_id.eq.${staffProfileId}`)
+    .in('action', [
+      'applicant.converted_to_staff',
+      'staff.created',
+      'applicant.status_changed',
+      'staff.profile_updated',
+      'document.approved',
+      'document.rejected',
+    ])
+    .order('created_at', { ascending: false })
+    .limit(20)
+
   // Generate signed URLs using the correct storage bucket
   const applicantDocs: ApplicantDocument[] = await Promise.all(
     (rawApplicantDocs ?? []).map(async (doc) => {
@@ -168,7 +185,7 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
     })
   )
 
-  // ── 5. Staff-stage documents (uploaded post-conversion; no applicant_id) ───
+  // ── 6. Staff-stage documents (uploaded post-conversion; no applicant_id) ───
   // These are documents uploaded after the applicant became staff; they have
   // staff_profile_id but applicant_id = NULL.
   const staffOnlyDocs = documents.filter((d) => !d.applicant_id)
@@ -202,11 +219,19 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
             View original record
           </Link>
         </div>
-        <div className="p-4 bg-white flex flex-col gap-1 text-sm text-gray-700">
-          <p>
-            <span className="font-medium text-gray-900">Conversion Date: </span>
-            {formatDate(applicant?.updated_at || applicant?.created_at)}
-          </p>
+        <div className="p-4 bg-white grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-0.5">Converted</p>
+            <p className="font-semibold text-gray-900">{formatDate(convertedAt ?? applicant?.created_at ?? null)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-0.5">Applied</p>
+            <p className="text-gray-900">{formatDate(applicant?.created_at ?? null)}</p>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-0.5">Role applied for</p>
+            <p className="text-gray-900">{applicant?.job_role ?? '—'}</p>
+          </div>
         </div>
       </div>
 
@@ -332,6 +357,53 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
             </div>
             <div className="p-4">
               <TrainingQualifications data={answers.training_qualifications} />
+            </div>
+          </div>
+
+          {/* ── Recruitment Audit Trail ───────────────────────────────────── */}
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+            <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center gap-2">
+              <span className="material-symbols-outlined text-gray-500 text-[16px]">history</span>
+              <h2 className="text-sm font-semibold text-gray-700">Audit Trail</h2>
+            </div>
+            <div className="p-4">
+              {!auditLogs || auditLogs.length === 0 ? (
+                <p className="text-sm text-gray-400">No audit events recorded.</p>
+              ) : (
+                <ol className="relative border-l border-gray-200 space-y-4 ml-2">
+                  {(auditLogs as Array<{ id: string; action: string; actor_id: string | null; metadata: Record<string, unknown> | null; created_at: string }>).map((log) => {
+                    const ACTION_META: Record<string, { label: string; icon: string; cls: string }> = {
+                      'applicant.converted_to_staff': { label: 'Converted to staff',   icon: 'check_circle', cls: 'text-green-600' },
+                      'staff.created':                { label: 'Staff profile created', icon: 'person_add',   cls: 'text-blue-600' },
+                      'applicant.status_changed':     { label: 'Status changed',        icon: 'update',       cls: 'text-yellow-600' },
+                      'staff.profile_updated':        { label: 'Profile updated',       icon: 'edit',         cls: 'text-gray-500' },
+                      'document.approved':            { label: 'Document approved',     icon: 'verified',     cls: 'text-green-600' },
+                      'document.rejected':            { label: 'Document rejected',     icon: 'cancel',       cls: 'text-red-600' },
+                    }
+                    const meta = ACTION_META[log.action] ?? { label: log.action.replace(/\./g, ' '), icon: 'info', cls: 'text-gray-500' }
+                    const mappedFields = (
+                      log.metadata && typeof log.metadata === 'object' && 'fields_mapped' in log.metadata && Array.isArray(log.metadata.fields_mapped)
+                        ? (log.metadata.fields_mapped as string[])
+                        : []
+                    )
+                    return (
+                      <li key={log.id} className="ml-4">
+                        <div className="absolute -left-1.5 mt-1.5 w-3 h-3 rounded-full border-2 border-white bg-gray-300" />
+                        <div className="flex items-start gap-2">
+                          <span className={`material-symbols-outlined text-[14px] mt-0.5 shrink-0 ${meta.cls}`}>{meta.icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-primary">{meta.label}</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">{fmt(log.created_at)}</p>
+                            {mappedFields.length > 0 && (
+                              <p className="text-[11px] text-gray-500 mt-0.5">Fields: {mappedFields.join(', ')}</p>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ol>
+              )}
             </div>
           </div>
         </div>
