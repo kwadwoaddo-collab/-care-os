@@ -134,6 +134,7 @@ const REVIEW_STATUS_CLS: Record<string, string> = {
   rejected:     'bg-red-100 text-red-800 ring-red-700/20',
   pending:      'bg-yellow-100 text-yellow-900 ring-yellow-700/20',
   under_review: 'bg-blue-100 text-blue-800 ring-blue-700/20',
+  superseded:   'bg-gray-100 text-gray-600 ring-gray-500/20',
 }
 
 function ReviewStatusBadge({ status }: { status: string | null | undefined }) {
