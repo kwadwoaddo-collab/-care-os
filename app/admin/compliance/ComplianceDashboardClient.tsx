@@ -366,8 +366,16 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
         )}
 
         {!loading && data.length === 0 && (
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-10 text-center text-sm text-on-surface-variant">
-            No staff members match this filter.
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-12 text-center space-y-3">
+            <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">verified_user</span>
+            <p className="text-sm font-medium text-primary">
+              {currentFilter ? 'No staff match this compliance filter' : 'No active staff members found'}
+            </p>
+            <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+              {currentFilter
+                ? 'All active staff may be compliant — try a different filter or clear to see everyone.'
+                : 'Onboard your first staff member to start tracking compliance.'}
+            </p>
           </div>
         )}
 

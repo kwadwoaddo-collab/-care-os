@@ -240,8 +240,16 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-gray-400">
-          No shifts match this filter.
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
+          <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">calendar_today</span>
+          <p className="text-sm font-medium text-primary">
+            {filter === 'all' ? 'No shifts yet' : 'No shifts match this filter'}
+          </p>
+          <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+            {filter === 'all'
+              ? 'Create shifts manually or generate them from a care package.'
+              : 'Try a different filter or clear the current one to see all shifts.'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

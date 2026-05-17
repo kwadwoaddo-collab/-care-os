@@ -4,13 +4,21 @@ import React from 'react'
 
 export interface SystemHealthData {
   health: {
-    database:             boolean
-    storage:              boolean
-    resendConfigured:     boolean
-    emailFromConfigured:  boolean
-    appUrlConfigured:     boolean
-    authSession:          boolean
-    timestamp:            string
+    database:              boolean
+    storage:               boolean
+    resendConfigured:      boolean
+    emailFromConfigured:   boolean
+    appUrlConfigured:      boolean
+    cronSecretConfigured:  boolean
+    authSession:           boolean
+    timestamp:             string
+    expectedMigrations:    number | null
+    appliedMigrations:     number | null
+    migrationsMismatch:    boolean
+    activeStaffCount:      number | null
+    staleOnboardingCount:  number | null
+    staleApplicantCount:   number | null
+    missingEnvVars:        string[]
   } | null
   appUrl: string
   supaUrl: string
@@ -54,7 +62,9 @@ function InfraCard({ title, ok, metric, detail }: { title: string; ok: boolean; 
 export default function SystemHealthMobile({ data }: { data: SystemHealthData }) {
   const { health, appUrl, supaUrl, nodeEnv, builtAt } = data
   const allOk = health
-    ? health.database && health.storage && health.resendConfigured && health.emailFromConfigured && health.appUrlConfigured
+    ? health.database && health.storage && health.resendConfigured &&
+      health.emailFromConfigured && health.appUrlConfigured &&
+      !health.migrationsMismatch && (health.missingEnvVars?.length ?? 0) === 0
     : false
   
   const fetchedAtUtc = health?.timestamp 
@@ -124,8 +134,64 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
             <InfraCard title="App URL Routing" ok={health?.appUrlConfigured ?? false} detail={appUrl} />
             <InfraCard title="Auth Session" ok={health?.authSession ?? false} detail="JWT verified" />
             <InfraCard title="Email Dispatcher" ok={health?.resendConfigured ?? false} detail="Resend API" />
+            <InfraCard title="Cron Secret" ok={health?.cronSecretConfigured ?? false} detail="Compliance reminders" />
           </div>
         </div>
+
+        {/* Migration Status */}
+        <div className="space-y-3">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Database Migrations</h2>
+          <div className="bg-white rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
+            <div className="flex justify-between p-4">
+              <span className="text-sm font-medium text-slate-500">Expected</span>
+              <span className="text-sm font-bold text-[#1e293b]">{health?.expectedMigrations ?? '—'}</span>
+            </div>
+            <div className="flex justify-between p-4">
+              <span className="text-sm font-medium text-slate-500">Applied</span>
+              <span className="text-sm font-bold text-[#1e293b]">{health?.appliedMigrations ?? 'N/A'}</span>
+            </div>
+            {health?.migrationsMismatch && (
+              <div className="p-4 bg-amber-50 border-t border-amber-200">
+                <p className="text-xs font-semibold text-amber-800">Migration mismatch detected — run pending migrations before deploying.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Operational Signals */}
+        <div className="space-y-3">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Operational Signals</h2>
+          <div className="bg-white rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
+            <div className="flex justify-between p-4">
+              <span className="text-sm font-medium text-slate-500">Active staff</span>
+              <span className="text-sm font-bold text-[#1e293b]">{health?.activeStaffCount ?? '—'}</span>
+            </div>
+            <div className="flex justify-between p-4">
+              <span className="text-sm font-medium text-slate-500">Stale onboarding (&gt;30d)</span>
+              <span className={`text-sm font-bold ${(health?.staleOnboardingCount ?? 0) > 0 ? 'text-amber-600' : 'text-green-700'}`}>
+                {health?.staleOnboardingCount ?? '—'}
+              </span>
+            </div>
+            <div className="flex justify-between p-4">
+              <span className="text-sm font-medium text-slate-500">Stale applicants (&gt;60d)</span>
+              <span className={`text-sm font-bold ${(health?.staleApplicantCount ?? 0) > 0 ? 'text-amber-600' : 'text-green-700'}`}>
+                {health?.staleApplicantCount ?? '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Missing env vars warning */}
+        {(health?.missingEnvVars?.length ?? 0) > 0 && (
+          <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+            <p className="text-xs font-semibold text-red-800 mb-2">Missing environment variables:</p>
+            <ul className="space-y-1">
+              {health!.missingEnvVars.map((v) => (
+                <li key={v} className="text-xs font-mono text-red-700">{v}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Build Info */}
         <div className="space-y-3">

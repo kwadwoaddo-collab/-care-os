@@ -211,9 +211,13 @@ export default async function ApplicantsPage({
       </div>
 
       {applicants.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center space-y-3">
-          <p className="text-sm text-on-surface-variant">
-            {hasFilters ? 'No results found. Try changing your filters.' : 'No active applicants in the pipeline.'}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
+          <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">person_search</span>
+          <p className="text-sm font-medium text-primary">
+            {hasFilters ? 'No results found' : 'No applicants in the pipeline'}
+          </p>
+          <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+            {hasFilters ? 'Try changing or clearing your filters.' : 'Invite your first applicant to start recruiting.'}
           </p>
           {!hasFilters && (
             <p className="text-xs text-on-surface-variant">

@@ -6,25 +6,16 @@ import { can } from '@/lib/auth/permissions'
 import AccessDenied from '@/components/admin/AccessDenied'
 import SystemHealthMobile from '@/components/admin/SystemHealthMobile'
 import SystemHealthDesktop from '@/components/admin/SystemHealthDesktop'
+import type { HealthResponse } from '@/app/api/admin/system/health/route'
 
-interface HealthData {
-  database:             boolean
-  storage:              boolean
-  resendConfigured:     boolean
-  emailFromConfigured:  boolean
-  appUrlConfigured:     boolean
-  authSession:          boolean
-  timestamp:            string
-}
-
-async function getHealth(): Promise<HealthData | null> {
+async function getHealth(): Promise<HealthResponse | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     const res = await adminFetch(`${baseUrl}/api/admin/system/health`, {
       cache: 'no-store',
     })
     if (!res.ok) return null
-    return res.json() as Promise<HealthData>
+    return res.json() as Promise<HealthResponse>
   } catch {
     return null
   }

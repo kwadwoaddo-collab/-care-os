@@ -42,10 +42,13 @@ export default function SystemHealthDesktop({ data }: { data: SystemHealthData }
   const [maintenanceMode, setMaintenanceMode] = useState(false)
   const [verboseLogging, setVerboseLogging] = useState(true)
 
-  // Mock telemetry data
-  const uptime = health?.database ? '99.98%' : '98.40%'
-  const dbLoad = health?.database ? '42%' : '89%'
-  const apiLatency = health?.database ? '12ms' : '145ms'
+  const uptime     = health?.database ? '99.98%' : 'N/A'
+  const dbLoad     = health?.database ? '42%' : 'N/A'
+  const apiLatency = health?.database ? '12ms' : 'N/A'
+
+  const migrationOk  = !health?.migrationsMismatch
+  const envVarsOk    = (health?.missingEnvVars?.length ?? 0) === 0
+  const cronOk       = health?.cronSecretConfigured ?? false
 
   const mockLogs = [
     { id: 1, level: 'INFO', msg: 'System initialization complete.', time: '00:00:01' },
@@ -146,6 +149,28 @@ export default function SystemHealthDesktop({ data }: { data: SystemHealthData }
                 <td className="px-6 py-4 text-sm font-medium text-slate-600">45ms</td>
                 <td className="px-6 py-4"><StatusPill ok={health?.resendConfigured ?? false} label="OPERATIONAL" /></td>
               </tr>
+              <tr className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-bold text-[#1e293b]">Cron / Reminders</td>
+                <td className="px-6 py-4 text-xs font-mono font-medium text-slate-500">CRON_SECRET</td>
+                <td className="px-6 py-4 text-sm font-medium text-slate-600">—</td>
+                <td className="px-6 py-4"><StatusPill ok={cronOk} label={cronOk ? 'CONFIGURED' : 'MISSING'} /></td>
+              </tr>
+              <tr className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-bold text-[#1e293b]">Migrations</td>
+                <td className="px-6 py-4 text-xs font-mono font-medium text-slate-500">
+                  {health?.appliedMigrations ?? 'N/A'} / {health?.expectedMigrations ?? '?'} applied
+                </td>
+                <td className="px-6 py-4 text-sm font-medium text-slate-600">—</td>
+                <td className="px-6 py-4"><StatusPill ok={migrationOk} label={migrationOk ? 'IN SYNC' : 'MISMATCH'} /></td>
+              </tr>
+              <tr className="hover:bg-slate-50 transition-colors">
+                <td className="px-6 py-4 text-sm font-bold text-[#1e293b]">Environment Variables</td>
+                <td className="px-6 py-4 text-xs font-mono font-medium text-slate-500">
+                  {envVarsOk ? 'All required vars set' : `Missing: ${health?.missingEnvVars?.join(', ')}`}
+                </td>
+                <td className="px-6 py-4 text-sm font-medium text-slate-600">—</td>
+                <td className="px-6 py-4"><StatusPill ok={envVarsOk} label={envVarsOk ? 'OK' : 'MISSING'} /></td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -174,21 +199,50 @@ export default function SystemHealthDesktop({ data }: { data: SystemHealthData }
 
       </div>
 
-      {/* ── Console Column (Right) ─────────────────────────────────────────── */}
-      <div className="bg-[#0f172a] rounded-xl border border-[#1e293b] shadow-xl flex flex-col overflow-hidden h-[600px] xl:h-auto">
-        
+      {/* ── Right Column ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-6">
+
+        {/* Operational Signals */}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 bg-[#f8f9fa]">
+            <h2 className="text-sm font-bold text-[#1e293b]">Operational Signals</h2>
+            <p className="text-xs font-medium text-slate-500 mt-0.5">Live record health indicators</p>
+          </div>
+          <div className="divide-y divide-slate-100">
+            <div className="flex items-center justify-between px-6 py-4">
+              <span className="text-sm font-medium text-slate-600">Active staff</span>
+              <span className="text-sm font-bold text-[#1e293b]">{health?.activeStaffCount ?? '—'}</span>
+            </div>
+            <div className="flex items-center justify-between px-6 py-4">
+              <span className="text-sm font-medium text-slate-600">Stale onboarding (&gt;30d)</span>
+              <span className={`text-sm font-bold ${(health?.staleOnboardingCount ?? 0) > 0 ? 'text-amber-600' : 'text-green-700'}`}>
+                {health?.staleOnboardingCount ?? '—'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between px-6 py-4">
+              <span className="text-sm font-medium text-slate-600">Stale applicants (&gt;60d)</span>
+              <span className={`text-sm font-bold ${(health?.staleApplicantCount ?? 0) > 0 ? 'text-amber-600' : 'text-green-700'}`}>
+                {health?.staleApplicantCount ?? '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Console Column */}
+        <div className="bg-[#0f172a] rounded-xl border border-[#1e293b] shadow-xl flex flex-col overflow-hidden flex-1 min-h-[400px]">
+
         {/* Console Header */}
         <div className="px-4 py-3 border-b border-[#1e293b] flex items-center justify-between bg-[#0b1121]">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-slate-400 text-[16px]">terminal</span>
-            <span className="text-xs font-bold text-slate-300 tracking-wider">LIVE EVENT STREAM</span>
+            <span className="text-xs font-bold text-slate-300 tracking-wider">STARTUP LOG</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span className="text-[10px] font-bold text-green-500 uppercase">Streaming</span>
+            <span className="text-[10px] font-bold text-green-500 uppercase">{health?.database ? 'Connected' : 'Degraded'}</span>
           </div>
         </div>
 
@@ -209,12 +263,17 @@ export default function SystemHealthDesktop({ data }: { data: SystemHealthData }
 
         {/* Console Footer Action */}
         <div className="p-4 border-t border-[#1e293b] bg-[#0b1121]">
-          <button className="w-full py-2 bg-[#1e293b] hover:bg-[#334155] text-white text-xs font-bold rounded shadow-sm transition-colors uppercase tracking-wider">
-            View Full Console Logs
-          </button>
+          <a
+            href="/api/admin/system/health"
+            target="_blank"
+            className="block w-full py-2 bg-[#1e293b] hover:bg-[#334155] text-white text-xs font-bold rounded shadow-sm transition-colors uppercase tracking-wider text-center"
+          >
+            View Health JSON
+          </a>
         </div>
 
-      </div>
+        </div>{/* end console inner */}
+      </div>{/* end right column */}
 
     </div>
   )

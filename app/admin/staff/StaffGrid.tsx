@@ -147,8 +147,10 @@ export default function StaffGrid({ staff }: { staff: StaffProfileWithCompliance
 
       {/* Staff Power Cards Grid */}
       {filtered.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-on-surface-variant">
-          No staff match this filter.
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
+          <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">group</span>
+          <p className="text-sm font-medium text-primary">No staff match this filter</p>
+          <p className="text-xs text-on-surface-variant">Try a different status or clear the filter to see all staff.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

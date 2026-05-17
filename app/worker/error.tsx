@@ -8,13 +8,21 @@ interface Props {
 }
 
 export default function WorkerError({ error, reset }: Props) {
+  const incidentRef = error.digest
+    ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+    : `ERR-${Date.now().toString(36).toUpperCase()}`
+
   useEffect(() => {
-    console.error('[worker/error]', error)
-  }, [error])
+    console.error('[worker/error]', {
+      message:     error.message,
+      digest:      error.digest,
+      incidentRef,
+      timestamp:   new Date().toISOString(),
+    })
+  }, [error, incidentRef])
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
-      {/* Icon */}
       <div className="w-16 h-16 rounded-full bg-red-50 border border-red-200 flex items-center justify-center mb-5">
         <svg
           className="w-8 h-8 text-red-500"
@@ -38,12 +46,9 @@ export default function WorkerError({ error, reset }: Props) {
         We couldn&apos;t load this page. Please try again — your data is safe.
       </p>
 
-      {/* Correlation ID for support */}
-      {error.digest && (
-        <p className="text-xs text-gray-400 font-mono mb-5">
-          Ref: {error.digest}
-        </p>
-      )}
+      <p className="text-xs text-gray-400 font-mono mb-5 select-all" title="Quote this reference if you contact support">
+        Ref: {incidentRef}
+      </p>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button

@@ -157,10 +157,25 @@ export default async function StaffPage({
       </div>
 
       {staff.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-on-surface-variant">
-          {Object.keys(raw).length > 0
-            ? 'No results found. Try changing your filters.'
-            : 'No staff profiles yet. Convert a hired applicant to create one.'}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
+          <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">badge</span>
+          <p className="text-sm font-medium text-primary">
+            {Object.keys(raw).length > 0 ? 'No results found' : 'No staff yet'}
+          </p>
+          <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+            {Object.keys(raw).length > 0
+              ? 'Try changing or clearing your filters.'
+              : 'Staff profiles are created when you convert a hired applicant. Start by inviting an applicant.'}
+          </p>
+          {Object.keys(raw).length === 0 && (
+            <Link
+              href="/admin/applicants"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-opacity mt-1"
+            >
+              <span className="material-symbols-outlined text-[16px]">person_add</span>
+              Go to Applicants
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
