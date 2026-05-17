@@ -29,13 +29,17 @@ export async function GET(
   const result = await validateWorkerToken(token)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
 
-  const { id: staffProfileId } = result.worker
+  const { id: staffProfileId, company_id: companyId } = result.worker
   const { id: shiftId }        = await params
 
+  // company_id scopes the query to this tenant; assigned_staff_id enforces
+  // that the worker can only view shifts assigned to them.
   const { data: shift, error } = await adminClient
     .from('shifts')
     .select('id, title, shift_date, start_time, end_time, status, shift_type, location, client_name, client_id, care_package_id, notes, assigned_staff_id, worker_ack_status, worker_ack_at, worker_ack_reason')
     .eq('id', shiftId)
+    .eq('company_id', companyId)
+    .eq('assigned_staff_id', staffProfileId)
     .maybeSingle()
 
   if (error) {
@@ -43,20 +47,18 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch shift' }, { status: 500 })
   }
 
+  // Returns 404 for both "not found" and "not your shift" — avoids leaking
+  // whether a shift ID exists in another tenant.
   if (!shift) return NextResponse.json({ error: 'Shift not found' }, { status: 404 })
 
   const row = shift as ShiftRow
 
-  // Enforce: worker can only view their own assigned shift
-  if (row.assigned_staff_id !== staffProfileId) {
-    return NextResponse.json({ error: 'Shift not assigned to you' }, { status: 403 })
-  }
-
-  // Attach visit note id if exists
+  // Attach visit note id if exists (scoped to company)
   const { data: note } = await adminClient
     .from('visit_notes')
     .select('id, status')
     .eq('shift_id', shiftId)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   // Attach timesheet clock-in/out

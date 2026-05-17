@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { getPaginationParams, getRange, buildPaginationMeta } from '@/lib/pagination'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can }          from '@/lib/auth/permissions'
+import { forbidden }    from '@/lib/auth/responses'
 
 // ── GET /api/admin/clients ────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'clients:read')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   const sp          = request.nextUrl.searchParams
@@ -74,6 +77,7 @@ interface CreateClientBody {
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'clients:write')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   let body: CreateClientBody

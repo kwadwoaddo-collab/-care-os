@@ -78,6 +78,15 @@ export async function GET(request: NextRequest) {
     )
   }
 
+  // Rejected applicants must not be able to re-access or re-submit their form.
+  // Their token remains valid as an identifier but their application is closed.
+  if (applicant.status === 'rejected') {
+    return NextResponse.json(
+      { error: 'This application has been closed' },
+      { status: 403 }
+    )
+  }
+
   return NextResponse.json(
     {
       applicant: {

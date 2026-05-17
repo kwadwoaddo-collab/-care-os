@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { can }          from '@/lib/auth/permissions'
+import { forbidden }    from '@/lib/auth/responses'
 
 const ALLOWED_STATUSES    = ['active', 'paused', 'ended', 'prospective'] as const
 const ALLOWED_FUNDING     = ['private', 'local_authority', 'nhs', 'direct_payment', 'other'] as const
@@ -14,6 +16,7 @@ export async function GET(
 ) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'clients:read')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   const { id } = await params
@@ -70,6 +73,7 @@ export async function PATCH(
 ) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'clients:write')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   const { id } = await params

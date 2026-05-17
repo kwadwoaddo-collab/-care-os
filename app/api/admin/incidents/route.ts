@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { requireAdmin }              from '@/lib/auth/requireAdmin'
+import { can }                       from '@/lib/auth/permissions'
+import { forbidden }                 from '@/lib/auth/responses'
 import { sendNotification } from '@/lib/notifications/sendNotification'
 import { createNotification } from '@/lib/notifications/createNotification'
 import { ipRateLimit } from '@/lib/rateLimit'
@@ -23,6 +25,7 @@ const STATUSES   = ['open', 'investigating', 'resolved', 'closed'] as const
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'incidents:read')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   const sp   = Object.fromEntries(request.nextUrl.searchParams.entries())
@@ -116,6 +119,7 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
+  if (!can(auth.ctx.role, 'incidents:write')) return forbidden('Insufficient permissions')
   const { companyId } = auth.ctx
 
   let body: Record<string, unknown>

@@ -11,13 +11,14 @@ export async function GET(request: NextRequest) {
   const result = await validateWorkerToken(token)
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
 
-  // result.worker.id === staff_profiles.id — maps to in_app_notifications.staff_profile_id
   const staffProfileId = result.worker.id
+  const companyId      = result.worker.company_id
 
   const { data, error } = await adminClient
     .from('in_app_notifications')
     .select('id, title, message, action_url, event_type, read_at, created_at')
     .eq('staff_profile_id', staffProfileId)
+    .eq('company_id', companyId)
     .order('created_at', { ascending: false })
     .limit(30)
 
@@ -38,6 +39,7 @@ export async function PATCH(request: NextRequest) {
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
 
   const staffProfileId = result.worker.id
+  const companyId      = result.worker.company_id
 
   // Optional: mark specific id or all unread
   let body: { id?: string } = {}
@@ -47,6 +49,7 @@ export async function PATCH(request: NextRequest) {
     .from('in_app_notifications')
     .update({ read_at: new Date().toISOString() })
     .eq('staff_profile_id', staffProfileId)
+    .eq('company_id', companyId)
     .is('read_at', null)
 
   if (body.id) {

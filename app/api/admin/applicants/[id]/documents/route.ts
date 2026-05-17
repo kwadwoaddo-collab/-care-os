@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 
-const SIGNED_URL_EXPIRY = 3600 // 1 hour
+const SIGNED_URL_EXPIRY = 300 // 5 minutes — reduced from 1h to limit stale URL exposure window
 
 export async function GET(
   _request: NextRequest,
