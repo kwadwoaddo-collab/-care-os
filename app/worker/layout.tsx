@@ -12,7 +12,7 @@ const NAV = [
   { href: '/worker/onboarding',      label: 'Onboarding',    icon: '✅' },
   { href: '/worker/documents',       label: 'Documents',     icon: '📄' },
   { href: '/worker/shifts',          label: 'Shifts',        icon: '📅' },
-  { href: '/worker/availability',    label: 'Availability',  icon: '🗓' },
+  { href: '/worker/messages',        label: 'Messages',      icon: '💬' },
 ]
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {
