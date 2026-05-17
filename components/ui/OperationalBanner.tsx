@@ -1,15 +1,4 @@
-/**
- * OperationalBanner — standardised alert/info/warning banner for operational states.
- *
- * Replaces scattered ad-hoc banner divs across pages (SLA alerts, pilot banners,
- * trigger result notices, escalation warnings, etc.)
- *
- * Usage:
- *   <OperationalBanner type="warning" message="3 visits overdue." />
- *   <OperationalBanner type="critical" message="SLA breached." action={{ label: 'Review', href: '...' }} />
- *   <OperationalBanner type="success" message="Scan complete." dismissible onDismiss={...} />
- *   <OperationalBanner type="info" icon="🚀" message="Pilot mode active." />
- */
+'use client'
 
 import Link from 'next/link'
 import { useState } from 'react'

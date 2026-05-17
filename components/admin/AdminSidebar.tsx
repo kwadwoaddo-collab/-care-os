@@ -71,6 +71,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   const footerItems = [
     { label: 'Analytics', href: '/admin/analytics',        icon: 'analytics',      show: navCan(canViewCompliance) },
     { label: 'Tenants',   href: '/admin/system/tenants',   icon: 'corporate_fare', show: navCan(canManageTenants) },
+    { label: 'Jobs',      href: '/admin/system/jobs',      icon: 'manufacturing',  show: navCan(canViewSystemHealth) },
     { label: 'System',    href: '/admin/system',            icon: 'settings',       show: navCan(canViewSystemHealth) },
   ]
 

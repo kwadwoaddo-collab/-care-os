@@ -62,6 +62,7 @@ export const PERMISSIONS = [
 
   // System (super_admin + company_admin only)
   'system:read',
+  'system:write',
 
   // Role management (company_admin + super_admin only)
   'roles:write',
@@ -178,6 +179,7 @@ const COMPANY_ADMIN_PERMISSIONS: PermSet = new Set<Permission>([
   'settings:read',
   'settings:write',
   'system:read',
+  'system:write',
   'roles:write',
 ])
 

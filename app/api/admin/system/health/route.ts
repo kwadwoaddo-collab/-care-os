@@ -40,6 +40,14 @@ export interface HealthResponse {
   staleApplicantCount:   number | null
   /** Missing env vars */
   missingEnvVars:        string[]
+  /** Jobs stuck in running state for >15 min */
+  stuckJobCount:         number | null
+  /** Job executions that failed in the last 24h */
+  recentFailedJobCount:  number | null
+  /** Visit anomalies open and unresolved */
+  openAnomalyCount:      number | null
+  /** Incidents open with no update in >7 days */
+  staleIncidentCount:    number | null
 }
 
 export async function GET() {
@@ -137,6 +145,52 @@ export async function GET() {
     staleApplicantCount = count ?? null
   } catch { /* stays null */ }
 
+  // ── Stuck jobs (running >15 min) ──────────────────────────────────────────
+  let stuckJobCount: number | null = null
+  try {
+    const stuckCutoff = new Date(Date.now() - 15 * 60_000).toISOString()
+    const { count } = await adminClient
+      .from('job_executions')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'running')
+      .lt('started_at', stuckCutoff)
+    stuckJobCount = count ?? 0
+  } catch { /* table may not exist yet */ }
+
+  // ── Failed jobs in last 24h ────────────────────────────────────────────────
+  let recentFailedJobCount: number | null = null
+  try {
+    const since24h = new Date(Date.now() - 24 * 3600_000).toISOString()
+    const { count } = await adminClient
+      .from('job_executions')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'failed')
+      .gte('started_at', since24h)
+    recentFailedJobCount = count ?? 0
+  } catch { /* table may not exist yet */ }
+
+  // ── Open visit anomalies ──────────────────────────────────────────────────
+  let openAnomalyCount: number | null = null
+  try {
+    const { count } = await adminClient
+      .from('visit_anomalies')
+      .select('*', { count: 'exact', head: true })
+      .eq('resolved', false)
+    openAnomalyCount = count ?? 0
+  } catch { /* table may not exist yet */ }
+
+  // ── Stale incidents (open, no update in >7 days) ──────────────────────────
+  let staleIncidentCount: number | null = null
+  try {
+    const cutoff7d = new Date(Date.now() - 7 * 86400_000).toISOString()
+    const { count } = await adminClient
+      .from('incidents')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['open', 'under_review'])
+      .lt('updated_at', cutoff7d)
+    staleIncidentCount = count ?? 0
+  } catch { /* incidents table may not exist */ }
+
   return NextResponse.json({
     database,
     storage,
@@ -153,5 +207,9 @@ export async function GET() {
     staleOnboardingCount,
     staleApplicantCount,
     missingEnvVars,
+    stuckJobCount,
+    recentFailedJobCount,
+    openAnomalyCount,
+    staleIncidentCount,
   } satisfies HealthResponse)
 }
