@@ -17,7 +17,7 @@ export async function GET(
   // ── Fetch staff profile ────────────────────────────────────────────────────
   const { data: staffProfile, error: spError } = await adminClient
     .from('staff_profiles')
-    .select('id, applicant_id, company_id')
+    .select('id, applicant_id, company_id, job_role')
     .eq('id', id)
     .eq('company_id', companyId)
     .maybeSingle()
@@ -37,8 +37,9 @@ export async function GET(
   // ── Fetch documents from both sources ─────────────────────────────────────
   const documents = await getStaffDocuments(staffProfile.id, staffProfile.applicant_id as string | null)
 
-  // ── Compute compliance ────────────────────────────────────────────────────
-  const summary = calculateCompliance(documents)
+  // ── Compute compliance (role-aware) ──────────────────────────────────────
+  const jobRole = (staffProfile.job_role as string | null) ?? null
+  const summary = calculateCompliance(documents, jobRole)
 
   return NextResponse.json({ summary, documents })
 }

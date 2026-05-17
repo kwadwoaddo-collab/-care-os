@@ -19,6 +19,7 @@ import { adminClient }               from '@/lib/supabase/admin'
 import { validateWorkerToken }       from '@/lib/worker/auth'
 import { getRequiredTraining }       from '@/lib/training/matrix'
 import { calculateCompliance }       from '@/lib/compliance/calculateCompliance'
+import { explainCompliance }         from '@/lib/compliance/explainability'
 import type { ComplianceDocument }   from '@/lib/compliance/calculateCompliance'
 
 // Mandatory document types (mirrors calculateOnboardingStatus)
@@ -58,8 +59,8 @@ export async function GET(request: NextRequest) {
     if (!seen.has(d.id)) { seen.add(d.id); docs.push(d) }
   }
 
-  // Use compliance engine for training breakdown
-  const compliance = calculateCompliance(docs)
+  // Use compliance engine for training breakdown (role-aware)
+  const compliance = calculateCompliance(docs, job_role ?? null)
 
   // Build required doc coverage
   const now            = new Date()
@@ -100,6 +101,15 @@ export async function GET(request: NextRequest) {
     (cat) => !approvedSet.has(cat) && !pendingSet.has(cat)
   )
 
+  // Build explainability breakdown for the worker
+  const breakdown = explainCompliance(compliance, docs, requiredTraining)
+
+  // Worker-facing action list: prioritised by impact
+  const nextActions = breakdown.issues
+    .filter((r) => r.status === 'missing' || r.status === 'expired')
+    .slice(0, 3)
+    .map((r) => ({ label: r.label, action: r.action, status: r.status, impact: r.impact }))
+
   return NextResponse.json({
     requiredTraining,
     approvedCategories,
@@ -108,5 +118,11 @@ export async function GET(request: NextRequest) {
     requiredDocs:    REQUIRED_DOC_TYPES,
     uploadedDocTypes: [...uploadedTypes],
     missingDocs,
+    // Compliance status (new — for worker portal explainability)
+    complianceState:      compliance.complianceState,
+    compliancePercentage: compliance.percentage,
+    primaryBlocker:       breakdown.primaryBlocker,
+    stateExplanation:     breakdown.stateExplanation,
+    nextActions,
   })
 }

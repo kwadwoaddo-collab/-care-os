@@ -9,6 +9,7 @@ import { COMPLIANCE_STATE_CLS, COMPLIANCE_STATE_LABEL } from '@/lib/compliance/b
 import { BAND_CLS, type ExpiryBand } from '@/lib/compliance/expiryBands'
 import { RISK_LEVEL_CLS, RISK_LEVEL_LABEL } from '@/lib/compliance/riskScore'
 import { TerminationModal, type TerminationData } from '@/components/admin/TerminationModal'
+import ComplianceExplainModal from '@/components/admin/ComplianceExplainModal'
 import { hasRole } from '@/lib/rbac/roles'
 import StatusBadge, { staffStatusVariant } from '@/components/ui/StatusBadge'
 
@@ -68,16 +69,17 @@ function RiskScoreGauge({ score, riskLevel }: { score: number; riskLevel: string
 
 // ── Top-risk staff row ────────────────────────────────────────────────────────
 
-function TopRiskRow({ row, rank }: { row: RiskStaffRow; rank: number }) {
+function TopRiskRow({ row, rank, onWhyClick }: {
+  row:        RiskStaffRow
+  rank:       number
+  onWhyClick: (staffId: string, staffName: string) => void
+}) {
   const level = row.riskLevel as 'low' | 'medium' | 'high' | 'critical'
   return (
-    <Link
-      href={`/admin/staff/${row.staffId}`}
-      className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-surface-container-low transition-colors group"
-    >
+    <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-surface-container-low transition-colors">
       <span className="text-xs font-bold text-on-surface-variant w-5 text-center">{rank}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-primary truncate group-hover:underline">{row.staffName}</p>
+        <p className="text-sm font-medium text-primary truncate">{row.staffName}</p>
         <p className="text-xs text-on-surface-variant truncate">
           {row.jobRole?.replace(/_/g, ' ') ?? 'Staff'}
           {row.nonCompliantDays > 0 && (
@@ -85,15 +87,24 @@ function TopRiskRow({ row, rank }: { row: RiskStaffRow; rank: number }) {
           )}
         </p>
       </div>
-      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ring-1 ${RISK_LEVEL_CLS[level]}`}>
-          {row.riskScore}
-        </span>
-        {row.escalationLevel !== 'none' && row.escalationLevel !== 'worker_notified' && (
-          <span className="text-[9px] text-orange-600 font-medium">Escalated</span>
-        )}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <button
+          onClick={() => onWhyClick(row.staffId, row.staffName)}
+          className="text-[10px] font-semibold text-primary bg-surface-container rounded-full px-2 py-0.5 hover:bg-surface-container-high transition-colors"
+          title="Why is this person at risk?"
+        >
+          Why?
+        </button>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ring-1 ${RISK_LEVEL_CLS[level]}`}>
+            {row.riskScore}
+          </span>
+          {row.escalationLevel !== 'none' && row.escalationLevel !== 'worker_notified' && (
+            <span className="text-[9px] text-orange-600 font-medium">Escalated</span>
+          )}
+        </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
@@ -156,6 +167,8 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
   const [summary,    setSummary]   = useState<Summary | null>(null)
   const [riskData,   setRiskData]  = useState<RiskScoreResponse | null>(null)
   const [loading,    setLoading]   = useState(true)
+  const [explainId,  setExplainId] = useState<string | null>(null)
+  const [explainName, setExplainName] = useState<string>('')
   const [selected,   setSelected]  = useState<Set<string>>(new Set())
   const [bulkBusy,   setBulkBusy]  = useState(false)
   const [bulkMsg,    setBulkMsg]   = useState<string | null>(null)
@@ -338,7 +351,12 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
                 </p>
                 <div className="divide-y divide-outline-variant/30">
                   {riskData.topRisk.slice(0, 5).map((row, i) => (
-                    <TopRiskRow key={row.staffId} row={row} rank={i + 1} />
+                    <TopRiskRow
+                      key={row.staffId}
+                      row={row}
+                      rank={i + 1}
+                      onWhyClick={(sid, sname) => { setExplainId(sid); setExplainName(sname) }}
+                    />
                   ))}
                 </div>
               </div>
@@ -531,6 +549,12 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
                       {openMenuId === row.staffId && (
                         <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-outline-variant shadow-lg rounded-xl overflow-hidden z-10 py-1" onClick={e => e.stopPropagation()}>
                           <Link href={`/admin/staff/${row.staffId}`} className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left">View Profile</Link>
+                          <button
+                            onClick={() => { setOpenMenuId(null); setExplainId(row.staffId); setExplainName(row.staffName) }}
+                            className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left"
+                          >
+                            Why? (Explain)
+                          </button>
                           <button onClick={() => remindWorker(row)} className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left">Send Reminder</button>
                           {hasRole(userRole || 'care_worker', 'coordinator') && (
                             <button onClick={() => { setOpenMenuId(null); doStatusChange(row.staffId, 'suspended'); }} className="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 w-full text-left">Suspend Worker</button>
@@ -621,6 +645,21 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
           isLoading={bulkBusy}
         />
       )}
+
+      {/* Compliance explain modal — "Why?" drill-down */}
+      <ComplianceExplainModal
+        staffId={explainId ?? ''}
+        staffName={explainName}
+        open={!!explainId}
+        onClose={() => setExplainId(null)}
+        onOverrideGranted={() => {
+          // Refresh risk data after override granted
+          fetch('/api/admin/compliance/risk-score')
+            .then((r) => r.json() as Promise<RiskScoreResponse>)
+            .then(setRiskData)
+            .catch(() => null)
+        }}
+      />
     </div>
   )
 }

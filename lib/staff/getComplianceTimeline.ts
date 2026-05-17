@@ -14,6 +14,10 @@ export type ComplianceEventType =
   | 'expired'
   | 'reminder_sent'
   | 'renewed'
+  | 'escalated'
+  | 'override_granted'
+  | 'override_revoked'
+  | 'shift_blocked'
 
 export interface ComplianceEvent {
   id:        string
@@ -24,12 +28,16 @@ export interface ComplianceEvent {
 }
 
 const ACTION_MAP: Record<string, ComplianceEventType> = {
-  'document.uploaded':   'uploaded',
-  'document.approved':   'approved',
-  'document.rejected':   'rejected',
-  'document.superseded': 'superseded',
-  'compliance.reminder': 'reminder_sent',
-  'document.renewed':    'renewed',
+  'document.uploaded':            'uploaded',
+  'document.approved':            'approved',
+  'document.rejected':            'rejected',
+  'document.superseded':          'superseded',
+  'compliance.reminder':          'reminder_sent',
+  'document.renewed':             'renewed',
+  'compliance.escalation':        'escalated',
+  'compliance.override_granted':  'override_granted',
+  'compliance.override_revoked':  'override_revoked',
+  'compliance.override_used':     'override_granted',
 }
 
 function labelFor(eventType: ComplianceEventType, meta: Record<string, unknown>): string {
@@ -45,6 +53,19 @@ function labelFor(eventType: ComplianceEventType, meta: Record<string, unknown>)
     case 'expired':        return `Certificate expired${trainingCat ? `: ${trainingCat.replace(/_/g, ' ')}` : docType ? `: ${docType.replace(/_/g, ' ')}` : ''}`
     case 'reminder_sent':  return `Compliance reminder sent${subject ? ` — ${subject}` : ''}`
     case 'renewed':        return `Certificate renewed${trainingCat ? `: ${trainingCat.replace(/_/g, ' ')}` : ''}`
+    case 'escalated': {
+      const level = String(meta?.level ?? '')
+      const days  = meta?.days_non_compliant
+      return `Escalated: ${level.replace(/_/g, ' ')}${days !== undefined ? ` (${days}d non-compliant)` : ''}`
+    }
+    case 'override_granted': {
+      const reason = String(meta?.reason ?? meta?.override_reason ?? '')
+      return `Override granted${reason ? ` — ${reason.slice(0, 60)}${reason.length > 60 ? '…' : ''}` : ''}`
+    }
+    case 'override_revoked':
+      return 'Compliance override revoked'
+    case 'shift_blocked':
+      return 'Shift assignment blocked — compliance'
     default:               return 'Compliance event'
   }
 }

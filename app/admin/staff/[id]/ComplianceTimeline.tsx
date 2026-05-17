@@ -21,23 +21,31 @@ function fmtTs(iso: string): string {
 }
 
 const EVENT_DOT_CLS: Record<ComplianceEventType, string> = {
-  uploaded:       'bg-blue-400',
-  approved:       'bg-green-500',
-  rejected:       'bg-red-500',
-  superseded:     'bg-gray-400',
-  expired:        'bg-orange-500',
-  reminder_sent:  'bg-indigo-400',
-  renewed:        'bg-teal-500',
+  uploaded:        'bg-blue-400',
+  approved:        'bg-green-500',
+  rejected:        'bg-red-500',
+  superseded:      'bg-gray-400',
+  expired:         'bg-orange-500',
+  reminder_sent:   'bg-indigo-400',
+  renewed:         'bg-teal-500',
+  escalated:       'bg-red-600',
+  override_granted: 'bg-orange-400',
+  override_revoked: 'bg-gray-500',
+  shift_blocked:   'bg-red-800',
 }
 
 const EVENT_ICON: Record<ComplianceEventType, string> = {
-  uploaded:       '📤',
-  approved:       '✅',
-  rejected:       '❌',
-  superseded:     '🔄',
-  expired:        '⚠️',
-  reminder_sent:  '📧',
-  renewed:        '🆕',
+  uploaded:        '📤',
+  approved:        '✅',
+  rejected:        '❌',
+  superseded:      '🔄',
+  expired:         '⚠️',
+  reminder_sent:   '📧',
+  renewed:         '🆕',
+  escalated:       '🚨',
+  override_granted: '🛡️',
+  override_revoked: '🔒',
+  shift_blocked:   '🚫',
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────

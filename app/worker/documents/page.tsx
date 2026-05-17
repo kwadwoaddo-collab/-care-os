@@ -28,6 +28,17 @@ interface Requirements {
   requiredDocs:        string[]
   uploadedDocTypes:    string[]
   missingDocs:         string[]
+  // Compliance explainability fields
+  complianceState?:      string
+  compliancePercentage?: number
+  primaryBlocker?:       string | null
+  stateExplanation?:     string
+  nextActions?: Array<{
+    label:  string
+    action: string
+    status: string
+    impact: string
+  }>
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -117,6 +128,76 @@ function DocCard({ d }: { d: WorkerDocument }) {
         <p className="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">
           <strong>Reason:</strong> {d.review_notes}
         </p>
+      )}
+    </div>
+  )
+}
+
+// ── Compliance status panel ────────────────────────────────────────────────────
+
+function ComplianceStatusPanel({ reqs }: { reqs: Requirements }) {
+  const state      = reqs.complianceState ?? 'compliant'
+  const percentage = reqs.compliancePercentage ?? 100
+
+  if (state === 'compliant') return null   // only show if there's something to explain
+
+  const stateConfig: Record<string, { bg: string; border: string; icon: string; title: string; iconCls: string }> = {
+    blocked:       { bg: 'bg-red-50',    border: 'border-red-200',    icon: '🚫', title: 'Blocked from shifts',  iconCls: 'text-red-600' },
+    non_compliant: { bg: 'bg-orange-50', border: 'border-orange-200', icon: '⚠️', title: 'Action required',      iconCls: 'text-orange-600' },
+    warning:       { bg: 'bg-amber-50',  border: 'border-amber-200',  icon: '🗓',  title: 'Credentials expiring', iconCls: 'text-amber-600' },
+  }
+
+  const cfg = stateConfig[state] ?? stateConfig['non_compliant']!
+
+  return (
+    <div className={`rounded-xl border p-4 space-y-3 ${cfg.bg} ${cfg.border}`}>
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{cfg.icon}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-gray-900">{cfg.title}</p>
+          {reqs.stateExplanation && (
+            <p className="text-xs text-gray-700 mt-0.5">{reqs.stateExplanation}</p>
+          )}
+        </div>
+        <div className="flex-shrink-0 text-right">
+          <div className="text-lg font-bold text-gray-800 tabular-nums">{percentage}%</div>
+          <div className="text-[10px] text-gray-500 uppercase tracking-wide">compliant</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2 bg-white rounded-full overflow-hidden border border-gray-100">
+        <div
+          className={`h-full rounded-full transition-all ${
+            state === 'blocked'       ? 'bg-red-500' :
+            state === 'non_compliant' ? 'bg-orange-500' :
+            'bg-amber-400'
+          }`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
+      {/* Primary blocker */}
+      {reqs.primaryBlocker && (
+        <p className="text-xs font-medium text-gray-700">
+          <strong>Primary issue:</strong> {reqs.primaryBlocker}
+        </p>
+      )}
+
+      {/* Next actions */}
+      {reqs.nextActions && reqs.nextActions.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">What to do next:</p>
+          {reqs.nextActions.map((action, i) => (
+            <div key={i} className="flex items-start gap-2 bg-white/70 rounded-lg px-3 py-2 border border-gray-100">
+              <span className="text-xs font-bold text-gray-400 w-4 mt-0.5">{i + 1}.</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-800">{action.label}</p>
+                <p className="text-xs text-gray-600 mt-0.5">{action.action}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
@@ -327,6 +408,9 @@ export default function WorkerDocumentsPage() {
           View checklist →
         </Link>
       </div>
+
+      {/* Compliance status + explainability panel */}
+      {reqs && <ComplianceStatusPanel reqs={reqs} />}
 
       {/* Missing / pending compliance banner */}
       {reqs && <MissingBanner reqs={reqs} />}

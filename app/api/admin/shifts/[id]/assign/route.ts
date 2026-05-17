@@ -7,6 +7,7 @@ import {
 import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
+import { explainShiftBlock }       from '@/lib/compliance/explainability'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { sendNotification } from '@/lib/notifications/sendNotification'
 import { createNotification } from '@/lib/notifications/createNotification'
@@ -118,17 +119,65 @@ export async function PATCH(
 
     const compliance = calculateCompliance(docs, (staff as { job_role?: string | null }).job_role ?? null)
 
+    // Check for active compliance override (allows blocked staff to be assigned)
+    const nowIso = new Date().toISOString()
+    const { data: activeOverride } = await adminClient
+      .from('compliance_overrides')
+      .select('id, reason, expires_at')
+      .eq('company_id', companyId)
+      .eq('staff_profile_id', staff.id)
+      .is('revoked_at', null)
+      .gt('expires_at', nowIso)
+      .limit(1)
+      .maybeSingle()
+
     // Readiness
     const availRaw = availRes.data?.find(a => (a as any).staff_profile_id === staff.id)
     const availability = availRaw ? parseAvailabilityRecord(staff.id, availRaw as Record<string, unknown>) : null
-    const readiness = calculateReadiness(staff.status, compliance.compliant, availability)
+
+    // If there's an active override, treat compliance as passing
+    const effectivelyCompliant = compliance.compliant || !!activeOverride
+    const readiness = calculateReadiness(staff.status, effectivelyCompliant, availability)
 
     if (!readiness.ready) {
+      // Generate detailed blocking explanation
+      const blockExplanation = explainShiftBlock(
+        compliance.complianceState,
+        compliance.missingDocuments,
+        compliance.expiredDocuments,
+        compliance.missingTraining,
+        compliance.expiredTraining,
+        staff.status,
+      )
+
       return NextResponse.json({
-        error:    `Staff ${staff.first_name} is not ready — resolve compliance or availability issues first`,
-        blockers: readiness.blockers,
-        warnings: readiness.warnings,
+        error:       `${staff.first_name} cannot be assigned — compliance issues must be resolved first`,
+        blockers:    readiness.blockers,
+        warnings:    readiness.warnings,
+        blockDetail: blockExplanation,
+        staffId:     staff.id,
+        overrideable: blockExplanation.overrideable,
+        overrideHint: blockExplanation.overrideable
+          ? `A compliance_manager or company_admin can grant a temporary override at /admin/staff/${staff.id}`
+          : null,
       }, { status: 422 })
+    }
+
+    // Log if override was used
+    if (activeOverride && !compliance.compliant) {
+      complianceWarning = true
+      void adminClient.from('audit_logs').insert({
+        company_id:  companyId,
+        actor_id:    null,
+        action:      'compliance.override_used',
+        entity_type: 'shift',
+        entity_id:   shiftId,
+        metadata: {
+          staff_id:    staff.id,
+          override_id: activeOverride.id,
+          override_reason: activeOverride.reason,
+        },
+      })
     }
 
     // Overlaps

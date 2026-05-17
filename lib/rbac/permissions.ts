@@ -65,6 +65,9 @@ export const PERMISSIONS = [
 
   // Role management (company_admin + super_admin only)
   'roles:write',
+
+  // Compliance overrides (registered_manager + company_admin + super_admin)
+  'compliance:override',
 ] as const
 
 export type Permission = typeof PERMISSIONS[number]
@@ -126,6 +129,7 @@ const REGISTERED_MANAGER_PERMISSIONS: PermSet = new Set<Permission>([
   'documents:read',
   'documents:upload',
   'compliance:read',
+  'compliance:override',
   'safeguarding:read',
   'clients:read',
   'care_packages:read',
@@ -152,6 +156,7 @@ const COMPANY_ADMIN_PERMISSIONS: PermSet = new Set<Permission>([
   'documents:read',
   'documents:upload',
   'compliance:read',
+  'compliance:override',
   'safeguarding:read',
   'clients:read',
   'clients:write',
