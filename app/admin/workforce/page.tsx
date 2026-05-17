@@ -150,6 +150,22 @@ export default async function WorkforcePage() {
     })
   }
 
+  if (canSeeStaff) {
+    sections.push({
+      label: 'Capacity Intelligence',
+      icon: 'monitoring',
+      cards: [
+        {
+          href: '/admin/workforce/capacity',
+          icon: 'monitoring',
+          title: 'Workforce Capacity',
+          description: 'Deployability scores, shift coverage gaps, and operational pressure across the workforce.',
+          badge: 'new',
+        },
+      ],
+    })
+  }
+
   return (
     <div className="space-y-8">
 
