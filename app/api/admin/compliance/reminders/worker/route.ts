@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const snap = buildComplianceSnapshot(docs)
+    const snap = buildComplianceSnapshot(docs, s.job_role ?? null)
 
     // Skip compliant staff (unless explicitly targeted)
     if (snap.state === 'compliant' && staffIds.length === 0) {

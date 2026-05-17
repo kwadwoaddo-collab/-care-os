@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { StaffComplianceRow, StaffComplianceResponse } from '@/app/api/admin/compliance/staff/route'
+import type { RiskScoreResponse, RiskStaffRow } from '@/app/api/admin/compliance/risk-score/route'
 import { COMPLIANCE_STATE_CLS, COMPLIANCE_STATE_LABEL } from '@/lib/compliance/buildComplianceSnapshot'
 import { BAND_CLS, type ExpiryBand } from '@/lib/compliance/expiryBands'
+import { RISK_LEVEL_CLS, RISK_LEVEL_LABEL } from '@/lib/compliance/riskScore'
 import { TerminationModal, type TerminationData } from '@/components/admin/TerminationModal'
 import { hasRole } from '@/lib/rbac/roles'
 import StatusBadge, { staffStatusVariant } from '@/components/ui/StatusBadge'
@@ -21,6 +23,78 @@ interface Summary {
   total: number; compliant: number; warning: number
   non_compliant: number; blocked: number
   expiring7d: number; expiring14d: number; expiring30d: number
+}
+
+// ── Risk score gauge ──────────────────────────────────────────────────────────
+
+function RiskScoreGauge({ score, riskLevel }: { score: number; riskLevel: string }) {
+  const level = riskLevel as 'low' | 'medium' | 'high' | 'critical'
+  const strokeColor =
+    level === 'critical' ? '#ef4444' :
+    level === 'high'     ? '#f97316' :
+    level === 'medium'   ? '#eab308' :
+    '#22c55e'
+
+  const circumference = 2 * Math.PI * 36
+  const dashOffset    = circumference * (1 - score / 100)
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative w-24 h-24">
+        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="36" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+          <circle
+            cx="40" cy="40" r="36"
+            stroke={strokeColor}
+            strokeWidth="8"
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold text-primary tabular-nums">{score}</span>
+          <span className="text-[9px] text-on-surface-variant uppercase tracking-wider">score</span>
+        </div>
+      </div>
+      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ring-1 ${RISK_LEVEL_CLS[level]}`}>
+        {RISK_LEVEL_LABEL[level]}
+      </span>
+    </div>
+  )
+}
+
+// ── Top-risk staff row ────────────────────────────────────────────────────────
+
+function TopRiskRow({ row, rank }: { row: RiskStaffRow; rank: number }) {
+  const level = row.riskLevel as 'low' | 'medium' | 'high' | 'critical'
+  return (
+    <Link
+      href={`/admin/staff/${row.staffId}`}
+      className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-surface-container-low transition-colors group"
+    >
+      <span className="text-xs font-bold text-on-surface-variant w-5 text-center">{rank}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-primary truncate group-hover:underline">{row.staffName}</p>
+        <p className="text-xs text-on-surface-variant truncate">
+          {row.jobRole?.replace(/_/g, ' ') ?? 'Staff'}
+          {row.nonCompliantDays > 0 && (
+            <span className="ml-1 text-orange-600">· {row.nonCompliantDays}d non-compliant</span>
+          )}
+        </p>
+      </div>
+      <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ring-1 ${RISK_LEVEL_CLS[level]}`}>
+          {row.riskScore}
+        </span>
+        {row.escalationLevel !== 'none' && row.escalationLevel !== 'worker_notified' && (
+          <span className="text-[9px] text-orange-600 font-medium">Escalated</span>
+        )}
+      </div>
+    </Link>
+  )
 }
 
 // ── Filter chip definitions ───────────────────────────────────────────────────
@@ -78,15 +152,24 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
   const currentFilter = (searchParams.get('filter') ?? '') as FilterKey
   const currentSearch = searchParams.get('search') ?? ''
 
-  const [data,      setData]     = useState<StaffComplianceRow[]>([])
-  const [summary,   setSummary]  = useState<Summary | null>(null)
-  const [loading,   setLoading]  = useState(true)
-  const [selected,  setSelected] = useState<Set<string>>(new Set())
-  const [bulkBusy,  setBulkBusy] = useState(false)
-  const [bulkMsg,   setBulkMsg]  = useState<string | null>(null)
-  const [search,    setSearch]   = useState(currentSearch)
+  const [data,       setData]      = useState<StaffComplianceRow[]>([])
+  const [summary,    setSummary]   = useState<Summary | null>(null)
+  const [riskData,   setRiskData]  = useState<RiskScoreResponse | null>(null)
+  const [loading,    setLoading]   = useState(true)
+  const [selected,   setSelected]  = useState<Set<string>>(new Set())
+  const [bulkBusy,   setBulkBusy]  = useState(false)
+  const [bulkMsg,    setBulkMsg]   = useState<string | null>(null)
+  const [search,     setSearch]    = useState(currentSearch)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [staffToTerminate, setStaffToTerminate] = useState<StaffComplianceRow | null>(null)
+
+  // Fetch org risk score on mount
+  useEffect(() => {
+    fetch('/api/admin/compliance/risk-score')
+      .then((r) => r.json() as Promise<RiskScoreResponse>)
+      .then(setRiskData)
+      .catch(() => null)
+  }, [])
 
   useEffect(() => {
     const clickHandler = () => setOpenMenuId(null)
@@ -221,6 +304,48 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
+
+      {/* Risk Overview — global health score + top-risk staff */}
+      {riskData && (
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-card-padding">
+          <div className="flex items-start justify-between gap-6 flex-wrap">
+
+            {/* Left: gauge + breakdown */}
+            <div className="flex items-center gap-6">
+              <RiskScoreGauge score={riskData.orgHealthScore} riskLevel={riskData.orgRiskLevel} />
+              <div>
+                <h3 className="text-sm font-semibold text-primary">Org Compliance Health</h3>
+                <p className="text-xs text-on-surface-variant mt-0.5 max-w-xs">
+                  {riskData.orgRiskLevel === 'critical' && 'Critical issues require immediate action.'}
+                  {riskData.orgRiskLevel === 'high'     && 'High risk — multiple staff need attention.'}
+                  {riskData.orgRiskLevel === 'medium'   && 'Some compliance gaps exist — review expiries.'}
+                  {riskData.orgRiskLevel === 'low'      && 'Team compliance is in good shape.'}
+                </p>
+                <div className="flex flex-wrap gap-3 mt-3 text-xs text-on-surface-variant">
+                  <span><strong className="text-green-600">{riskData.breakdown.compliant}</strong> compliant</span>
+                  <span><strong className="text-yellow-600">{riskData.breakdown.warning}</strong> warning</span>
+                  <span><strong className="text-orange-600">{riskData.breakdown.nonCompliant}</strong> non-compliant</span>
+                  <span><strong className="text-red-600">{riskData.breakdown.blocked}</strong> blocked</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: top-risk staff list */}
+            {riskData.topRisk.length > 0 && (
+              <div className="flex-1 min-w-[260px]">
+                <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1 px-3">
+                  Highest Risk Staff
+                </p>
+                <div className="divide-y divide-outline-variant/30">
+                  {riskData.topRisk.slice(0, 5).map((row, i) => (
+                    <TopRiskRow key={row.staffId} row={row} rank={i + 1} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Summary stat cards */}
       {summary && (

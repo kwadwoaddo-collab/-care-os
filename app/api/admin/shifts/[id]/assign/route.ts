@@ -65,7 +65,7 @@ export async function PATCH(
   // ── Validate all staff candidates ──────────────────────────────────────────
   const { data: staffList, error: staffListErr } = await adminClient
     .from('staff_profiles')
-    .select('id, company_id, status, applicant_id, first_name, last_name, email, receive_shift_emails')
+    .select('id, company_id, status, applicant_id, first_name, last_name, email, receive_shift_emails, job_role')
     .in('id', targetStaffIds!)
     .eq('company_id', companyId)
 
@@ -116,7 +116,7 @@ export async function PATCH(
       ...(appDocsRes.data?.filter(d => (d as any).applicant_id === staff.applicant_id) ?? [])
     ] as unknown as ComplianceDocument[]
 
-    const compliance = calculateCompliance(docs)
+    const compliance = calculateCompliance(docs, (staff as { job_role?: string | null }).job_role ?? null)
 
     // Readiness
     const availRaw = availRes.data?.find(a => (a as any).staff_profile_id === staff.id)

@@ -87,7 +87,7 @@ export async function GET() {
   // ── Fetch staff profiles for this company ──────────────────────────────────
   const { data: staff, error: staffError } = await adminClient
     .from('staff_profiles')
-    .select('id, first_name, last_name, email, status, applicant_id')
+    .select('id, first_name, last_name, email, job_role, status, applicant_id')
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
 
@@ -178,7 +178,7 @@ export async function GET() {
       }
     }
 
-    const snap = buildComplianceSnapshot(docs)
+    const snap = buildComplianceSnapshot(docs, (s as { job_role?: string | null }).job_role ?? null)
     const name = staffName(s.first_name, s.last_name, s.email)
 
     totalPercentage += snap.percentage

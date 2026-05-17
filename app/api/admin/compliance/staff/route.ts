@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const snap = buildComplianceSnapshot(docs)
+    const snap = buildComplianceSnapshot(docs, s.job_role ?? null)
 
     // Build expiring-soon items with band detail
     const expiringItems: ExpiringItem[] = []

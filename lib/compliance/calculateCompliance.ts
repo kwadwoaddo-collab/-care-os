@@ -2,8 +2,8 @@ import {
   REQUIRED_DOCUMENTS,
   REQUIRED_TRAINING,
   EXPIRY_WARN_DAYS,
-  type RequiredTraining,
 } from './requirements'
+import { getRequiredTraining } from '@/lib/training/matrix'
 
 // ── Compliance State ──────────────────────────────────────────────────────────
 //
@@ -81,12 +81,12 @@ function isExpiringSoon(expiryDate: string | null): boolean {
 // valid (the admin chose not to set one).
 
 interface TrainingResolution {
-  satisfied: RequiredTraining[]
-  expired:   RequiredTraining[]
-  missing:   RequiredTraining[]
+  satisfied: string[]
+  expired:   string[]
+  missing:   string[]
 }
 
-function resolveTraining(documents: ComplianceDocument[]): TrainingResolution {
+function resolveTraining(documents: ComplianceDocument[], requiredCategories: string[]): TrainingResolution {
   const approvedCerts = documents.filter(
     (d) =>
       d.document_type   === 'training_certificate' &&
@@ -94,11 +94,11 @@ function resolveTraining(documents: ComplianceDocument[]): TrainingResolution {
       d.training_category !== null
   )
 
-  const satisfied: RequiredTraining[] = []
-  const expired:   RequiredTraining[] = []
-  const missing:   RequiredTraining[] = []
+  const satisfied: string[] = []
+  const expired:   string[] = []
+  const missing:   string[] = []
 
-  for (const category of REQUIRED_TRAINING) {
+  for (const category of requiredCategories) {
     // All approved certs for this category
     const matching = approvedCerts
       .filter((d) => d.training_category === category)
@@ -137,7 +137,8 @@ function resolveTraining(documents: ComplianceDocument[]): TrainingResolution {
 // ── Main calculator ───────────────────────────────────────────────────────────
 
 export function calculateCompliance(
-  documents: ComplianceDocument[]
+  documents: ComplianceDocument[],
+  jobRole?: string | null
 ): ComplianceSummary {
   const missingDocuments:  string[] = []
   const expiredDocuments:  string[] = []
@@ -163,14 +164,18 @@ export function calculateCompliance(
   }
 
   // ── Training checks (category-based, approval-aware) ───────────────────────
-  const { satisfied, expired: expiredT, missing: missingT } = resolveTraining(documents)
+  // Use role-specific training requirements when jobRole is provided
+  const requiredTrainingCategories: string[] = jobRole
+    ? getRequiredTraining(jobRole)
+    : [...REQUIRED_TRAINING]
+  const { satisfied, expired: expiredT, missing: missingT } = resolveTraining(documents, requiredTrainingCategories)
 
   // ── Compliance percentage ──────────────────────────────────────────────────
   // Each required item is either compliant or not.
   // Missing + expired documents count as non-compliant.
   // Expiring-soon documents are still compliant (just warned).
   // Missing + expired training counts as non-compliant.
-  const totalRequired  = REQUIRED_DOCUMENTS.length + REQUIRED_TRAINING.length
+  const totalRequired  = REQUIRED_DOCUMENTS.length + requiredTrainingCategories.length
   const totalIssues    = missingDocuments.length + expiredDocuments.length + missingT.length + expiredT.length
   const compliantItems = Math.max(0, totalRequired - totalIssues)
   const percentage     = totalRequired === 0
@@ -183,7 +188,6 @@ export function calculateCompliance(
     missingT.length          === 0 &&
     expiredT.length          === 0
 
-  const allMissing = [...missingDocuments, ...expiredDocuments, ...missingT, ...expiredT]
   const complianceState: ComplianceState = getComplianceState(
     compliant,
     expiringSoon.length > 0,

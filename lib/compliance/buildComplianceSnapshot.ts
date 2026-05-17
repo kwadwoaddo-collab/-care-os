@@ -30,9 +30,10 @@ export interface ComplianceSnapshot extends ComplianceSummary {
 }
 
 export function buildComplianceSnapshot(
-  documents: ComplianceDocument[]
+  documents: ComplianceDocument[],
+  jobRole?: string | null
 ): ComplianceSnapshot {
-  const summary = calculateCompliance(documents)
+  const summary = calculateCompliance(documents, jobRole)
   return {
     ...summary,
     tier:             complianceTier(summary.percentage),

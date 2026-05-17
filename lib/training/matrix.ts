@@ -24,7 +24,6 @@ export const ROLE_TRAINING_MATRIX: Record<string, TrainingCategory[]> = {
     'infection_control',
     'health_safety',
   ],
-  // Senior care workers additionally require medication administration
   senior_care_worker: [
     'manual_handling',
     'safeguarding',
@@ -32,6 +31,45 @@ export const ROLE_TRAINING_MATRIX: Record<string, TrainingCategory[]> = {
     'infection_control',
     'health_safety',
     'medication',
+  ],
+  support_worker: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+  ],
+  community_care_worker: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+  ],
+  nurse: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+    'medication',
+  ],
+  medication_care_worker: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+    'medication',
+  ],
+  team_leader: [
+    'manual_handling',
+    'safeguarding',
+    'basic_life_support',
+    'infection_control',
+    'health_safety',
+    'medication',
+    'fire_safety',
   ],
 }
 
