@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus'
+import { flushQueue, getQueue } from '@/lib/utils/offlineQueue'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +39,13 @@ interface WorkerDocument {
   id:            string
   document_type: string
   expiry_date:   string | null
+}
+
+interface WellbeingData {
+  hours_this_week:  number
+  consecutive_days: number
+  any_concern:      boolean
+  warnings:         string[]
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -141,8 +150,33 @@ export default function WorkerDashboard() {
   const [shifts,     setShifts]     = useState<Shift[]>([])
   const [docs,       setDocs]       = useState<WorkerDocument[]>([])
   const [hoursWeek,  setHoursWeek]  = useState<number | null>(null)
+  const [wellbeing,  setWellbeing]  = useState<WellbeingData | null>(null)
+  const [unread,     setUnread]     = useState(0)
+  const [taskCount,  setTaskCount]  = useState(0)
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState<string | null>(null)
+  const [queued,     setQueued]     = useState(0)
+  const [syncing,    setSyncing]    = useState(false)
+
+  const online = useOnlineStatus()
+
+  const syncOfflineQueue = useCallback(async () => {
+    if (!online) return
+    const q = getQueue()
+    if (q.length === 0) return
+    setSyncing(true)
+    await flushQueue()
+    setQueued(getQueue().length)
+    setSyncing(false)
+  }, [online])
+
+  useEffect(() => {
+    setQueued(getQueue().length)
+  }, [])
+
+  useEffect(() => {
+    if (online) syncOfflineQueue()
+  }, [online, syncOfflineQueue])
 
   useEffect(() => {
     const token = sessionStorage.getItem('worker_token')
@@ -159,17 +193,21 @@ export default function WorkerDashboard() {
       fetch(`/api/worker/shifts?token=${enc}`).then((r) => r.json()),
       fetch(`/api/worker/documents?token=${enc}`).then((r) => r.json()),
       fetch(`/api/worker/timesheets?token=${enc}`).then((r) => r.json()),
+      fetch(`/api/worker/wellbeing?token=${enc}`).then((r) => r.json()).catch(() => null),
+      fetch(`/api/worker/messages?token=${enc}`).then((r) => r.json()).catch(() => null),
+      fetch(`/api/worker/tasks?token=${enc}`).then((r) => r.json()).catch(() => null),
     ])
-      .then(([workerData, shiftsData, docsData, timesheetData]) => {
+      .then(([workerData, shiftsData, docsData, timesheetData, wellbeingData, msgData, taskData]) => {
         const w = workerData as WorkerInfo & { error?: string }
         if (w.error) { setError(w.error); return }
         setWorker(w)
         setShifts(Array.isArray(shiftsData) ? (shiftsData as Shift[]) : [])
         setDocs(Array.isArray(docsData) ? (docsData as WorkerDocument[]) : [])
         const ts = timesheetData as { total_hours?: number; error?: string }
-        if (!ts.error && typeof ts.total_hours === 'number') {
-          setHoursWeek(ts.total_hours)
-        }
+        if (!ts.error && typeof ts.total_hours === 'number') setHoursWeek(ts.total_hours)
+        if (wellbeingData && !wellbeingData.error) setWellbeing(wellbeingData as WellbeingData)
+        if (msgData?.unread_count) setUnread(msgData.unread_count as number)
+        if (taskData?.total_pending) setTaskCount(taskData.total_pending as number)
       })
       .catch(() => setError('Failed to load — please try again.'))
       .finally(() => setLoading(false))
@@ -247,6 +285,22 @@ export default function WorkerDashboard() {
   return (
     <div className="space-y-5 pb-4">
 
+      {/* Offline banner */}
+      {!online && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 text-sm text-amber-700">
+          <span className="text-base shrink-0">📡</span>
+          <span className="flex-1">You are offline. Some features are unavailable.</span>
+        </div>
+      )}
+
+      {/* Sync banner — pending queued actions */}
+      {online && queued > 0 && (
+        <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3.5 py-3 text-sm text-blue-700">
+          <span className="text-base shrink-0">{syncing ? '🔄' : '☁️'}</span>
+          <span className="flex-1">{syncing ? 'Syncing offline actions…' : `${queued} action${queued !== 1 ? 's' : ''} queued to sync.`}</span>
+        </div>
+      )}
+
       {/* Profile header */}
       <div className="bg-white rounded-2xl border border-gray-200 px-4 py-4 flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg flex-shrink-0">
@@ -307,6 +361,49 @@ export default function WorkerDashboard() {
         </div>
       </div>
 
+      {/* Wellbeing alerts */}
+      {wellbeing?.any_concern && wellbeing.warnings.length > 0 && (
+        <section>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3.5 space-y-2">
+            <p className="text-sm font-semibold text-orange-800">Wellbeing notice</p>
+            {wellbeing.warnings.map((w, i) => (
+              <p key={i} className="text-xs text-orange-700 leading-relaxed">{w}</p>
+            ))}
+            <p className="text-xs text-orange-600 font-medium mt-1">If you need support, contact your manager or use the messaging tab.</p>
+          </div>
+        </section>
+      )}
+
+      {/* Task count callout */}
+      {taskCount > 0 && (
+        <Link href="/worker/tasks"
+          className="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3 hover:border-indigo-300 active:scale-[0.98] transition-all">
+          <span className="text-xl shrink-0">📋</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-indigo-900">
+              {taskCount} pending task{taskCount !== 1 ? 's' : ''}
+            </p>
+            <p className="text-xs text-indigo-600">Tap to view and complete</p>
+          </div>
+          <span className="text-indigo-400 text-lg">→</span>
+        </Link>
+      )}
+
+      {/* Unread messages callout */}
+      {unread > 0 && (
+        <Link href="/worker/messages"
+          className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 hover:border-blue-300 active:scale-[0.98] transition-all">
+          <span className="text-xl shrink-0">💬</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-900">
+              {unread} unread message{unread !== 1 ? 's' : ''}
+            </p>
+            <p className="text-xs text-blue-600">Tap to read</p>
+          </div>
+          <span className="text-blue-400 text-lg">→</span>
+        </Link>
+      )}
+
 
       {/* Alerts */}
       {alerts.length > 0 && (
@@ -348,10 +445,31 @@ export default function WorkerDashboard() {
       <section>
         <h2 className="text-sm font-semibold text-gray-700 mb-2">Quick Actions</h2>
         <div className="grid grid-cols-4 gap-2">
-          <QuickAction href="/worker/shifts"       icon="📅" label="My Shifts" />
+          <QuickAction href="/worker/timeline"     icon="🗺️" label="Timeline" />
           <QuickAction href="/worker/availability" icon="🗓" label="Availability" />
           <QuickAction href="/worker/documents"    icon="📤" label="Upload Doc" />
-          <QuickAction href="/worker/shifts"       icon="📝" label="Visit Notes" />
+          <QuickAction href="/worker/performance"  icon="📊" label="My Progress" />
+        </div>
+      </section>
+
+      {/* Safety — emergency access */}
+      <section>
+        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+          <p className="text-xs font-semibold text-gray-500 mb-2">Safety</p>
+          <div className="flex gap-2">
+            <Link
+              href="/worker/safety"
+              className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 active:scale-95 transition-all"
+            >
+              🚨 Emergency Alert
+            </Link>
+            <Link
+              href="/worker/messages"
+              className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 border border-gray-200 text-gray-700 text-xs font-medium rounded-xl hover:bg-gray-50 transition-all"
+            >
+              💬 Contact Coordinator
+            </Link>
+          </div>
         </div>
       </section>
 

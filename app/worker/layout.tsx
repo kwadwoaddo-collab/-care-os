@@ -8,11 +8,11 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const NAV = [
-  { href: '/worker/dashboard',       label: 'Home',          icon: '🏠' },
-  { href: '/worker/onboarding',      label: 'Onboarding',    icon: '✅' },
-  { href: '/worker/documents',       label: 'Documents',     icon: '📄' },
-  { href: '/worker/shifts',          label: 'Shifts',        icon: '📅' },
-  { href: '/worker/messages',        label: 'Messages',      icon: '💬' },
+  { href: '/worker/dashboard',  label: 'Home',     icon: '🏠' },
+  { href: '/worker/tasks',      label: 'Tasks',    icon: '✅' },
+  { href: '/worker/shifts',     label: 'Shifts',   icon: '📅' },
+  { href: '/worker/messages',   label: 'Messages', icon: '💬' },
+  { href: '/worker/documents',  label: 'Docs',     icon: '📄' },
 ]
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {

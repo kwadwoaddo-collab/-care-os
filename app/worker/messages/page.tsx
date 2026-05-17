@@ -94,6 +94,8 @@ function MessagesInner() {
     markRead(msg)
   }
 
+  const urgentMessages = messages.filter(m => m.priority === 'critical' && !m.acknowledged_at)
+
   const filtered = messages.filter(m => {
     if (filter === 'unread')     return !m.read_at
     if (filter === 'compliance') return m.message_type.includes('compliance') || m.message_type.includes('onboarding')
@@ -109,6 +111,33 @@ function MessagesInner() {
           ← Dashboard
         </Link>
       </div>
+
+      {/* Urgent broadcast banners */}
+      {urgentMessages.map(msg => (
+        <div key={msg.id} className="bg-red-600 rounded-xl p-4 space-y-2">
+          <div className="flex items-start gap-2">
+            <span className="text-xl shrink-0">🚨</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white">{msg.subject}</p>
+              <p className="text-xs text-red-100 mt-0.5 line-clamp-2">{msg.body}</p>
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              await fetch(`/api/worker/messages?token=${encodeURIComponent(token)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message_id: msg.id, source: msg.source }),
+              })
+              setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, acknowledged_at: new Date().toISOString(), read_at: m.read_at ?? new Date().toISOString() } : m))
+              setUnread(prev => Math.max(0, prev - 1))
+            }}
+            className="w-full py-2 bg-white text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
+          >
+            Acknowledge — I have read this
+          </button>
+        </div>
+      ))}
 
       <div className="flex items-start justify-between gap-2">
         <div>

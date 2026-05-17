@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useOnlineStatus } from '@/lib/hooks/useOnlineStatus'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -69,7 +70,8 @@ const DEFAULT_TASKS: { task_type: string; task_name: string; sequence_order: num
 function VisitExecutionInner() {
   const { shiftId } = useParams<{ shiftId: string }>()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token') ?? (typeof window !== 'undefined' ? sessionStorage.getItem('worker_token') ?? '' : '')
+  const token  = searchParams.get('token') ?? (typeof window !== 'undefined' ? sessionStorage.getItem('worker_token') ?? '' : '')
+  const online = useOnlineStatus()
 
   const [phase,     setPhase]     = useState<Phase>('guidance')
   const [guidance,  setGuidance]  = useState<Guidance | null>(null)
@@ -176,7 +178,19 @@ function VisitExecutionInner() {
   }
 
   if (loading) return <div className="flex items-center justify-center py-24"><span className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" /></div>
-  if (error)   return <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700"><p>{error}</p><Link href="/worker/shifts" className="text-sm text-red-600 underline mt-2 inline-block">Back to shifts</Link></div>
+  if (error)   return (
+    <div className="space-y-3">
+      {!online && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 text-sm text-amber-700">
+          <span>📡</span><span>You are offline. Visit data may be unavailable.</span>
+        </div>
+      )}
+      <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">
+        <p>{error}</p>
+        <Link href="/worker/shifts" className="text-sm text-red-600 underline mt-2 inline-block">Back to shifts</Link>
+      </div>
+    </div>
+  )
 
   const g = guidance!
   const clientName = g.client ? `${g.client.first_name} ${g.client.last_name}` : g.shift.title
@@ -193,9 +207,23 @@ function VisitExecutionInner() {
 
   return (
     <div className="space-y-4 pb-24">
+      {/* Offline warning */}
+      {!online && (
+        <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3 text-sm text-amber-700">
+          <span className="shrink-0">📡</span>
+          <span>You are offline. Actions will be saved when you reconnect.</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
         <Link href="/worker/shifts" className="text-sm text-gray-500 hover:text-gray-900">← Shifts</Link>
+        <Link
+          href="/worker/safety"
+          className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 active:scale-95 transition-all"
+        >
+          🚨 Safety
+        </Link>
       </div>
 
       <div>
@@ -261,6 +289,24 @@ function VisitExecutionInner() {
             </div>
           )}
 
+          {/* Key risks */}
+          {g.client?.risk_level && g.client.risk_level !== 'standard' && (
+            <div className={`rounded-xl border p-4 ${g.client.risk_level === 'critical' ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-300'}`}>
+              <p className="text-sm font-bold text-gray-800 mb-1">
+                {g.client.risk_level === 'critical' ? '⚠️ Critical risk client' : '⚠️ High risk client'}
+              </p>
+              <p className="text-xs text-gray-600">Follow all care plan instructions precisely. Escalate any concerns immediately.</p>
+            </div>
+          )}
+
+          {/* Care package context */}
+          {g.care_package && (
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-800 mb-1">Care package</p>
+              <p className="text-sm text-gray-700">{g.care_package.title}</p>
+            </div>
+          )}
+
           {/* Escalation contacts */}
           {g.escalation_contacts.length > 0 && (
             <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
@@ -271,7 +317,7 @@ function VisitExecutionInner() {
                     <p className="font-medium text-gray-700">{c.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{c.role}</p>
                   </div>
-                  <a href={`mailto:${c.email}`} className="text-indigo-600 text-xs hover:underline">{c.email}</a>
+                  <a href={`tel:${c.email}`} className="text-indigo-600 text-xs hover:underline">{c.email}</a>
                 </div>
               ))}
             </div>
