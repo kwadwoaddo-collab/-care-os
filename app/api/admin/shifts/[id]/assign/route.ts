@@ -8,9 +8,11 @@ import { parseAvailabilityRecord } from '@/lib/staff/types'
 import { calculateReadiness }      from '@/lib/staff/calculateReadiness'
 import { hasShiftOverlap }         from '@/lib/shifts/hasShiftOverlap'
 import { explainShiftBlock }       from '@/lib/compliance/explainability'
-import { requireAdmin } from '@/lib/auth/requireAdmin'
-import { sendNotification } from '@/lib/notifications/sendNotification'
-import { createNotification } from '@/lib/notifications/createNotification'
+import { requireAdmin }            from '@/lib/auth/requireAdmin'
+import { sendNotification }        from '@/lib/notifications/sendNotification'
+import { createNotification }      from '@/lib/notifications/createNotification'
+import { checkRestPeriod, checkConsecutiveDays } from '@/lib/scheduling/restPeriod'
+import type { ShiftSpan }          from '@/lib/shifts/hasShiftOverlap'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -76,26 +78,38 @@ export async function PATCH(
 
   // Fetch docs for all
   const applicantIds = staffList.map(s => s.applicant_id).filter(Boolean) as string[]
-  const [staffDocsRes, appDocsRes, availRes, nearbyShiftsRes] = await Promise.all([
+
+  const shiftDateStr  = shift.shift_date as string
+  const sdParts       = shiftDateStr.split('-').map(Number) as [number, number, number]
+  const shiftBaseDay  = new Date(Date.UTC(sdParts[0], sdParts[1] - 1, sdParts[2]))
+  const overlapBefore = new Date(shiftBaseDay); overlapBefore.setUTCDate(shiftBaseDay.getUTCDate() - 1)
+  const overlapAfter  = new Date(shiftBaseDay); overlapAfter.setUTCDate(shiftBaseDay.getUTCDate() + 1)
+  // 7-day window for consecutive days and rest period checks
+  const fatigueBefore = new Date(shiftBaseDay); fatigueBefore.setUTCDate(shiftBaseDay.getUTCDate() - 7)
+  const fatigueAfter  = new Date(shiftBaseDay); fatigueAfter.setUTCDate(shiftBaseDay.getUTCDate() + 2)
+
+  const [staffDocsRes, appDocsRes, availRes, nearbyShiftsRes, fatigueShiftsRes] = await Promise.all([
     adminClient.from('documents').select('id, document_type, file_name, expiry_date, staff_profile_id').in('staff_profile_id', targetStaffIds!),
     applicantIds.length > 0 ? adminClient.from('documents').select('id, document_type, file_name, expiry_date, applicant_id').in('applicant_id', applicantIds) : Promise.resolve({ data: [] }),
     adminClient.from('staff_availability').select('*').in('staff_profile_id', targetStaffIds!),
-    // Overlap check scope
-    (async () => {
-      const shiftDate = shift.shift_date as string
-      const dateParts = shiftDate.split('-').map(Number) as [number, number, number]
-      const baseDay   = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]))
-      const dayBefore = new Date(baseDay); dayBefore.setUTCDate(baseDay.getUTCDate() - 1)
-      const dayAfter  = new Date(baseDay); dayAfter.setUTCDate(baseDay.getUTCDate() + 1)
-      return adminClient
-        .from('shifts')
-        .select('id, shift_date, start_time, end_time, assigned_staff_id')
-        .in('assigned_staff_id', targetStaffIds!)
-        .gte('shift_date', dayBefore.toISOString().slice(0, 10))
-        .lte('shift_date', dayAfter.toISOString().slice(0, 10))
-        .neq('status', 'cancelled')
-        .neq('id', shiftId)
-    })()
+    // ±1 day for overlap
+    adminClient
+      .from('shifts')
+      .select('id, shift_date, start_time, end_time, assigned_staff_id')
+      .in('assigned_staff_id', targetStaffIds!)
+      .gte('shift_date', overlapBefore.toISOString().slice(0, 10))
+      .lte('shift_date', overlapAfter.toISOString().slice(0, 10))
+      .neq('status', 'cancelled')
+      .neq('id', shiftId),
+    // 7-day window for fatigue checks
+    adminClient
+      .from('shifts')
+      .select('shift_date, start_time, end_time, assigned_staff_id')
+      .in('assigned_staff_id', targetStaffIds!)
+      .gte('shift_date', fatigueBefore.toISOString().slice(0, 10))
+      .lte('shift_date', fatigueAfter.toISOString().slice(0, 10))
+      .neq('status', 'cancelled')
+      .neq('id', shiftId),
   ])
 
   const targetSpan = {
@@ -180,9 +194,9 @@ export async function PATCH(
       })
     }
 
-    // Overlaps
-    const existingSpans = (nearbyShiftsRes.data ?? [])
-      .filter(s => (s as any).assigned_staff_id === staff.id)
+    // Overlaps (±1 day window)
+    const existingSpans: ShiftSpan[] = (nearbyShiftsRes.data ?? [])
+      .filter(s => (s as Record<string, unknown>).assigned_staff_id === staff.id)
       .map((s) => ({
         shift_date: s.shift_date as string,
         start_time: s.start_time as string,
@@ -190,8 +204,41 @@ export async function PATCH(
       }))
 
     if (hasShiftOverlap(targetSpan, existingSpans)) {
-      return NextResponse.json({ error: `Staff ${staff.first_name} has an overlapping shift` }, { status: 422 })
+      return NextResponse.json({ error: `${staff.first_name} has an overlapping shift on this date` }, { status: 422 })
     }
+
+    // Fatigue checks (7-day window for rest period + consecutive days)
+    const fatigueSpans: ShiftSpan[] = (fatigueShiftsRes.data ?? [])
+      .filter(s => (s as Record<string, unknown>).assigned_staff_id === staff.id)
+      .map((s) => ({
+        shift_date: s.shift_date as string,
+        start_time: s.start_time as string,
+        end_time:   s.end_time   as string,
+      }))
+
+    const restResult = checkRestPeriod(targetSpan, fatigueSpans)
+    if (restResult.level === 'block') {
+      return NextResponse.json({
+        error:            `${staff.first_name}: ${restResult.message}`,
+        rule:             'rest_period',
+        gapMinutes:       restResult.gapMinutes,
+        overrideable:     true,
+        overrideHint:     `A registered_manager or company_admin can override rest period checks in exceptional circumstances.`,
+      }, { status: 422 })
+    }
+    if (restResult.level === 'warn') complianceWarning = true
+
+    const consecResult = checkConsecutiveDays(targetSpan.shift_date, fatigueSpans)
+    if (consecResult.level === 'block') {
+      return NextResponse.json({
+        error:            `${staff.first_name}: ${consecResult.message}`,
+        rule:             'consecutive_days',
+        consecutiveDays:  consecResult.consecutiveDays,
+        overrideable:     true,
+        overrideHint:     `A registered_manager or company_admin can override consecutive day limits.`,
+      }, { status: 422 })
+    }
+    if (consecResult.level === 'warn') complianceWarning = true
 
     const now = Date.now()
     const expSoon = docs.some(d => {
@@ -258,7 +305,13 @@ export async function PATCH(
         action:      isDirectAssign ? 'shift.assigned' : 'shift.offered',
         entity_type: 'shift',
         entity_id:   shiftId,
-        metadata:    { targetStaffIds }
+        metadata:    {
+          target_staff_ids: targetStaffIds,
+          compliance_warning: complianceWarning,
+          shift_date:  shift.shift_date,
+          shift_title: shift.title,
+          assignment_type: isDirectAssign ? 'direct' : 'broadcast',
+        },
       })
     } catch { /* ignore */ }
 
