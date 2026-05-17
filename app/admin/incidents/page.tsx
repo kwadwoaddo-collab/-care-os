@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CreateIncidentButton from './CreateIncidentButton'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import Pagination  from '@/components/admin/Pagination'
 import IncidentsDashboardDesktop from '@/components/admin/IncidentsDashboardDesktop'
@@ -22,6 +23,8 @@ interface IncidentRow {
   description:         string
   escalation_required: boolean
   created_at:          string
+  risk_score:          number | null
+  risk_classification: string | null
   clients:             { id: string; first_name: string; last_name: string } | null
   staff_profiles:      { id: string; first_name: string | null; last_name: string | null } | null
 }
@@ -130,6 +133,17 @@ export default async function IncidentsPage({
         title="Incidents"
         subtitle={`${meta.total} incident${meta.total !== 1 ? 's' : ''}`}
       />
+
+      {/* Mobile intelligence shortcut */}
+      <div className="lg:hidden">
+        <Link
+          href="/admin/incidents/intelligence"
+          className="flex items-center gap-2 w-full rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+        >
+          <span className="text-base">📊</span>
+          View Safeguarding Intelligence
+        </Link>
+      </div>
 
       {incidents.length === 0 ? (
         <>

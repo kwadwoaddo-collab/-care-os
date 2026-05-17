@@ -258,13 +258,13 @@ export default function IncidentsDashboardDesktop({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              type="button"
+            <Link
+              href="/admin/incidents/intelligence"
               className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-white text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">download</span>
-              Export Report
-            </button>
+              <span className="material-symbols-outlined text-[16px]">insights</span>
+              Intelligence
+            </Link>
             <Link
               href="/admin/incidents/new"
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#4f46e5] text-white text-sm font-bold hover:bg-[#4338ca] transition-colors shadow-sm"

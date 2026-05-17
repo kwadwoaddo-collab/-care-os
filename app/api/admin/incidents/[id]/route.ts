@@ -3,6 +3,7 @@ import { adminClient }               from '@/lib/supabase/admin'
 import { requireAdmin }              from '@/lib/auth/requireAdmin'
 import { can }                       from '@/lib/auth/permissions'
 import { forbidden }                 from '@/lib/auth/responses'
+import { scoreIncident }             from '@/lib/incidents/riskEngine'
 
 const SEVERITIES = ['low', 'medium', 'high', 'critical'] as const
 const STATUSES   = ['open', 'investigating', 'resolved', 'closed'] as const
@@ -82,6 +83,61 @@ export async function PATCH(
   }
   if (updates.status && !STATUSES.includes(updates.status as typeof STATUSES[number])) {
     return NextResponse.json({ error: `Invalid status: ${String(updates.status)}` }, { status: 400 })
+  }
+
+  // Recompute risk score if severity, type, escalation, or action changed
+  const riskFields = ['severity', 'incident_type', 'escalation_required', 'immediate_action_taken']
+  const needsRescoring = riskFields.some((f) => f in body)
+  if (needsRescoring) {
+    // Fetch current incident to fill missing fields
+    const { data: cur } = await adminClient
+      .from('incidents')
+      .select('severity, incident_type, escalation_required, immediate_action_taken, client_id, staff_profile_id, company_id')
+      .eq('id', id)
+      .eq('company_id', companyId)
+      .maybeSingle()
+
+    if (cur) {
+      const ninetyDaysAgo = new Date()
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+      const effectiveType = (updates.incident_type ?? cur.incident_type) as string
+
+      const [clientRepeat, workerRepeat] = await Promise.all([
+        cur.client_id
+          ? adminClient
+              .from('incidents')
+              .select('id', { count: 'exact', head: true })
+              .eq('company_id', companyId)
+              .eq('client_id', cur.client_id as string)
+              .eq('incident_type', effectiveType)
+              .neq('id', id)
+              .gte('occurred_at', ninetyDaysAgo.toISOString())
+          : Promise.resolve({ count: 0, error: null }),
+        cur.staff_profile_id
+          ? adminClient
+              .from('incidents')
+              .select('id', { count: 'exact', head: true })
+              .eq('company_id', companyId)
+              .eq('staff_profile_id', cur.staff_profile_id as string)
+              .eq('incident_type', effectiveType)
+              .neq('id', id)
+              .gte('occurred_at', ninetyDaysAgo.toISOString())
+          : Promise.resolve({ count: 0, error: null }),
+      ])
+
+      const riskResult = scoreIncident({
+        severity:               (updates.severity ?? cur.severity) as string,
+        incident_type:          effectiveType,
+        escalation_required:    (updates.escalation_required ?? cur.escalation_required) as boolean,
+        immediate_action_taken: (updates.immediate_action_taken ?? cur.immediate_action_taken) as string | null,
+        repeatCountForClient:   clientRepeat.count ?? 0,
+        repeatCountForWorker:   workerRepeat.count ?? 0,
+      })
+
+      updates.risk_score          = riskResult.score
+      updates.risk_classification = riskResult.classification
+      updates.risk_factors        = riskResult.factors
+    }
   }
 
   // Auto-set resolved_at when status transitions to resolved/closed

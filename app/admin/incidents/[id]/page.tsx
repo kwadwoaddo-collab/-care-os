@@ -24,6 +24,9 @@ interface Incident {
   follow_up_notes:       string | null
   resolved_at:           string | null
   resolution_notes:      string | null
+  risk_score:            number | null
+  risk_classification:   string | null
+  risk_factors:          string[] | null
   created_at:            string
   updated_at:            string
   clients:               { id: string; first_name: string; last_name: string } | null
@@ -133,6 +136,54 @@ export default async function IncidentDetailPage({
           {incident.occurred_at && ` · Occurred ${formatDateTime(incident.occurred_at)}`}
         </p>
       </div>
+
+      {/* Risk intelligence panel */}
+      {incident.risk_score !== null && incident.risk_score !== undefined && (
+        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h2 className="text-sm font-semibold text-gray-800 mb-1">Risk Intelligence</h2>
+              <div className="flex items-center gap-3 mt-2">
+                <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-sm font-bold ring-1 ring-inset ${SEVERITY_CLS[incident.risk_classification ?? ''] ?? 'bg-gray-50 text-gray-600 ring-gray-400/20'}`}>
+                  {incident.risk_classification ?? '—'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${
+                        incident.risk_score >= 75 ? 'bg-red-500'
+                        : incident.risk_score >= 50 ? 'bg-orange-500'
+                        : incident.risk_score >= 25 ? 'bg-yellow-400'
+                        : 'bg-green-400'
+                      }`}
+                      style={{ width: `${incident.risk_score}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold tabular-nums text-gray-700">{incident.risk_score}<span className="text-xs font-normal text-gray-400">/100</span></span>
+                </div>
+              </div>
+              {incident.risk_factors && incident.risk_factors.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {incident.risk_factors.map((f) => (
+                    <span
+                      key={f}
+                      className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] text-gray-600"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Link
+              href="/admin/incidents/intelligence"
+              className="text-xs text-indigo-600 hover:underline whitespace-nowrap"
+            >
+              View intelligence →
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Top-level info cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -11,6 +11,7 @@ import {
   getRange,
   buildPaginationMeta,
 } from '@/lib/pagination'
+import { scoreIncident } from '@/lib/incidents/riskEngine'
 
 const INCIDENT_TYPES = [
   'fall', 'medication_error', 'safeguarding', 'injury',
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
       incident_type, severity, status, occurred_at, description,
       immediate_action_taken, escalation_required, escalated_to,
       follow_up_required, follow_up_notes, resolved_at, resolution_notes,
+      risk_score, risk_classification,
       created_at, updated_at,
       clients!client_id            ( id, first_name, last_name ),
       staff_profiles!staff_profile_id ( id, first_name, last_name )
@@ -157,6 +159,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Invalid severity: ${String(severity)}` }, { status: 400 })
   }
 
+  // ── Compute incident risk score ────────────────────────────────────────────
+  const ninetyDaysAgo = new Date()
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+
+  const [clientRepeat, workerRepeat] = await Promise.all([
+    client_id
+      ? adminClient
+          .from('incidents')
+          .select('id', { count: 'exact', head: true })
+          .eq('company_id', companyId)
+          .eq('client_id', client_id as string)
+          .eq('incident_type', incident_type as string)
+          .gte('occurred_at', ninetyDaysAgo.toISOString())
+      : Promise.resolve({ count: 0, error: null }),
+    staff_profile_id
+      ? adminClient
+          .from('incidents')
+          .select('id', { count: 'exact', head: true })
+          .eq('company_id', companyId)
+          .eq('staff_profile_id', staff_profile_id as string)
+          .eq('incident_type', incident_type as string)
+          .gte('occurred_at', ninetyDaysAgo.toISOString())
+      : Promise.resolve({ count: 0, error: null }),
+  ])
+
+  const riskResult = scoreIncident({
+    severity:               (severity as string) ?? 'medium',
+    incident_type:          incident_type as string,
+    escalation_required:    (escalation_required as boolean) ?? false,
+    immediate_action_taken: (immediate_action_taken as string | null) ?? null,
+    repeatCountForClient:   clientRepeat.count ?? 0,
+    repeatCountForWorker:   workerRepeat.count ?? 0,
+  })
+
   // ── Deduplication: if visit_note_id provided, check for existing incident ──
   if (visit_note_id) {
     const { data: existing } = await adminClient
@@ -192,6 +228,9 @@ export async function POST(request: NextRequest) {
       escalated_to:           escalated_to ?? null,
       follow_up_required:     follow_up_required ?? false,
       follow_up_notes:        follow_up_notes ?? null,
+      risk_score:             riskResult.score,
+      risk_classification:    riskResult.classification,
+      risk_factors:           riskResult.factors,
     })
     .select()
     .single()
