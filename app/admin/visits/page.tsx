@@ -2,6 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import {
+  MetricCard,
+  MetricGrid,
+  Card,
+  PageHeader,
+  SectionHeader,
+  OperationalBanner,
+  SeverityBadge,
+  Skeleton,
+  Button,
+} from '@/components/ui'
 import type { VisitsDashboard, LiveVisit } from '@/app/api/admin/visits/route'
 
 function fmtTime(t: string) { return t.slice(0, 5) }
@@ -10,21 +21,13 @@ function fmtISO(iso: string | null) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
-const STATUS_CLS: Record<string, string> = {
-  accepted:    'bg-green-100 text-green-700',
-  in_progress: 'bg-emerald-100 text-emerald-800',
-  completed:   'bg-slate-100 text-slate-600',
-  missed:      'bg-red-100 text-red-700',
-  open:        'bg-blue-100 text-blue-700',
-}
-
 function VisitRow({ v, tag }: { v: LiveVisit; tag: 'live' | 'overdue' | 'missed' }) {
-  const tagCls = tag === 'live' ? 'bg-emerald-500' : tag === 'overdue' ? 'bg-amber-500' : 'bg-red-500'
+  const dotCls = tag === 'live' ? 'bg-emerald-500' : tag === 'overdue' ? 'bg-amber-500' : 'bg-red-500'
   return (
     <tr className="hover:bg-slate-50 transition-colors">
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${tagCls}`} />
+          <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${dotCls}`} aria-hidden="true" />
           <div>
             <p className="text-sm font-medium text-slate-800 truncate max-w-[180px]">{v.title}</p>
             {v.client_name && <p className="text-xs text-slate-400">{v.client_name}</p>}
@@ -34,13 +37,13 @@ function VisitRow({ v, tag }: { v: LiveVisit; tag: 'live' | 'overdue' | 'missed'
       <td className="px-4 py-3 text-sm text-slate-600 hidden md:table-cell">
         {fmtTime(v.start_time)}–{fmtTime(v.end_time)}
       </td>
-      <td className="px-4 py-3 text-sm text-slate-600 hidden lg:table-cell">
-        {v.worker_name}
-      </td>
+      <td className="px-4 py-3 text-sm text-slate-600 hidden lg:table-cell">{v.worker_name}</td>
       <td className="px-4 py-3 hidden md:table-cell">
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${STATUS_CLS[v.status] ?? 'bg-slate-100 text-slate-500'}`}>
-          {v.status.replace(/_/g, ' ')}
-        </span>
+        <SeverityBadge level={
+          v.status === 'completed' ? 'success' :
+          v.status === 'in_progress' ? 'active' :
+          v.status === 'missed' ? 'critical' : 'info'
+        } label={v.status.replace(/_/g, ' ')} />
       </td>
       <td className="px-4 py-3 hidden lg:table-cell text-sm">
         {v.clock_in ? (
@@ -52,16 +55,14 @@ function VisitRow({ v, tag }: { v: LiveVisit; tag: 'live' | 'overdue' | 'missed'
       </td>
       <td className="px-4 py-3 hidden lg:table-cell text-xs">
         {v.lateness_minutes > 0 && (
-          <span className={`font-medium ${v.lateness_minutes >= 30 ? 'text-red-600' : 'text-amber-600'}`}>
-            +{v.lateness_minutes}m late
-          </span>
+          <SeverityBadge level={v.lateness_minutes >= 30 ? 'critical' : 'warning'} label={`+${v.lateness_minutes}m late`} />
         )}
         {v.escalation_raised && (
-          <span className="ml-1 text-red-600 font-semibold">⚠ Escalation</span>
+          <span className="ml-1 text-red-600 font-semibold text-xs">⚠</span>
         )}
       </td>
       <td className="px-4 py-3">
-        <Link href={`/admin/visit-notes`} className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">
+        <Link href="/admin/visit-notes" className="text-indigo-600 hover:text-indigo-800 text-xs font-medium">
           Notes →
         </Link>
       </td>
@@ -69,18 +70,19 @@ function VisitRow({ v, tag }: { v: LiveVisit; tag: 'live' | 'overdue' | 'missed'
   )
 }
 
-function Section({ title, visits, tag, emptyMsg }: { title: string; visits: LiveVisit[]; tag: 'live' | 'overdue' | 'missed'; emptyMsg: string }) {
-  if (visits.length === 0) return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <h2 className="text-sm font-semibold text-slate-700 mb-2">{title} <span className="text-slate-400 font-normal">(0)</span></h2>
-      <p className="text-sm text-slate-400">{emptyMsg}</p>
-    </div>
-  )
+function VisitSection({ title, visits, tag, emptyMsg }: { title: string; visits: LiveVisit[]; tag: 'live' | 'overdue' | 'missed'; emptyMsg: string }) {
+  if (visits.length === 0) {
+    return (
+      <Card>
+        <SectionHeader title={title} count={0} className="mb-3" />
+        <p className="text-sm text-slate-400">{emptyMsg}</p>
+      </Card>
+    )
+  }
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
-        <span className="text-xs font-bold text-slate-500">{visits.length}</span>
+    <Card padding="none">
+      <div className="px-4 py-3 border-b border-slate-100">
+        <SectionHeader title={title} count={visits.length} />
       </div>
       <table className="w-full text-sm">
         <thead>
@@ -98,15 +100,15 @@ function Section({ title, visits, tag, emptyMsg }: { title: string; visits: Live
           {visits.map(v => <VisitRow key={v.shift_id} v={v} tag={tag} />)}
         </tbody>
       </table>
-    </div>
+    </Card>
   )
 }
 
 export default function VisitsDashboardPage() {
-  const [data,      setData]      = useState<VisitsDashboard | null>(null)
-  const [loading,   setLoading]   = useState(true)
-  const [scanning,  setScanning]  = useState(false)
-  const [scanResult, setScanResult] = useState<string | null>(null)
+  const [data,        setData]        = useState<VisitsDashboard | null>(null)
+  const [loading,     setLoading]     = useState(true)
+  const [scanning,    setScanning]    = useState(false)
+  const [scanResult,  setScanResult]  = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   const load = useCallback(() => {
@@ -120,7 +122,7 @@ export default function VisitsDashboardPage() {
 
   useEffect(() => {
     load()
-    const interval = setInterval(load, 60_000) // auto-refresh every 60s
+    const interval = setInterval(load, 60_000)
     return () => clearInterval(interval)
   }, [load])
 
@@ -128,12 +130,18 @@ export default function VisitsDashboardPage() {
     setScanning(true)
     setScanResult(null)
     try {
-      const res = await fetch('/api/admin/visits/anomalies', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) })
+      const res = await fetch('/api/admin/visits/anomalies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
       const d = await res.json()
-      setScanResult(`Late arrivals: ${d.late_arrival} | Short visits: ${d.short_visit} | Medication: ${d.medication} | No-shows: ${d.no_show}`)
+      setScanResult(
+        `Late arrivals: ${d.late_arrival} · Short visits: ${d.short_visit} · Medication: ${d.medication} · No-shows: ${d.no_show}`
+      )
       load()
     } catch {
-      setScanResult('Scan failed — check console')
+      setScanResult('Scan failed')
     } finally { setScanning(false) }
   }
 
@@ -142,93 +150,70 @@ export default function VisitsDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Visit Operations</h1>
-          <p className="text-sm text-slate-500 mt-1">{dateStr} · Auto-refreshes every 60s</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={load}
-            disabled={loading}
-            className="px-3 py-2 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 disabled:opacity-60"
-          >
-            {loading ? 'Loading…' : 'Refresh'}
-          </button>
-          <button
-            onClick={runAnomalyScan}
-            disabled={scanning}
-            className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 disabled:opacity-60 flex items-center gap-2"
-          >
-            {scanning && <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />}
-            Detect Anomalies
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Visit Operations"
+        subtitle={`${dateStr} · Auto-refreshes every 60 seconds`}
+        actions={
+          <>
+            <Button variant="secondary" size="sm" onClick={load} loading={loading}>
+              Refresh
+            </Button>
+            <Button variant="warning" size="sm" onClick={runAnomalyScan} loading={scanning}>
+              Detect Anomalies
+            </Button>
+          </>
+        }
+      />
 
       {scanResult && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800 font-medium">
-          Scan complete: {scanResult}
-        </div>
+        <OperationalBanner type="info" message={`Scan complete: ${scanResult}`} dismissible />
+      )}
+
+      {data && data.unresolved_anomalies > 0 && (
+        <OperationalBanner
+          type="warning"
+          message={`${data.unresolved_anomalies} unresolved visit anomal${data.unresolved_anomalies === 1 ? 'y' : 'ies'} detected`}
+          detail="Including late arrivals, short visits, medication issues, and no-shows."
+          action={{ label: 'Review →', href: '/admin/visits/anomalies' }}
+        />
       )}
 
       {/* KPI bar */}
       {data && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          {[
-            { label: 'Live Now',       value: data.live.length,             colour: data.live.length > 0 ? 'text-emerald-600' : 'text-slate-900' },
-            { label: 'Overdue',        value: data.overdue.length,           colour: data.overdue.length > 0 ? 'text-amber-600' : 'text-slate-900' },
-            { label: 'Missed',         value: data.missed.length,            colour: data.missed.length > 0 ? 'text-red-600' : 'text-slate-900' },
-            { label: 'Completed',      value: data.completed_today },
-            { label: 'Med Alerts',     value: data.medication_alerts,        colour: data.medication_alerts > 0 ? 'text-red-600' : 'text-slate-900' },
-            { label: 'Anomalies',      value: data.unresolved_anomalies,     colour: data.unresolved_anomalies > 0 ? 'text-amber-600' : 'text-slate-900' },
-            { label: 'Task Rate',      value: `${data.task_completion_rate}%` },
-            { label: 'Avg Lateness',   value: `${data.avg_lateness_minutes}m`, colour: data.avg_lateness_minutes > 15 ? 'text-amber-600' : 'text-slate-900' },
-          ].map(({ label, value, colour }) => (
-            <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
-              <p className={`text-xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Anomaly alert banner */}
-      {data && data.unresolved_anomalies > 0 && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-amber-800">{data.unresolved_anomalies} unresolved visit anomal{data.unresolved_anomalies === 1 ? 'y' : 'ies'} detected</p>
-            <p className="text-xs text-amber-700 mt-0.5">Including late arrivals, short visits, medication issues, and no-shows.</p>
-          </div>
-          <Link href="/admin/visits/anomalies" className="px-3 py-2 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 shrink-0">
-            Review →
-          </Link>
-        </div>
+        <MetricGrid cols={8}>
+          <MetricCard label="Live Now"       value={data.live.length}              colour={data.live.length > 0 ? 'emerald' : 'slate'} />
+          <MetricCard label="Overdue"        value={data.overdue.length}           colour={data.overdue.length > 0 ? 'amber' : 'slate'} />
+          <MetricCard label="Missed"         value={data.missed.length}            colour={data.missed.length > 0 ? 'red' : 'slate'} />
+          <MetricCard label="Completed"      value={data.completed_today} />
+          <MetricCard label="Med Alerts"     value={data.medication_alerts}        colour={data.medication_alerts > 0 ? 'red' : 'slate'} />
+          <MetricCard label="Anomalies"      value={data.unresolved_anomalies}     colour={data.unresolved_anomalies > 0 ? 'amber' : 'slate'} />
+          <MetricCard label="Task Rate"      value={`${data.task_completion_rate}%`} />
+          <MetricCard label="Avg Lateness"   value={`${data.avg_lateness_minutes}m`} colour={data.avg_lateness_minutes > 15 ? 'amber' : 'slate'} />
+        </MetricGrid>
       )}
 
       {loading && !data ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => <div key={i} className="h-32 bg-slate-100 rounded-xl animate-pulse" />)}
-        </div>
+        <Skeleton rows={3} />
       ) : data ? (
         <>
-          <Section title="Live Visits" visits={data.live} tag="live" emptyMsg="No visits currently in progress." />
-          <Section title="Overdue Visits" visits={data.overdue} tag="overdue" emptyMsg="No overdue visits. All visits started on time." />
-          <Section title="Missed Visits" visits={data.missed} tag="missed" emptyMsg="No missed visits today." />
+          <VisitSection title="Live Visits"    visits={data.live}    tag="live"    emptyMsg="No visits currently in progress." />
+          <VisitSection title="Overdue Visits" visits={data.overdue} tag="overdue" emptyMsg="No overdue visits. All visits started on time." />
+          <VisitSection title="Missed Visits"  visits={data.missed}  tag="missed"  emptyMsg="No missed visits today." />
         </>
       ) : null}
 
       {/* Quick links */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'All Shifts',    href: '/admin/shifts' },
-          { label: 'Visit Notes',   href: '/admin/visit-notes' },
-          { label: 'Incidents',     href: '/admin/incidents' },
-          { label: 'Operations',    href: '/admin/operations' },
+          { label: 'All Shifts',  href: '/admin/shifts' },
+          { label: 'Visit Notes', href: '/admin/visit-notes' },
+          { label: 'Incidents',   href: '/admin/incidents' },
+          { label: 'Operations',  href: '/admin/operations' },
         ].map(({ label, href }) => (
-          <Link key={href} href={href} className="bg-white border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors">
-            {label} →
+          <Link key={href} href={href} className="group block">
+            <Card padding="sm" className="hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+              <p className="text-sm font-medium text-slate-700 group-hover:text-indigo-700 transition-colors">{label} →</p>
+            </Card>
           </Link>
         ))}
       </div>

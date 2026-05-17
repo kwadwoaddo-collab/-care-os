@@ -2,6 +2,18 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import {
+  MetricCard,
+  MetricGrid,
+  Card,
+  PageHeader,
+  SectionHeader,
+  OperationalBanner,
+  SeverityBadge,
+  EmptyState,
+  Skeleton,
+  Button,
+} from '@/components/ui'
 
 interface Message {
   id:              string
@@ -29,31 +41,17 @@ const TYPE_COLOURS: Record<string, string> = {
   broadcast:              'bg-slate-50 text-slate-700',
 }
 
-const PRIORITY_COLOURS: Record<string, string> = {
-  normal:   'bg-slate-100 text-slate-600',
-  urgent:   'bg-amber-100 text-amber-700',
-  critical: 'bg-red-100 text-red-700',
-}
-
-const STATUS_COLOURS: Record<string, string> = {
-  draft:    'bg-slate-100 text-slate-500',
-  sending:  'bg-blue-100 text-blue-600',
-  sent:     'bg-emerald-100 text-emerald-700',
-  failed:   'bg-red-100 text-red-700',
-  scheduled:'bg-purple-100 text-purple-700',
-}
-
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 export default function CommunicationsPage() {
-  const [messages,  setMessages]  = useState<Message[]>([])
-  const [loading,   setLoading]   = useState(true)
-  const [error,     setError]     = useState<string | null>(null)
-  const [typeFilter, setTypeFilter] = useState('')
+  const [messages,     setMessages]     = useState<Message[]>([])
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState<string | null>(null)
+  const [typeFilter,   setTypeFilter]   = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [triggering, setTriggering] = useState(false)
+  const [triggering,   setTriggering]   = useState(false)
   const [triggerResult, setTriggerResult] = useState<string | null>(null)
 
   const load = useCallback(() => {
@@ -81,14 +79,12 @@ export default function CommunicationsPage() {
       })
       const d = await res.json()
       setTriggerResult(
-        `Compliance: ${d.compliance_expiry} | Onboarding: ${d.onboarding_stall} | Shifts: ${d.uncovered_shifts} | Safeguarding: ${d.safeguarding_alerts} | Skipped: ${d.skipped}`
+        `Compliance: ${d.compliance_expiry} · Onboarding: ${d.onboarding_stall} · Shifts: ${d.uncovered_shifts} · Safeguarding: ${d.safeguarding_alerts} · Skipped: ${d.skipped}`
       )
       if (!dry) load()
     } catch {
-      setTriggerResult('Trigger failed — check console')
-    } finally {
-      setTriggering(false)
-    }
+      setTriggerResult('Trigger failed')
+    } finally { setTriggering(false) }
   }
 
   const counts = {
@@ -101,114 +97,99 @@ export default function CommunicationsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Communications</h1>
-          <p className="text-sm text-slate-500 mt-1">Operational messaging, broadcasts, and compliance reminders.</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link
-            href="/admin/communications/templates"
-            className="px-3 py-2 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50"
-          >
-            Templates
-          </Link>
-          <Link
-            href="/admin/communications/broadcast"
-            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
-          >
-            + New Message
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Communications"
+        subtitle="Operational messaging, broadcasts, and compliance reminders."
+        actions={
+          <>
+            <Link href="/admin/communications/templates" className="px-3 py-2 border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+              Templates
+            </Link>
+            <Link href="/admin/communications/broadcast" className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+              + New Message
+            </Link>
+          </>
+        }
+      />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          { label: 'Total',     value: counts.total },
-          { label: 'Sent',      value: counts.sent,     colour: 'text-emerald-600' },
-          { label: 'Drafts',    value: counts.draft },
-          { label: 'Critical',  value: counts.critical,  colour: counts.critical > 0 ? 'text-red-600' : undefined },
-          { label: 'Auto-gen',  value: counts.auto,      colour: 'text-indigo-600' },
-        ].map(({ label, value, colour }) => (
-          <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
-            <p className={`text-2xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+      <MetricGrid cols={5}>
+        <MetricCard label="Total"    value={counts.total} />
+        <MetricCard label="Sent"     value={counts.sent}    colour="emerald" />
+        <MetricCard label="Drafts"   value={counts.draft} />
+        <MetricCard label="Critical" value={counts.critical} colour={counts.critical > 0 ? 'red' : 'slate'} />
+        <MetricCard label="Auto-gen" value={counts.auto}    colour="indigo" />
+      </MetricGrid>
+
+      {/* Smart trigger panel */}
+      <Card>
+        <div className="flex items-start gap-4 flex-wrap">
+          <div className="flex-1 min-w-0">
+            <SectionHeader title="Smart Triggers" className="mb-1" />
+            <p className="text-xs text-slate-500">
+              Scan for compliance expiries, onboarding stalls, uncovered shifts, and safeguarding alerts — then auto-generate messages.
+            </p>
+            {triggerResult && (
+              <p className="text-xs text-indigo-700 mt-2 font-medium">{triggerResult}</p>
+            )}
           </div>
-        ))}
-      </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="secondary" size="sm" onClick={() => runTriggers(true)} loading={triggering}>
+              Dry Run
+            </Button>
+            <Button variant="warning" size="sm" onClick={() => runTriggers(false)} loading={triggering}>
+              Run Triggers
+            </Button>
+          </div>
+        </div>
+      </Card>
 
-      {/* Smart trigger controls */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-800">Smart Triggers</p>
-          <p className="text-xs text-slate-500 mt-0.5">Scan for compliance expiries, onboarding stalls, uncovered shifts, and safeguarding alerts — then auto-generate messages.</p>
-          {triggerResult && (
-            <p className="text-xs text-indigo-700 mt-2 font-medium">{triggerResult}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => runTriggers(true)}
-            disabled={triggering}
-            className="px-3 py-2 border border-slate-200 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50 disabled:opacity-60"
-          >
-            Dry Run
-          </button>
-          <button
-            onClick={() => runTriggers(false)}
-            disabled={triggering}
-            className="px-3 py-2 bg-amber-600 text-white text-xs font-medium rounded-lg hover:bg-amber-700 disabled:opacity-60 flex items-center gap-1"
-          >
-            {triggering && <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />}
-            Run Triggers
-          </button>
-        </div>
-      </div>
+      {error && (
+        <OperationalBanner type="warning" message={error} dismissible />
+      )}
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap items-center">
         <select
           value={typeFilter}
-          onChange={e => { setTypeFilter(e.target.value) }}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400"
+          onChange={e => setTypeFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-white"
         >
           <option value="">All types</option>
-          {['announcement', 'compliance_reminder', 'staffing_alert', 'onboarding_reminder', 'safeguarding_escalation', 'shift_communication', 'broadcast'].map(t => (
+          {['announcement','compliance_reminder','staffing_alert','onboarding_reminder','safeguarding_escalation','shift_communication','broadcast'].map(t => (
             <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
           ))}
         </select>
         <select
           value={statusFilter}
-          onChange={e => { setStatusFilter(e.target.value) }}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400"
+          onChange={e => setStatusFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-white"
         >
           <option value="">All statuses</option>
-          {['draft', 'sent', 'failed', 'scheduled'].map(s => (
+          {['draft','sent','failed','scheduled'].map(s => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
         {(typeFilter || statusFilter) && (
           <button onClick={() => { setTypeFilter(''); setStatusFilter('') }} className="text-xs text-indigo-600 hover:underline">
-            Clear filters
+            Clear
           </button>
         )}
       </div>
 
       {/* Messages list */}
       {loading ? (
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />)}
-        </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{error}</div>
+        <Skeleton rows={4} />
       ) : messages.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
-          <p className="text-slate-500 text-sm">No messages yet. Send your first broadcast or run smart triggers.</p>
-        </div>
+        <Card>
+          <EmptyState
+            message="No messages yet."
+            submessage="Send your first broadcast or run smart triggers to auto-generate compliance reminders."
+            action={{ label: '+ New Message', href: '/admin/communications/broadcast' }}
+            icon="📬"
+          />
+        </Card>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <Card padding="none">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-100 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -244,18 +225,18 @@ export default function CommunicationsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${PRIORITY_COLOURS[m.priority]}`}>
-                      {m.priority}
-                    </span>
+                    <SeverityBadge
+                      level={m.priority === 'critical' ? 'critical' : m.priority === 'urgent' ? 'urgent' : 'neutral'}
+                      label={m.priority}
+                    />
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${STATUS_COLOURS[m.status] ?? 'bg-slate-100 text-slate-500'}`}>
-                      {m.status}
-                    </span>
+                    <SeverityBadge
+                      level={m.status === 'sent' ? 'success' : m.status === 'failed' ? 'critical' : m.status === 'draft' ? 'neutral' : 'info'}
+                      label={m.status}
+                    />
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-slate-600 text-xs">
-                    {m.recipient_count}
-                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-slate-600 text-xs">{m.recipient_count}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-slate-400 text-xs">
                     {m.sent_at ? fmtDate(m.sent_at) : '—'}
                   </td>
@@ -268,7 +249,7 @@ export default function CommunicationsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
     </div>
   )
