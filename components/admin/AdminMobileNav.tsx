@@ -258,6 +258,7 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     canViewCompliance(userRole)      && { href: '/admin/compliance',           label: 'Compliance',            icon: <IconCompliance /> },
     canManageStaff(userRole)         && { href: '/admin/onboarding',           label: 'Onboarding',            icon: <IconSystem /> },
     canViewIncidents(userRole)       && { href: '/admin/incidents',            label: 'Incidents',             icon: <IconIncidents /> },
+    canViewShifts(userRole)          && { href: '/admin/visits',               label: 'Visit Ops',             icon: <IconSystem /> },
     canViewIncidents(userRole)       && { href: '/admin/operations',           label: 'Operations',            icon: <IconSystem /> },
     canViewIncidents(userRole)       && { href: '/admin/operations/queue',     label: 'Priority Queue',        icon: <IconSystem /> },
     canViewIncidents(userRole)       && { href: '/admin/operations/handover',  label: 'Handover Notes',        icon: <IconSystem /> },
