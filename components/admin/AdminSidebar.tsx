@@ -51,6 +51,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     { label: 'Clients',       href: '/admin/clients',        icon: 'contact_page',  show: navCan((r) => can(r, 'clients:read')) },
     { label: 'Packages',      href: '/admin/care-packages',  icon: 'payments',      show: navCan((r) => can(r, 'care_packages:read')) },
     { label: 'Incidents',     href: '/admin/incidents',      icon: 'warning',       show: navCan(canViewIncidents) },
+    { label: 'Operations',    href: '/admin/operations',     icon: 'hub',           show: navCan(canViewIncidents) },
     { label: 'Audit Log',     href: '/admin/audit-log',      icon: 'history',       show: navCan(canViewAuditLogs) },
     { label: 'Notifications', href: '/admin/notifications',  icon: 'notifications', show: navCan(canViewNotifications) },
   ]
