@@ -13,6 +13,7 @@ import {
   canViewIncidents,
   canManageStaff,
   canViewSystemHealth,
+  canManageTenants,
 } from '@/lib/rbac/can'
 
 interface AdminSidebarProps {
@@ -66,7 +67,8 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   const footerItems = [
-    { label: 'System', href: '/admin/system', icon: 'settings', show: navCan(canViewSystemHealth) },
+    { label: 'Tenants', href: '/admin/system/tenants', icon: 'corporate_fare', show: navCan(canManageTenants) },
+    { label: 'System',  href: '/admin/system',         icon: 'settings',       show: navCan(canViewSystemHealth) },
   ]
 
   return (

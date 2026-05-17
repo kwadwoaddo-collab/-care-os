@@ -129,6 +129,13 @@ export function canViewNotifications(role: Role | string): boolean {
   return can(role, 'notifications:read')
 }
 
+// ── Tenant administration ─────────────────────────────────────────────────────
+
+/** Can view the tenant administration panel (super_admin only). */
+export function canManageTenants(role: Role | string): boolean {
+  return can(role, 'tenants:read')
+}
+
 // ── Suspended user / operational access ───────────────────────────────────────
 
 /**

@@ -12,6 +12,7 @@ import {
   canViewAuditLogs,
   canViewSystemHealth,
   canViewNotifications,
+  canManageTenants,
 } from '@/lib/rbac/can'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -265,6 +266,7 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     canViewNotifications(userRole)   && { href: '/admin/notifications',        label: 'Notifications',         icon: <IconNotifications /> },
     can(userRole, 'clients:read')    && { href: '/admin/clients',              label: 'Clients',               icon: <IconSystem /> },
     canViewSystemHealth(userRole)    && { href: '/admin/system',               label: 'System Health',         icon: <IconSystem /> },
+    canManageTenants(userRole)       && { href: '/admin/system/tenants',       label: 'Tenant Admin',          icon: <IconSystem /> },
   ].filter(Boolean) as MoreItem[]
 
   // ── Render ─────────────────────────────────────────────────────────────────

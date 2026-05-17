@@ -68,6 +68,10 @@ export const PERMISSIONS = [
 
   // Compliance overrides (registered_manager + company_admin + super_admin)
   'compliance:override',
+
+  // Tenant administration (super_admin only)
+  'tenants:read',
+  'tenants:write',
 ] as const
 
 export type Permission = typeof PERMISSIONS[number]
