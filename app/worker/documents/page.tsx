@@ -418,18 +418,90 @@ export default function WorkerDocumentsPage() {
     return <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>
   }
 
-  const expiredDocs = docs.filter((d) => isExpired(d.expiry_date))
-  const soonDocs    = docs.filter((d) => !isExpired(d.expiry_date) && isExpiringSoon(d.expiry_date))
-  const okDocs      = docs.filter((d) => !isExpired(d.expiry_date) && !isExpiringSoon(d.expiry_date))
+  const expiredDocs       = docs.filter((d) => isExpired(d.expiry_date))
+  const soonDocs          = docs.filter((d) => !isExpired(d.expiry_date) && isExpiringSoon(d.expiry_date))
+  const okDocs            = docs.filter((d) => !isExpired(d.expiry_date) && !isExpiringSoon(d.expiry_date))
+  const resubmissionDocs  = docs.filter((d) => d.resubmission_requested)
+  const rejectedDocs      = docs.filter((d) => (d.verification_status === 'rejected' || d.reviewed_status === 'rejected') && !d.resubmission_requested)
+  const pendingDocs       = docs.filter((d) => d.verification_status === 'pending_verification' || (!d.verification_status && d.reviewed_status === 'pending'))
+  const approvedDocs      = docs.filter((d) => d.verification_status === 'approved' || (!d.verification_status && d.reviewed_status === 'approved'))
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-6 pb-4" id="worker-doc-center">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">My Documents</h1>
         <Link href="/worker/onboarding" className="text-xs text-indigo-600 font-medium hover:underline">
           View checklist →
         </Link>
       </div>
+
+      {/* Document status summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-center">
+          <p className="text-xl font-bold text-gray-900 tabular-nums">{docs.length}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Total</p>
+        </div>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${approvedDocs.length > 0 ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'}`}>
+          <p className={`text-xl font-bold tabular-nums ${approvedDocs.length > 0 ? 'text-green-700' : 'text-gray-400'}`}>{approvedDocs.length}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Approved</p>
+        </div>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${pendingDocs.length > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+          <p className={`text-xl font-bold tabular-nums ${pendingDocs.length > 0 ? 'text-amber-700' : 'text-gray-400'}`}>{pendingDocs.length}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Under review</p>
+        </div>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${(resubmissionDocs.length + rejectedDocs.length) > 0 ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'}`}>
+          <p className={`text-xl font-bold tabular-nums ${(resubmissionDocs.length + rejectedDocs.length) > 0 ? 'text-red-700' : 'text-gray-400'}`}>
+            {resubmissionDocs.length + rejectedDocs.length}
+          </p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Action needed</p>
+        </div>
+      </div>
+
+      {/* Resubmission alerts */}
+      {resubmissionDocs.length > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-red-600 text-[20px]">upload_file</span>
+            <p className="text-sm font-semibold text-red-800">
+              {resubmissionDocs.length} document{resubmissionDocs.length > 1 ? 's' : ''} require resubmission
+            </p>
+          </div>
+          {resubmissionDocs.map((d) => (
+            <div key={d.id} className="rounded-lg border border-red-200 bg-white px-3 py-2.5">
+              <p className="text-xs font-semibold text-gray-800">{d.file_name}</p>
+              {(d.rejected_reason || d.review_notes) && (
+                <p className="text-xs text-red-600 mt-0.5">{d.rejected_reason ?? d.review_notes}</p>
+              )}
+              <a href="#upload" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-3 py-1.5 transition-colors">
+                <span className="material-symbols-outlined text-[12px]">upload</span>
+                Upload replacement
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Expiry reminders */}
+      {(expiredDocs.length > 0 || soonDocs.length > 0) && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="material-symbols-outlined text-amber-600 text-[18px]">schedule</span>
+            <p className="text-sm font-semibold text-amber-800">Document expiry reminders</p>
+          </div>
+          {expiredDocs.map((d) => (
+            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-white rounded-lg border border-red-200 px-3 py-1.5">
+              <span className="font-medium text-gray-800">{d.file_name}</span>
+              <span className="text-red-700 font-semibold shrink-0">Expired {fmtDate(d.expiry_date)}</span>
+            </div>
+          ))}
+          {soonDocs.map((d) => (
+            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-white rounded-lg border border-amber-200 px-3 py-1.5">
+              <span className="font-medium text-gray-800">{d.file_name}</span>
+              <span className="text-amber-700 font-semibold shrink-0">Expires {fmtDate(d.expiry_date)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Compliance status + explainability panel */}
       {reqs && <ComplianceStatusPanel reqs={reqs} />}

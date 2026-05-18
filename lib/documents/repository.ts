@@ -15,28 +15,39 @@ export interface DocumentFolder {
 }
 
 export interface RepositoryDocument {
-  id:               string
-  document_type:    string
-  file_name:        string
-  file_path:        string | null
-  file_size:        number | null
-  mime_type:        string | null
-  expiry_date:      string | null
-  issue_date:       string | null
-  created_at:       string
-  reviewed_status:  string | null
-  review_status:    string | null
-  source_stage:     string | null
-  worker_visible:   boolean
-  visibility:       string
-  compliance_linked: boolean
-  archived_at:      string | null
-  version_group_id: string | null
+  id:                     string
+  document_type:          string
+  file_name:              string
+  file_path:              string | null
+  file_size:              number | null
+  mime_type:              string | null
+  expiry_date:            string | null
+  issue_date:             string | null
+  created_at:             string
+  reviewed_status:        string | null
+  review_notes:           string | null
+  review_status:          string | null
+  source_stage:           string | null
+  worker_visible:         boolean
+  visibility:             string
+  compliance_linked:      boolean
+  archived_at:            string | null
+  version_group_id:       string | null
   requires_manual_review: boolean
-  original_filename: string | null
-  applicant_id:     string | null
-  staff_profile_id: string | null
-  folder_id:        string | null
+  original_filename:      string | null
+  applicant_id:           string | null
+  staff_profile_id:       string | null
+  folder_id:              string | null
+  // Verification fields (migration 053)
+  verification_status:    string | null
+  verified_by:            string | null
+  verified_at:            string | null
+  verification_method:    string | null
+  original_seen:          boolean
+  rejected_reason:        string | null
+  resubmission_requested: boolean
+  approved_by:            string | null
+  approved_at:            string | null
 }
 
 // ── Fetch full document repository for a staff member ────────────────────────
@@ -63,10 +74,13 @@ export async function getStaffDocumentRepository(opts: {
     .from('documents')
     .select(`
       id, document_type, file_name, file_path, file_size, mime_type,
-      expiry_date, issue_date, created_at, reviewed_status, review_status,
+      expiry_date, issue_date, created_at, reviewed_status, review_notes, review_status,
       source_stage, worker_visible, visibility, compliance_linked,
       archived_at, version_group_id, requires_manual_review,
-      original_filename, applicant_id, staff_profile_id, folder_id
+      original_filename, applicant_id, staff_profile_id, folder_id,
+      verification_status, verified_by, verified_at, verification_method,
+      original_seen, rejected_reason, resubmission_requested,
+      approved_by, approved_at
     `)
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })

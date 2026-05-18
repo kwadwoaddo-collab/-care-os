@@ -31,7 +31,7 @@ import DeleteStaffButton    from './DeleteStaffButton'
 import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 import StaffProfileDesktop from '@/components/admin/StaffProfileDesktop'
 import RecruitmentFileTab      from './RecruitmentFileTab'
-import DocumentRepositoryTab   from './DocumentRepositoryTab'
+import DocumentWorkspace        from './workspace/DocumentWorkspace'
 import { can }                 from '@/lib/rbac/permissions'
 import { getStaffDocumentRepository } from '@/lib/documents/repository'
 
@@ -660,11 +660,13 @@ export default async function StaffDetailPage({
       </div>
 
       {isDocumentsTab && docRepository ? (
-        <DocumentRepositoryTab
+        <DocumentWorkspace
           staffProfileId={sp.id}
           companyId={sp.company_id}
-          folders={docRepository.folders}
-          unclassified={docRepository.unclassified}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          folders={docRepository.folders as any}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          unclassified={docRepository.unclassified as any}
         />
       ) : isRecruitmentTab ? (
         <RecruitmentFileTab staffProfileId={sp.id} applicantId={sp.applicant_id as string} documents={documents} convertedAt={sp.created_at} />
