@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
+import { linkApplicantDocumentsToStaff } from '@/lib/documents/lifecycle'
 
 // ── Form slug → staff_profile column mapping ──────────────────────────────────
 //
@@ -218,10 +219,16 @@ export async function POST(
     .is('staff_profile_id', null)   // only touch unlinked docs
 
   if (docMigrateError) {
-    // Non-fatal: log and continue. Documents still visible via applicant_id
-    // fallback in getStaffDocuments; they just won't be approvable until fixed.
+    // Non-fatal: log and continue.
     console.error('[convert] document migration error:', docMigrateError.message)
   }
+
+  // Route and classify all applicant documents into the correct folders
+  void linkApplicantDocumentsToStaff({
+    applicantId,
+    staffProfileId: staffProfile.id,
+    companyId:      applicant.company_id,
+  }).catch((err) => console.error('[convert] document routing error:', err))
 
   // ── 7. Update applicant status → hired ────────────────────────────────────
   const { error: statusError } = await adminClient

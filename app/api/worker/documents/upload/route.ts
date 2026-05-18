@@ -91,6 +91,9 @@ export async function POST(request: NextRequest) {
     issue_date:       typeof issueDate  === 'string' && issueDate  ? issueDate  : null,
     // All worker-uploaded docs start as 'pending' — admin must approve.
     reviewed_status:  'pending',
+    source_stage:     'worker_upload',
+    original_filename: file.name,
+    requires_manual_review: true,
   }
 
   // Include applicant_id when the worker was converted from an applicant.

@@ -30,8 +30,10 @@ import AdminAccessButton    from './AdminAccessButton'
 import DeleteStaffButton    from './DeleteStaffButton'
 import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 import StaffProfileDesktop from '@/components/admin/StaffProfileDesktop'
-import RecruitmentFileTab  from './RecruitmentFileTab'
-import { can }             from '@/lib/rbac/permissions'
+import RecruitmentFileTab      from './RecruitmentFileTab'
+import DocumentRepositoryTab   from './DocumentRepositoryTab'
+import { can }                 from '@/lib/rbac/permissions'
+import { getStaffDocumentRepository } from '@/lib/documents/repository'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -510,6 +512,7 @@ export default async function StaffDetailPage({
   const { id } = await params
   const { tab } = await searchParams
   const isRecruitmentTab = tab === 'recruitment'
+  const isDocumentsTab   = tab === 'documents'
 
   // Start fetches in parallel
   const availabilityPromise    = getAvailability(id)
@@ -534,6 +537,15 @@ export default async function StaffDetailPage({
   const recentIncidents = await recentIncidentsPromise.catch(() => [] as StaffIncident[])
 
   const { staff_profile: sp, applicant, documents, compliance_items, hr_readiness } = data
+
+  // Fetch document repository for the Documents tab (lazy — only if that tab is active)
+  const docRepository = isDocumentsTab
+    ? await getStaffDocumentRepository({
+        staffProfileId: id,
+        applicantId:    sp.applicant_id ?? null,
+        companyId:      sp.company_id,
+      }).catch(() => ({ folders: [], unclassified: [] }))
+    : null
 
   // If the API didn't return hr_readiness (shouldn't happen post-migration), compute client-side
   const hrReadiness = hr_readiness ?? calculateHrReadiness({
@@ -622,6 +634,16 @@ export default async function StaffDetailPage({
           >
             Profile
           </Link>
+          <Link
+            href={`/admin/staff/${id}?tab=documents`}
+            className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+              isDocumentsTab
+                ? 'border-primary text-primary'
+                : 'border-transparent text-on-surface-variant hover:border-outline-variant hover:text-gray-700'
+            }`}
+          >
+            Documents
+          </Link>
           {sp.applicant_id && (
             <Link
               href={`/admin/staff/${id}?tab=recruitment`}
@@ -637,7 +659,14 @@ export default async function StaffDetailPage({
         </nav>
       </div>
 
-      {isRecruitmentTab ? (
+      {isDocumentsTab && docRepository ? (
+        <DocumentRepositoryTab
+          staffProfileId={sp.id}
+          companyId={sp.company_id}
+          folders={docRepository.folders}
+          unclassified={docRepository.unclassified}
+        />
+      ) : isRecruitmentTab ? (
         <RecruitmentFileTab staffProfileId={sp.id} applicantId={sp.applicant_id as string} documents={documents} convertedAt={sp.created_at} />
       ) : (
         <>

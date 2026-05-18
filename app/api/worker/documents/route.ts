@@ -33,11 +33,13 @@ export async function GET(request: NextRequest) {
 
   const { id: staffProfileId, applicant_id } = result.worker
 
-  // Fetch by staff_profile_id
+  // Fetch by staff_profile_id — worker_visible=true enforces visibility governance
   const { data: staffDocs, error: e1 } = await adminClient
     .from('documents')
     .select(DOC_SELECT)
     .eq('staff_profile_id', staffProfileId)
+    .eq('worker_visible', true)
+    .is('archived_at', null)
     .order('created_at', { ascending: false })
 
   if (e1) {
@@ -53,6 +55,8 @@ export async function GET(request: NextRequest) {
       .from('documents')
       .select(DOC_SELECT)
       .eq('applicant_id', applicant_id)
+      .eq('worker_visible', true)
+      .is('archived_at', null)
       .order('created_at', { ascending: false })
     applicantDocs = (aDocs ?? []) as unknown as DocRecord[]
   }

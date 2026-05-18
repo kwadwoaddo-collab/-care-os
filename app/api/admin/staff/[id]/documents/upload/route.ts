@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { ipRateLimit } from '@/lib/rateLimit'
 import { can } from '@/lib/auth/permissions'
 import { forbidden } from '@/lib/auth/responses'
+import { routeDocument } from '@/lib/documents/routing'
 import {
   DOCUMENT_TYPE_SET,
   DOCUMENT_TYPE_VALUES,
@@ -123,14 +124,17 @@ export async function POST(
 
   // ── Insert DB row ──────────────────────────────────────────────────────────
   const insertPayload: Record<string, unknown> = {
-    company_id:       companyId,
-    staff_profile_id: staffProfileId,
-    document_type:    documentType,
-    file_name:        originalName,
-    file_path:        storagePath,
-    file_size:        file.size,
-    mime_type:        file.type || null,
-    expiry_date:      parsed.data.expiryDate || null,
+    company_id:           companyId,
+    staff_profile_id:     staffProfileId,
+    document_type:        documentType,
+    file_name:            originalName,
+    file_path:            storagePath,
+    file_size:            file.size,
+    mime_type:            file.type || null,
+    expiry_date:          parsed.data.expiryDate || null,
+    source_stage:         'admin_upload',
+    original_filename:    originalName,
+    requires_manual_review: false,
   }
 
   if (staffProfile.applicant_id) {
@@ -172,6 +176,14 @@ export async function POST(
       { status: 500 }
     )
   }
+
+  // ── Auto-route into correct folder (fire-and-forget) ──────────────────────
+  void routeDocument({
+    documentId:   document.id,
+    documentType,
+    companyId,
+    routedBy:     'system',
+  }).catch((err) => console.error('[staff/documents/upload] routing error:', err))
 
   // ── Audit log (fire-and-forget) ────────────────────────────────────────────
   void (async () => {
