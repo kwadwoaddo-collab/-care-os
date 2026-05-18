@@ -7,17 +7,20 @@ import { TRAINING_CATEGORIES, DOCUMENT_TYPES, TRAINING_CATEGORY_LABELS } from '@
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface WorkerDocument {
-  id:                string
-  document_type:     string
-  training_category: string | null
-  file_name:         string
-  file_path:         string | null
-  file_size:         number | null
-  expiry_date:       string | null
-  issue_date:        string | null
-  created_at:        string
-  reviewed_status:   string | null
-  review_notes:      string | null
+  id:                      string
+  document_type:           string
+  training_category:       string | null
+  file_name:               string
+  file_path:               string | null
+  file_size:               number | null
+  expiry_date:             string | null
+  issue_date:              string | null
+  created_at:              string
+  reviewed_status:         string | null
+  review_notes:            string | null
+  verification_status:     string | null
+  rejected_reason:         string | null
+  resubmission_requested:  boolean
 }
 
 interface Requirements {
@@ -72,14 +75,21 @@ function trainingLabel(c: string) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ReviewBadge({ status }: { status: string | null }) {
+function VerificationStatusBadge({ verificationStatus, reviewedStatus, resubmissionRequested }: {
+  verificationStatus:    string | null
+  reviewedStatus:        string | null
+  resubmissionRequested: boolean
+}) {
+  const status = verificationStatus ?? (reviewedStatus === 'approved' ? 'approved' : reviewedStatus === 'rejected' ? 'rejected' : 'pending_verification')
   const map: Record<string, { label: string; cls: string }> = {
-    approved:   { label: '✓ Approved',                cls: 'bg-green-100 text-green-700' },
-    rejected:   { label: '✕ Rejected — reupload',     cls: 'bg-red-100 text-red-700' },
-    superseded: { label: '🔄 Superseded',              cls: 'bg-gray-100 text-gray-500' },
-    pending:    { label: '⏳ Pending review',          cls: 'bg-amber-100 text-amber-700' },
+    pending_verification: { label: '⏳ Pending review',        cls: 'bg-amber-100 text-amber-700' },
+    verified:             { label: '✓ Verified',               cls: 'bg-blue-100 text-blue-700' },
+    approved:             { label: '✓ Approved',               cls: 'bg-green-100 text-green-700' },
+    rejected:             { label: resubmissionRequested ? '↩ Resubmission required' : '✕ Rejected', cls: 'bg-red-100 text-red-700' },
+    expired:              { label: 'Expired',                  cls: 'bg-gray-100 text-gray-600' },
+    superseded:           { label: 'Superseded',               cls: 'bg-gray-100 text-gray-400' },
   }
-  const entry = map[status ?? ''] ?? { label: '⏳ Pending review', cls: 'bg-amber-100 text-amber-700' }
+  const entry = map[status] ?? { label: '⏳ Pending review', cls: 'bg-amber-100 text-amber-700' }
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${entry.cls}`}>
       {entry.label}
@@ -123,11 +133,23 @@ function DocCard({ d }: { d: WorkerDocument }) {
           )}
         </div>
       </div>
-      <ReviewBadge status={d.reviewed_status} />
-      {d.review_notes && d.reviewed_status === 'rejected' && (
-        <p className="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">
-          <strong>Reason:</strong> {d.review_notes}
-        </p>
+      <VerificationStatusBadge
+        verificationStatus={d.verification_status}
+        reviewedStatus={d.reviewed_status}
+        resubmissionRequested={d.resubmission_requested}
+      />
+      {(d.rejected_reason || d.review_notes) && (d.verification_status === 'rejected' || d.reviewed_status === 'rejected') && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+          <p className="text-xs font-semibold text-red-700">Action required</p>
+          <p className="text-xs text-red-600 mt-0.5">{d.rejected_reason ?? d.review_notes}</p>
+          {d.resubmission_requested && (
+            <a href="/worker/documents#upload"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg px-3 py-1.5 transition-colors">
+              <span className="material-symbols-outlined text-[13px]">upload_file</span>
+              Upload replacement
+            </a>
+          )}
+        </div>
       )}
     </div>
   )

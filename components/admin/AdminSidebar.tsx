@@ -55,6 +55,9 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     { label: 'Visits',        href: '/admin/visits',         icon: 'home_health',   show: navCan(canViewShifts) },
     { label: 'Operations',    href: '/admin/operations',     icon: 'hub',           show: navCan(canViewIncidents) },
     { label: 'Communications', href: '/admin/communications',  icon: 'forum',         show: navCan(canViewNotifications) },
+    { label: 'Documents',     href: '/admin/documents/verification', icon: 'fact_check', show: navCan(canViewCompliance),
+      activeMatch: (p: string) => p.startsWith('/admin/documents'),
+    },
     { label: 'Audit Log',     href: '/admin/audit-log',      icon: 'history',       show: navCan(canViewAuditLogs) },
     { label: 'Notifications', href: '/admin/notifications',  icon: 'notifications', show: navCan(canViewNotifications) },
   ]

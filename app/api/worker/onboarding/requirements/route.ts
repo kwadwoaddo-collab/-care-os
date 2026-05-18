@@ -42,13 +42,13 @@ export async function GET(request: NextRequest) {
   const [staffRes, applicantRes] = await Promise.all([
     adminClient
       .from('documents')
-      .select('id, document_type, training_category, reviewed_status, expiry_date, file_name, issue_date')
+      .select('id, document_type, training_category, reviewed_status, verification_status, expiry_date, file_name, issue_date')
       .eq('staff_profile_id', staffProfileId),
 
     applicant_id
       ? adminClient
           .from('documents')
-          .select('id, document_type, training_category, reviewed_status, expiry_date, file_name, issue_date')
+          .select('id, document_type, training_category, reviewed_status, verification_status, expiry_date, file_name, issue_date')
           .eq('applicant_id', applicant_id)
       : Promise.resolve({ data: [], error: null }),
   ])
@@ -84,7 +84,8 @@ export async function GET(request: NextRequest) {
     if (
       d.document_type     === 'training_certificate' &&
       d.training_category &&
-      d.reviewed_status   === 'pending'
+      ((d as unknown as { verification_status?: string | null }).verification_status === 'pending_verification' ||
+       d.reviewed_status === 'pending')
     ) {
       pendingMap.set(d.training_category, true)
     }

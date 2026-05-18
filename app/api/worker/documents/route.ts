@@ -7,6 +7,7 @@ const DOC_SELECT = [
   'file_name', 'file_path', 'file_size',
   'expiry_date', 'issue_date', 'created_at',
   'reviewed_status', 'review_notes',
+  'verification_status', 'rejected_reason', 'resubmission_requested',
 ].join(', ')
 
 interface DocRecord {

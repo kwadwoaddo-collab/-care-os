@@ -27,9 +27,11 @@ export interface ComplianceDocument {
   /** Populated from migration 029 — structured training classification */
   training_category: string | null
   /** Admin review status: 'pending' | 'approved' | 'rejected' | null */
-  reviewed_status:   string | null
+  reviewed_status:    string | null
+  /** Verification lifecycle status — primary compliance gate when present */
+  verification_status?: string | null
   /** Optional certificate issue date */
-  issue_date:        string | null
+  issue_date:         string | null
 }
 
 // ── Output type ───────────────────────────────────────────────────────────────
@@ -86,11 +88,17 @@ interface TrainingResolution {
   missing:   string[]
 }
 
+function isDocApproved(d: ComplianceDocument): boolean {
+  // verification_status is the primary gate when present
+  if (d.verification_status != null) return d.verification_status === 'approved'
+  return d.reviewed_status === 'approved'
+}
+
 function resolveTraining(documents: ComplianceDocument[], requiredCategories: string[]): TrainingResolution {
   const approvedCerts = documents.filter(
     (d) =>
-      d.document_type   === 'training_certificate' &&
-      d.reviewed_status === 'approved' &&
+      d.document_type     === 'training_certificate' &&
+      isDocApproved(d)                               &&
       d.training_category !== null
   )
 

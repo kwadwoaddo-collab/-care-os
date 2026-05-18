@@ -25,6 +25,9 @@ export interface ApplicantDocForHub {
   staff_profile_id: string | null
   applicant_id: string | null
   signed_url: string | null
+  verification_status?: string | null
+  original_seen?: boolean
+  rejected_reason?: string | null
 }
 
 export interface StaffDocForHub {
@@ -39,6 +42,9 @@ export interface StaffDocForHub {
   reviewed_status?: string | null
   reviewed_by?: string | null
   reviewed_at?: string | null
+  verification_status?: string | null
+  original_seen?: boolean
+  rejected_reason?: string | null
 }
 
 interface Props {
@@ -92,6 +98,9 @@ interface UnifiedDoc {
   reviewed_by: string | null
   signed_url: string | null
   source: 'applicant' | 'staff'
+  verification_status?: string | null
+  original_seen?: boolean
+  rejected_reason?: string | null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -305,6 +314,25 @@ function DocumentRow({
         </span>
         <ExpiryBadge expiryDate={doc.expiry_date} />
         {doc.reviewed_status && <ReviewStatusBadge status={doc.reviewed_status} />}
+        {doc.verification_status && doc.verification_status !== 'approved' && (
+          <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide rounded-md px-1.5 py-0.5 ring-1 ring-inset ${
+            doc.verification_status === 'pending_verification' ? 'bg-amber-50 text-amber-700 ring-amber-500/20' :
+            doc.verification_status === 'verified'             ? 'bg-blue-50 text-blue-700 ring-blue-400/20'   :
+            doc.verification_status === 'rejected'             ? 'bg-red-50 text-red-700 ring-red-500/20'      :
+            'bg-gray-100 text-gray-600 ring-gray-400/20'
+          }`}>
+            {doc.verification_status === 'pending_verification' ? 'Pending verification' :
+             doc.verification_status === 'verified'             ? 'Verified' :
+             doc.verification_status === 'rejected'             ? 'Rejected' :
+             doc.verification_status}
+          </span>
+        )}
+        {doc.original_seen && (
+          <span className="flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 rounded-full px-1.5 py-0.5 ring-1 ring-inset ring-blue-400/20">
+            <span className="material-symbols-outlined text-[10px]">visibility</span>
+            Original seen
+          </span>
+        )}
       </div>
 
       {/* In-context action buttons */}
@@ -381,32 +409,38 @@ export default function DocumentComplianceHub({
 
   // Normalise applicant docs → UnifiedDoc
   const fromApplicant: UnifiedDoc[] = applicantDocs.map((d) => ({
-    id:              d.id,
-    document_type:   d.document_type,
-    file_name:       d.file_name,
-    file_size:       d.file_size,
-    expiry_date:     d.expiry_date,
-    created_at:      d.created_at,
-    reviewed_status: d.reviewed_status,
-    reviewed_at:     d.reviewed_at,
-    reviewed_by:     d.reviewed_by,
-    signed_url:      d.signed_url,
-    source:          'applicant',
+    id:                  d.id,
+    document_type:       d.document_type,
+    file_name:           d.file_name,
+    file_size:           d.file_size,
+    expiry_date:         d.expiry_date,
+    created_at:          d.created_at,
+    reviewed_status:     d.reviewed_status,
+    reviewed_at:         d.reviewed_at,
+    reviewed_by:         d.reviewed_by,
+    signed_url:          d.signed_url,
+    source:              'applicant',
+    verification_status: d.verification_status ?? null,
+    original_seen:       d.original_seen ?? false,
+    rejected_reason:     d.rejected_reason ?? null,
   }))
 
   // Normalise staff docs → UnifiedDoc
   const fromStaff: UnifiedDoc[] = staffDocs.map((d) => ({
-    id:              d.id,
-    document_type:   d.document_type,
-    file_name:       d.file_name,
-    file_size:       null,
-    expiry_date:     d.expiry_date ?? null,
-    created_at:      d.created_at,
-    reviewed_status: d.reviewed_status ?? null,
-    reviewed_at:     d.reviewed_at ?? null,
-    reviewed_by:     d.reviewed_by ?? null,
-    signed_url:      d.file_url ?? null,
-    source:          'staff',
+    id:                  d.id,
+    document_type:       d.document_type,
+    file_name:           d.file_name,
+    file_size:           null,
+    expiry_date:         d.expiry_date ?? null,
+    created_at:          d.created_at,
+    reviewed_status:     d.reviewed_status ?? null,
+    reviewed_at:         d.reviewed_at ?? null,
+    reviewed_by:         d.reviewed_by ?? null,
+    signed_url:          d.file_url ?? null,
+    source:              'staff',
+    verification_status: d.verification_status ?? null,
+    original_seen:       d.original_seen ?? false,
+    rejected_reason:     d.rejected_reason ?? null,
   }))
 
   const allDocs: UnifiedDoc[] = [...fromApplicant, ...fromStaff]
