@@ -63,7 +63,10 @@ export default function SetPasswordClient() {
     setSubmitting(true)
     setError(null)
 
-    const { error: updateErr } = await supabase.auth.updateUser({ password })
+    const { error: updateErr } = await supabase.auth.updateUser({
+      password,
+      data: { must_change_password: false },   // clear temp-password flag
+    })
 
     if (updateErr) {
       setError(updateErr.message)

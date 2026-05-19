@@ -18,7 +18,9 @@
     "pilot:verify": "tsx scripts/pilot-verify.ts",
     "pilot:verify:production": "tsx scripts/pilot-verify.ts --production",
     "pilot:cleanup:dry": "tsx scripts/cleanup-demo-data.ts --dry-run --verbose",
-    "pilot:cleanup": "tsx scripts/cleanup-demo-data.ts --confirm"
+    "pilot:cleanup": "tsx scripts/cleanup-demo-data.ts --confirm",
+    "pilot:create-manager": "tsx scripts/create-test-manager.ts",
+    "pilot:create-manager:dry": "tsx scripts/create-test-manager.ts --dry-run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

@@ -19,7 +19,8 @@ import AdminSidebar   from '@/components/admin/AdminSidebar'
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Fetch user profile once for: QA banner + nav permission filtering.
   // Non-blocking — layout never crashes on auth errors.
-  let isQaEnvironment = false
+  let isQaEnvironment    = false
+  let mustChangePassword = false
   let userRole = ''
   let userFullName = 'Admin User'
   let userInitials = 'A'
@@ -42,6 +43,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         userFullName = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
         userInitials = [profile.first_name?.[0], profile.last_name?.[0]].filter(Boolean).join('').toUpperCase() || 'A'
       }
+
+      // Test/pilot accounts are provisioned with must_change_password: true in user_metadata
+      mustChangePassword = user.user_metadata?.must_change_password === true
     }
   } catch {
     // Non-blocking — don't crash the layout
@@ -66,6 +70,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span>⚠️</span>
             <span>QA Environment — Test Data Only. Do not use real client or staff information.</span>
             <span>⚠️</span>
+          </div>
+        )}
+        {mustChangePassword && (
+          <div
+            id="password-change-banner"
+            role="alert"
+            className="bg-yellow-500 text-yellow-950 text-center px-4 py-1.5 text-xs font-semibold flex items-center justify-center gap-2"
+          >
+            <span>🔑</span>
+            <span>
+              Your account was provisioned with a temporary password.{' '}
+              <a href="/admin/set-password" className="underline font-bold hover:text-yellow-900">
+                Change it now →
+              </a>
+            </span>
           </div>
         )}
         {!isQaEnvironment && userRole && (
