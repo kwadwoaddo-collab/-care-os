@@ -16,7 +16,9 @@
     "qa:cycle": "tsx scripts/reset-qa-environment.ts --force && tsx scripts/seed-qa-environment.ts",
     "email:test": "tsx scripts/send-test-email.ts",
     "pilot:verify": "tsx scripts/pilot-verify.ts",
-    "pilot:verify:production": "tsx scripts/pilot-verify.ts --production"
+    "pilot:verify:production": "tsx scripts/pilot-verify.ts --production",
+    "pilot:cleanup:dry": "tsx scripts/cleanup-demo-data.ts --dry-run --verbose",
+    "pilot:cleanup": "tsx scripts/cleanup-demo-data.ts --confirm"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
