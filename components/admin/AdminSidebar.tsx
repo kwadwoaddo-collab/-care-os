@@ -82,22 +82,22 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   ]
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-[#fbf8fa] border-r border-outline-variant z-50">
+    <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-surface-container border-r border-outline-variant z-50">
       <div className="flex flex-col h-full px-6 py-8 overflow-y-auto no-scrollbar">
 
         {/* ── Brand ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 shrink-0 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-            <Icon name="shield" size="md" fill className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shrink-0">
+            <Icon name="shield" size="md" fill className="text-on-primary" />
           </div>
           <div>
             <span
-              className="block text-[22px] font-bold text-slate-900 leading-none tracking-tight"
+              className="block text-[22px] font-bold text-on-surface leading-none tracking-tight"
               style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
             >
               Care OS
             </span>
-            <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+            <span className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">
               Healthcare Admin
             </span>
           </div>
@@ -117,8 +117,8 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 href={item.href}
                 className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 overflow-hidden ${
                   isActive
-                    ? 'bg-[#4f46e5] text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                    ? 'bg-secondary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
                 }`}
                 style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
@@ -149,8 +149,8 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
                 href={item.href}
                 className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 overflow-hidden ${
                   isActive
-                    ? 'bg-[#4f46e5] text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+                    ? 'bg-secondary text-white shadow-sm'
+                    : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
                 }`}
                 style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
@@ -172,17 +172,17 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
 
           {/* User profile row */}
           <div className="mt-4 pt-4 border-t border-outline-variant/60 flex items-center gap-3 px-2">
-            <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center text-slate-800 font-bold text-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-surface-container-lowest shadow-sm border border-outline-variant/60 flex items-center justify-center text-on-surface font-bold text-sm shrink-0">
               {userInitials}
             </div>
             <div className="flex-1 min-w-0">
               <p
-                className="text-sm font-bold text-slate-900 truncate"
+                className="text-sm font-bold text-on-surface truncate"
                 style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
                 {userFullName}
               </p>
-              <p className="text-[11px] text-slate-500 font-medium truncate capitalize">
+              <p className="text-[11px] text-on-surface-variant font-medium truncate capitalize">
                 {userRole.replace(/_/g, ' ') || 'Admin'}
               </p>
             </div>
