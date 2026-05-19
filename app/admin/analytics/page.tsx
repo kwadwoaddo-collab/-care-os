@@ -15,6 +15,108 @@ import {
 import type { AnalyticsDashboard } from '@/app/api/admin/analytics/route'
 import type { TrendsResponse }     from '@/app/api/admin/analytics/trends/route'
 import type { Period }             from '@/lib/analytics/compute'
+import type { OrchestrationResult, UnifiedPriorityItem } from '@/lib/operations/orchestration'
+
+// ── Executive Risk Summary ────────────────────────────────────────────────────
+
+const SEV_CLS: Record<string, string> = {
+  critical:      'text-red-700 bg-red-50 ring-red-500/20',
+  urgent:        'text-orange-700 bg-orange-50 ring-orange-400/20',
+  warning:       'text-yellow-700 bg-yellow-50 ring-yellow-400/20',
+  informational: 'text-slate-500 bg-slate-50 ring-slate-300/20',
+}
+
+const SEV_DOT: Record<string, string> = {
+  critical: 'bg-red-500', urgent: 'bg-orange-400', warning: 'bg-yellow-400', informational: 'bg-slate-300',
+}
+
+function RiskItem({ item }: { item: UnifiedPriorityItem }) {
+  return (
+    <div className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
+      <span className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${SEV_DOT[item.severity]}`} aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
+        <p className="text-xs text-slate-500 mt-0.5 truncate">{item.description}</p>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ring-1 ${SEV_CLS[item.severity]}`}>
+          {item.severity}
+        </span>
+        <span className="text-xs font-bold text-slate-600">{item.priorityScore}</span>
+      </div>
+    </div>
+  )
+}
+
+function ExecutiveRiskSummary() {
+  const [orch,    setOrch]    = useState<OrchestrationResult | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/admin/operations/priorities')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => setOrch(d))
+      .catch(() => null)
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <Skeleton variant="card" count={1} />
+  if (!orch)   return null
+
+  const now = Date.now()
+  const aging = {
+    over24h: orch.priorities.filter((p) => {
+      const h = (now - new Date(p.createdAt).getTime()) / 3600000
+      return h >= 24 && p.status !== 'resolved'
+    }).length,
+    over7d: orch.priorities.filter((p) => {
+      const d = (now - new Date(p.createdAt).getTime()) / 86400000
+      return d >= 7 && p.status !== 'resolved'
+    }).length,
+  }
+
+  return (
+    <Card>
+      <SectionHeader title="Operational Risk Summary" className="mb-4" />
+
+      {/* Risk counts */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        {([
+          { label: 'Critical',      count: orch.summary.critical,      cls: 'text-red-700 bg-red-50 border-red-200' },
+          { label: 'Urgent',        count: orch.summary.urgent,        cls: 'text-orange-700 bg-orange-50 border-orange-200' },
+          { label: 'Warning',       count: orch.summary.warning,       cls: 'text-yellow-700 bg-yellow-50 border-yellow-200' },
+          { label: 'Total open',    count: orch.summary.total,         cls: 'text-slate-700 bg-slate-50 border-slate-200' },
+        ] as const).map(({ label, count, cls }) => (
+          <div key={label} className={`rounded-lg border px-3 py-2 ${cls}`}>
+            <p className="text-xs font-medium opacity-70">{label}</p>
+            <p className="text-2xl font-black">{count}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Top 5 risks */}
+      <div className="mb-4">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Top 5 Risks</p>
+        {orch.summary.topRisk.length === 0 ? (
+          <p className="text-sm text-slate-400 py-2">No active operational risks.</p>
+        ) : (
+          orch.summary.topRisk.map((item) => (
+            <RiskItem key={item.id} item={item} />
+          ))
+        )}
+      </div>
+
+      {/* Priority aging */}
+      <div className="flex items-center gap-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
+        <span>Aging: <strong className="text-slate-700">{aging.over24h}</strong> open &gt;24h</span>
+        <span><strong className={aging.over7d > 0 ? 'text-red-600' : 'text-slate-700'}>{aging.over7d}</strong> open &gt;7d</span>
+        <Link href="/admin/operations" className="ml-auto text-indigo-600 font-medium hover:underline">
+          View all priorities →
+        </Link>
+      </div>
+    </Card>
+  )
+}
 
 // ── Bar chart ─────────────────────────────────────────────────────────────────
 
@@ -180,6 +282,9 @@ export default function AnalyticsDashboardPage() {
         </div>
       ) : (
         <>
+          {/* Executive operational risk summary */}
+          <ExecutiveRiskSummary />
+
           {/* Health score + signals */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
