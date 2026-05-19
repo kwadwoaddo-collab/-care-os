@@ -99,6 +99,68 @@ function staffName(p: { first_name: string | null; last_name: string | null } | 
   return [p.first_name, p.last_name].filter(Boolean).join(' ') || '—'
 }
 
+function formatAuditAction(e: AuditEntry): { title: string; subtitle: string } {
+  const action = e.action || ''
+  const entityType = e.entity_type || ''
+  const entityId = e.entity_id || ''
+  const metadata = e.metadata || {}
+
+  const staffNameVal = (metadata.staff_name || metadata.staffName || metadata.name || '') as string
+  const clientNameVal = (metadata.client_name || metadata.clientName || '') as string
+  const docType = (metadata.document_type || metadata.documentType || metadata.type || '') as string
+  const status = (metadata.status || metadata.new_status || '') as string
+
+  let title = action
+  let subtitle = entityId ? `${entityType} ID: ${entityId.slice(0, 8)}...` : 'System event'
+
+  if (action === 'staff.create') {
+    title = staffNameVal ? `Registered staff member ${staffNameVal}` : 'Registered a new staff member'
+    subtitle = 'Profile created'
+  } else if (action === 'staff.update') {
+    title = staffNameVal ? `Updated profile for ${staffNameVal}` : 'Updated staff profile'
+    subtitle = 'HR details updated'
+  } else if (action === 'staff.status_change' || action === 'staff.suspend') {
+    title = staffNameVal ? `Changed ${staffNameVal}'s status` : 'Changed staff status'
+    subtitle = status ? `New status: ${status}` : 'Status modified'
+  } else if (action === 'shift.create') {
+    title = 'Scheduled a new shift'
+    subtitle = clientNameVal ? `For client: ${clientNameVal}` : 'Shift scheduled'
+  } else if (action === 'shift.assign') {
+    const assignedStaff = (metadata.assigned_staff_name || metadata.staff_name || '') as string
+    title = assignedStaff ? `Assigned shift to ${assignedStaff}` : 'Assigned staff to shift'
+    subtitle = clientNameVal ? `Client: ${clientNameVal}` : 'Shift assigned'
+  } else if (action === 'shift.update') {
+    title = 'Updated shift details'
+    subtitle = 'Schedule modified'
+  } else if (action === 'shift.cancel') {
+    title = 'Cancelled shift'
+    subtitle = 'Shift cancelled'
+  } else if (action.startsWith('document.')) {
+    const verb = action.split('.')[1] || 'processed'
+    const docLabel = (docType || entityType || 'document').replace(/_/g, ' ')
+    title = `${verb.charAt(0).toUpperCase() + verb.slice(1)}ed ${docLabel}`
+    subtitle = staffNameVal ? `For staff: ${staffNameVal}` : `Document ID: ${entityId.slice(0, 8)}...`
+  } else if (action === 'incident.report') {
+    title = 'Reported new incident'
+    subtitle = clientNameVal ? `Involving client: ${clientNameVal}` : 'Incident flagged'
+  } else if (action === 'incident.resolve') {
+    title = 'Resolved incident'
+    subtitle = 'Investigation closed'
+  } else if (action === 'care_package.create') {
+    const pkgTitle = (metadata.title || metadata.package_title || '') as string
+    title = pkgTitle ? `Created care package: ${pkgTitle}` : 'Created new care package'
+    subtitle = clientNameVal ? `For client: ${clientNameVal}` : 'Care package initialized'
+  } else {
+    const parts = action.split('.')
+    const domain = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : ''
+    const verb = parts[1] ? parts[1].replace(/_/g, ' ') : ''
+    title = domain && verb ? `${domain}: ${verb}` : action
+    subtitle = staffNameVal ? `Staff: ${staffNameVal}` : clientNameVal ? `Client: ${clientNameVal}` : entityId ? `${entityType || 'Entity'} ID: ${entityId.slice(0, 8)}...` : 'System event'
+  }
+
+  return { title, subtitle }
+}
+
 const SHIFT_STATUS: Record<string, string> = {
   scheduled: 'bg-blue-50 text-blue-700',
   confirmed:  'bg-green-50 text-green-700',
@@ -143,7 +205,7 @@ function auditCls(action: string) {
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-white rounded-xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] ${className}`}>
+    <div className={`bg-white rounded-xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-md hover:scale-[1.005] hover:border-slate-200/60 ${className}`}>
       {children}
     </div>
   )
@@ -172,7 +234,7 @@ function CommandMetric({ title, count, sub, variant }: { title: string; count: n
     success: 'text-indigo-600',
   }
   return (
-    <div className={`bg-white p-6 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 ${borders[variant]}`}>
+    <div className={`bg-white p-6 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border-l-4 ${borders[variant]} transition-all duration-300 hover:shadow-md hover:scale-[1.01] hover:border-slate-200/40`}>
       <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
       <div className="mt-2 flex items-baseline gap-2">
         <span className={`text-4xl font-extrabold ${textColors[variant]}`}>{count}</span>
@@ -184,8 +246,8 @@ function CommandMetric({ title, count, sub, variant }: { title: string; count: n
 
 function QuickAction({ icon, title, subtitle, href, iconColor, bg }: { icon: string; title: string; subtitle: string; href: string; iconColor: string; bg: string }) {
   return (
-    <Link href={href} className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all text-left">
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${bg} ${iconColor}`}>
+    <Link href={href} className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 hover:scale-[1.02] transition-all duration-300 text-left group">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${bg} ${iconColor} transition-transform duration-300 group-hover:scale-110`}>
         <Icon name={icon} size="md" fill />
       </div>
       <div>
@@ -514,16 +576,19 @@ export default function AdminDashboardDesktop({
             <div className="divide-y divide-slate-50 p-2">
               {auditEntries.length === 0 ? (
                 <p className="text-center text-sm text-slate-400 py-8">No audit events yet.</p>
-              ) : auditEntries.slice(0, 8).map((e) => (
-                <div key={e.id} className="flex gap-4 px-4 py-3">
-                  <div className="mt-1 w-2 h-2 rounded-full bg-slate-300 shrink-0"></div>
-                  <div>
-                    <p className="text-sm text-slate-900 font-semibold">{e.action}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{e.entity_type} ID: {e.entity_id}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 uppercase font-semibold">{fmtTs(e.created_at)}</p>
+              ) : auditEntries.slice(0, 8).map((e) => {
+                const { title, subtitle } = formatAuditAction(e)
+                return (
+                  <div key={e.id} className="flex gap-4 px-4 py-3">
+                    <div className="mt-1 w-2 h-2 rounded-full bg-slate-300 shrink-0"></div>
+                    <div>
+                      <p className="text-sm text-slate-900 font-semibold">{title}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+                      <p className="text-[10px] text-slate-400 mt-1 uppercase font-semibold">{fmtTs(e.created_at)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </Card>
 

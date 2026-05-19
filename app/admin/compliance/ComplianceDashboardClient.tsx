@@ -138,7 +138,7 @@ function TriageCard({ label, count, description, cls, icon, iconCls, onClick }: 
   return (
     <button
       onClick={onClick}
-      className={`bg-surface-container-lowest border-l-4 p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col items-start text-left w-full hover:shadow-md transition-shadow ${cls}`}
+      className={`bg-surface-container-lowest border-l-4 p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col items-start text-left w-full hover:shadow-md hover:scale-[1.01] transition-all duration-300 ${cls}`}
     >
       <div className="flex justify-between items-start w-full">
         <div>
@@ -529,9 +529,19 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
               const ringColor = row.complianceState === 'blocked' ? 'border-error' : row.complianceState === 'non_compliant' ? 'border-error' : row.complianceState === 'warning' ? 'border-tertiary-fixed-dim' : 'border-secondary'
               
               return (
-                <div key={row.staffId} className="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full relative group">
+                <div key={row.staffId} className="bg-surface-container-lowest border border-outline-variant p-card-padding rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col h-full relative group transition-all duration-300 hover:shadow-md hover:scale-[1.01] hover:border-outline-variant/80">
                   {/* Top Right Actions */}
                   <div className="absolute top-4 right-4 flex items-center gap-2">
+                    {row.complianceState !== 'compliant' && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); remindWorker(row); }}
+                        disabled={bulkBusy}
+                        className="lg:opacity-0 lg:group-hover:opacity-100 opacity-100 transition-opacity p-1 rounded-md hover:bg-surface-container text-on-surface-variant hover:text-primary flex items-center justify-center disabled:opacity-50"
+                        title="Send compliance reminder magic link"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">mail</span>
+                      </button>
+                    )}
                     <input
                       type="checkbox"
                       aria-label={`Select ${row.staffName}`}
