@@ -15,13 +15,15 @@
  *   npx tsx scripts/create-test-manager.ts [options]
  *
  * Options:
- *   --email      <email>     Login email (default: pilot.manager@careos.pilot)
- *   --password   <pwd>       Temp password (default: auto-generated)
- *   --first-name <name>      First name   (default: Pilot)
- *   --last-name  <name>      Last name    (default: Manager)
- *   --phone      <phone>     Phone number (optional)
- *   --role       <role>      registered_manager | company_admin | coordinator
+ *   --email        <email>   Login email (required)
+ *   --password     <pwd>     Temp password (required; min 8 chars, mixed case + digit)
+ *   --first-name   <name>    First name   (default: Pilot)
+ *   --last-name    <name>    Last name    (default: Manager)
+ *   --phone        <phone>   Phone number (optional; UK format validated if supplied)
+ *   --role         <role>    registered_manager | company_admin | coordinator | compliance_manager
  *                            (default: registered_manager)
+ *   --company-id   <uuid>    Target company UUID (overrides auto-select)
+ *   --company-slug <slug>    Target company slug (overrides auto-select)
  *   --dry-run                Preview without creating anything
  *
  * The script reads NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY
@@ -51,35 +53,84 @@ const db = createClient<any>(SUPABASE_URL, SERVICE_ROLE_KEY, {
 })
 
 // ── CLI argument parsing ──────────────────────────────────────────────────────
+// Handles both --flag value and --flag=value forms (shell strips quotes and
+// may merge flag+value into a single token when = is used).
 
 function getArg(flag: string): string | null {
+  // --flag=value form (single token)
+  const prefix = `${flag}=`
+  const eqArg = process.argv.find((a) => a.startsWith(prefix))
+  if (eqArg) return eqArg.slice(prefix.length)
+
+  // --flag value form (two tokens)
   const idx = process.argv.indexOf(flag)
-  return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null
+  if (idx !== -1 && idx + 1 < process.argv.length) {
+    const next = process.argv[idx + 1]
+    if (next && !next.startsWith('--')) return next
+  }
+
+  return null
 }
 
-const DRY_RUN   = process.argv.includes('--dry-run')
-const FIRST_NAME = getArg('--first-name') ?? 'Pilot'
-const LAST_NAME  = getArg('--last-name')  ?? 'Manager'
-const EMAIL      = getArg('--email')      ?? 'pilot.manager@careos.pilot'
-const ROLE       = getArg('--role')       ?? 'registered_manager'
-const PHONE      = getArg('--phone')      ?? null
+const DRY_RUN     = process.argv.includes('--dry-run')
+const FIRST_NAME  = getArg('--first-name')   ?? 'Pilot'
+const LAST_NAME   = getArg('--last-name')    ?? 'Manager'
+const EMAIL       = getArg('--email')        ?? ''
+const ROLE        = getArg('--role')         ?? 'registered_manager'
+const PHONE       = getArg('--phone')        ?? null
+const COMPANY_ID  = getArg('--company-id')   ?? null
+const COMPANY_SLUG = getArg('--company-slug') ?? null
 
-// Generate a strong temp password if not provided
 const RAW_PASSWORD = getArg('--password') ?? generateTempPassword()
 
 // ── Validation ────────────────────────────────────────────────────────────────
 
 const VALID_ROLES = ['registered_manager', 'company_admin', 'coordinator', 'compliance_manager']
 
-if (!VALID_ROLES.includes(ROLE)) {
-  console.error(`❌  Invalid role "${ROLE}". Valid options: ${VALID_ROLES.join(', ')}`)
-  process.exit(1)
+function validateArgs(): void {
+  const errors: string[] = []
+
+  if (!EMAIL) {
+    errors.push('--email is required')
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(EMAIL)) {
+    errors.push(`--email "${EMAIL}" is not a valid email address`)
+  }
+
+  if (!getArg('--password')) {
+    // auto-generated is fine, no error
+  } else if (RAW_PASSWORD.length < 8) {
+    errors.push('--password must be at least 8 characters')
+  } else if (!/[A-Z]/.test(RAW_PASSWORD)) {
+    errors.push('--password must contain at least one uppercase letter')
+  } else if (!/[a-z]/.test(RAW_PASSWORD)) {
+    errors.push('--password must contain at least one lowercase letter')
+  } else if (!/[0-9]/.test(RAW_PASSWORD)) {
+    errors.push('--password must contain at least one digit')
+  }
+
+  if (PHONE) {
+    // Accept UK mobile/landline: 07xxx, 01xxx, 02xxx, +44xxx, or international +NNN
+    const cleaned = PHONE.replace(/\s+/g, '')
+    if (!/^(\+\d{7,15}|0\d{9,10})$/.test(cleaned)) {
+      errors.push(`--phone "${PHONE}" does not look like a valid phone number (e.g. 07877116650 or +447877116650)`)
+    }
+  }
+
+  if (!VALID_ROLES.includes(ROLE)) {
+    errors.push(`--role "${ROLE}" is invalid. Valid options: ${VALID_ROLES.join(', ')}`)
+  }
+
+  if (errors.length > 0) {
+    console.error('\n❌  Argument validation failed:')
+    for (const e of errors) {
+      console.error(`    • ${e}`)
+    }
+    console.error()
+    process.exit(1)
+  }
 }
 
-if (RAW_PASSWORD.length < 8) {
-  console.error('❌  Password must be at least 8 characters')
-  process.exit(1)
-}
+validateArgs()
 
 // ── Permission summary for the chosen role ────────────────────────────────────
 
@@ -178,44 +229,80 @@ async function main(): Promise<void> {
     console.log('  MODE: DRY RUN — no account will be created\n')
   }
 
-  console.log('  Account to create:')
-  console.log(`    Name  : ${FIRST_NAME} ${LAST_NAME}`)
-  console.log(`    Email : ${EMAIL}`)
-  console.log(`    Role  : ${ROLE}`)
-  if (PHONE) console.log(`    Phone : ${PHONE}`)
-  console.log()
+  // ── Step 0: Find the target company ───────────────────────────────────────
 
-  // ── Step 0: Find the pilot company ────────────────────────────────────────
+  let company: { id: string; name: string; slug: string } | null = null
 
-  const { data: companies, error: compErr } = await db
-    .from('companies')
-    .select('id, name, slug')
-    .not('slug', 'ilike', '%qa%')
-    .not('slug', 'ilike', '%demo%')
-    .not('slug', 'ilike', '%test%')
-    .order('created_at', { ascending: true })
-    .limit(1)
+  if (COMPANY_ID) {
+    const { data, error } = await db
+      .from('companies')
+      .select('id, name, slug')
+      .eq('id', COMPANY_ID)
+      .maybeSingle()
+    if (error || !data) {
+      console.error(`❌  No company found with id="${COMPANY_ID}"`)
+      process.exit(1)
+    }
+    company = data
+  } else if (COMPANY_SLUG) {
+    const { data, error } = await db
+      .from('companies')
+      .select('id, name, slug')
+      .eq('slug', COMPANY_SLUG)
+      .maybeSingle()
+    if (error || !data) {
+      console.error(`❌  No company found with slug="${COMPANY_SLUG}"`)
+      process.exit(1)
+    }
+    company = data
+  } else {
+    // Auto-select: first non-QA/demo/test company
+    const { data: companies, error: compErr } = await db
+      .from('companies')
+      .select('id, name, slug')
+      .not('slug', 'ilike', '%qa%')
+      .not('slug', 'ilike', '%demo%')
+      .not('slug', 'ilike', '%test%')
+      .order('created_at', { ascending: true })
+      .limit(1)
 
-  if (compErr || !companies || companies.length === 0) {
-    console.error('❌  No non-QA company found. Create a production company first.')
-    console.error('    (Or ensure the company slug does not contain "qa", "demo", or "test")')
-    process.exit(1)
+    if (compErr || !companies || companies.length === 0) {
+      console.error('❌  No non-QA company found. Create a production company first,')
+      console.error('    or pass --company-id / --company-slug to target a specific company.')
+      process.exit(1)
+    }
+    company = companies[0]
   }
 
-  const company = companies[0]
-  console.log(`  Target company : "${company.name}" (${company.id})\n`)
+  // ── Pre-provisioning summary ───────────────────────────────────────────────
+
+  console.log('  Requested account:')
+  console.log(`    Full name : ${FIRST_NAME} ${LAST_NAME}`)
+  console.log(`    Email     : ${EMAIL}`)
+  console.log(`    Phone     : ${PHONE ?? '(not provided)'}`)
+  console.log(`    Role      : ${ROLE}`)
+  console.log(`    Company   : "${company.name}" (slug: ${company.slug}, id: ${company.id})`)
+  console.log()
 
   if (DRY_RUN) {
-    console.log('  [DRY RUN] Would create:')
-    console.log(`    auth.users row with email="${EMAIL}"`)
-    console.log(`    profiles row with role="${ROLE}", company_id="${company.id}"`)
-    console.log(`    staff_profiles row with status="active", job_role="registered_manager"`)
-    console.log(`    audit_logs row: account_created`)
+    console.log('  Parsed arguments:')
+    console.log(`    --email        = ${EMAIL}`)
+    console.log(`    --first-name   = ${FIRST_NAME}`)
+    console.log(`    --last-name    = ${LAST_NAME}`)
+    console.log(`    --phone        = ${PHONE ?? '(none)'}`)
+    console.log(`    --role         = ${ROLE}`)
+    console.log(`    --password     = ${getArg('--password') ? '(provided)' : '(auto-generated)'}`)
+    console.log()
+    console.log('  Would create:')
+    console.log(`    auth.users row        → email="${EMAIL}"`)
+    console.log(`    profiles row          → role="${ROLE}", company_id="${company.id}"`)
+    console.log(`    staff_profiles row    → status="active", job_role="registered_manager"`)
+    console.log(`    audit_logs row        → action="test_manager_account_created"`)
     printLoginCard()
     process.exit(0)
   }
 
-  // ── Step 1: Check for existing user ───────────────────────────────────────
+  // ── Step 1: Safety guard — check for existing auth user ───────────────────
 
   const { data: existingList } = await db.auth.admin.listUsers()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -223,7 +310,30 @@ async function main(): Promise<void> {
 
   if (existingUser) {
     console.log(`  ⚠️   Auth user with email "${EMAIL}" already exists (${existingUser.id})`)
-    console.log('       Updating metadata and profile only.\n')
+
+    // Check for existing profile
+    const { data: existingProfile } = await db
+      .from('profiles')
+      .select('id, role, company_id')
+      .eq('id', existingUser.id)
+      .maybeSingle()
+
+    if (existingProfile) {
+      console.log(`       Existing profile: role=${existingProfile.role}, company_id=${existingProfile.company_id}`)
+    }
+
+    // Check for existing staff profile
+    const { data: existingStaff } = await db
+      .from('staff_profiles')
+      .select('id, status')
+      .eq('profile_id', existingUser.id)
+      .maybeSingle()
+
+    if (existingStaff) {
+      console.log(`       Existing staff profile: id=${existingStaff.id}, status=${existingStaff.status}`)
+    }
+
+    console.log('       Re-provisioning: updating metadata and profiles.\n')
     await ensureProfile(existingUser.id, company.id)
     await ensureStaffProfile(existingUser.id, company.id)
     await writeAuditLog(existingUser.id, company.id, 'test_account_reprovisioned')
@@ -238,7 +348,7 @@ async function main(): Promise<void> {
   const { data: authData, error: authErr } = await db.auth.admin.createUser({
     email:          EMAIL,
     password:       RAW_PASSWORD,
-    email_confirm:  true,      // skip email confirmation — direct login enabled
+    email_confirm:  true,
     user_metadata: {
       first_name:            FIRST_NAME,
       last_name:             LAST_NAME,
@@ -246,7 +356,7 @@ async function main(): Promise<void> {
       phone:                 PHONE,
       is_test_account:       true,
       is_pilot_account:      true,
-      must_change_password:  true,  // prompt to change on first login
+      must_change_password:  true,
       account_created_by:    'create-test-manager script',
       account_created_at:    new Date().toISOString(),
     },
@@ -304,7 +414,6 @@ async function ensureProfile(userId: string, companyId: string): Promise<void> {
 }
 
 async function ensureStaffProfile(userId: string, companyId: string): Promise<void> {
-  // Check if a staff profile already linked to this user_id exists
   const { data: existing } = await db
     .from('staff_profiles')
     .select('id')
@@ -320,25 +429,23 @@ async function ensureStaffProfile(userId: string, companyId: string): Promise<vo
   const { data, error } = await db
     .from('staff_profiles')
     .insert({
-      company_id:       companyId,
-      profile_id:       userId,
-      first_name:       FIRST_NAME,
-      last_name:        LAST_NAME,
-      email:            EMAIL,
-      phone:            PHONE,
-      job_role:         'registered_manager',
-      status:           'active',
-      onboarding_completed: true,
-      dbs_checked:      false,
+      company_id:            companyId,
+      profile_id:            userId,
+      first_name:            FIRST_NAME,
+      last_name:             LAST_NAME,
+      email:                 EMAIL,
+      phone:                 PHONE,
+      job_role:              'registered_manager',
+      status:                'active',
+      onboarding_completed:  true,
+      dbs_checked:           false,
       right_to_work_checked: false,
-      // Mark clearly as test/pilot account
-      compliance_state: 'warning',
+      compliance_state:      'warning',
     })
     .select('id')
     .maybeSingle()
 
   if (error) {
-    // Non-fatal — staff profile is secondary
     console.log(`     ⚠️  staff_profiles insert warning: ${error.message}`)
   } else {
     console.log(`     Staff profile: ${data?.id}`)
@@ -350,22 +457,23 @@ async function writeAuditLog(
   companyId: string,
   eventType: string,
 ): Promise<void> {
+  // audit_logs schema: id, company_id, actor_id, action, entity_type, entity_id, metadata, created_at
   const { error } = await db
     .from('audit_logs')
     .insert({
       company_id:  companyId,
-      event_type:  eventType,
       actor_id:    userId,
-      actor_email: EMAIL,
-      target_type: 'profile',
-      target_id:   userId,
+      action:      eventType,
+      entity_type: 'profile',
+      entity_id:   userId,
       metadata: {
-        role:                ROLE,
-        name:                `${FIRST_NAME} ${LAST_NAME}`,
-        is_test_account:     true,
-        is_pilot_account:    true,
-        provisioned_by:      'create-test-manager script',
-        provisioned_at:      new Date().toISOString(),
+        role:             ROLE,
+        name:             `${FIRST_NAME} ${LAST_NAME}`,
+        email:            EMAIL,
+        is_test_account:  true,
+        is_pilot_account: true,
+        provisioned_by:   'create-test-manager script',
+        provisioned_at:   new Date().toISOString(),
       },
     })
 
@@ -408,8 +516,7 @@ function printLoginCard(): void {
   }
 
   console.log('\n  FIRST-LOGIN CHECKLIST:')
-  const loginUrl2 = loginUrl
-  console.log(`    1. Go to ${loginUrl2}`)
+  console.log(`    1. Go to ${loginUrl}`)
   console.log(`    2. Enter email: ${EMAIL}`)
   console.log(`    3. Enter password: ${RAW_PASSWORD}`)
   console.log('    4. Dashboard should load — note the "Pilot mode" banner')
