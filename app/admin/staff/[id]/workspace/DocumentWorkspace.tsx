@@ -6,6 +6,7 @@ import { applyFilters, folderDocCounts, SOURCE_LABELS } from './helpers'
 import FolderTree from './FolderTree'
 import DocumentTable from './DocumentTable'
 import PreviewDrawer from './PreviewDrawer'
+import ReadinessPanel from './ReadinessPanel'
 import VerificationDrawer, { type DrawerMode, type DrawerDocument } from '../../../documents/verification/VerificationDrawer'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -266,6 +267,11 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
 
   return (
     <div className="flex flex-col gap-0 h-full min-h-0 -mx-0">
+      {/* Readiness panel */}
+      <div className="mb-4">
+        <ReadinessPanel staffProfileId={staffProfileId} />
+      </div>
+
       {/* Workspace summary strip */}
       <div className="flex flex-wrap items-center gap-3 px-0 pb-3">
         <div className="flex items-center gap-3">
