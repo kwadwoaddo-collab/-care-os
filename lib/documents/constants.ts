@@ -8,6 +8,8 @@ export const DOCUMENT_TYPE_VALUES = [
   'qualification',
   'proof_of_address',
   'national_insurance',
+  'application_form',
+  'cv',
   'other',
 ] as const
 
@@ -21,6 +23,8 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   qualification:        'Qualification',
   proof_of_address:     'Proof of Address',
   national_insurance:   'National Insurance',
+  application_form:     'Application Form',
+  cv:                   'CV / Résumé',
   other:                'Other',
 }
 

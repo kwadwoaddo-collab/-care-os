@@ -11,6 +11,8 @@ export interface DocumentFolder {
   icon:        string | null
   colour:      string | null
   description: string | null
+  is_system:   boolean
+  is_custom:   boolean
   documents:   RepositoryDocument[]
 }
 
@@ -48,6 +50,8 @@ export interface RepositoryDocument {
   resubmission_requested: boolean
   approved_by:            string | null
   approved_at:            string | null
+  source_label:           string | null
+  deleted_at:             string | null
 }
 
 // ── Fetch full document repository for a staff member ────────────────────────
@@ -63,11 +67,17 @@ export async function getStaffDocumentRepository(opts: {
   // Fetch all folders
   const { data: folderRows } = await adminClient
     .from('staff_document_folders')
-    .select('id, name, slug, sort_order, icon, colour, description')
+    .select('id, name, slug, sort_order, icon, colour, description, is_system, is_custom')
     .eq('company_id', companyId)
+    .is('archived_at', null)
     .order('sort_order', { ascending: true })
 
-  const folders: DocumentFolder[] = (folderRows ?? []).map((f) => ({ ...f, documents: [] }))
+  const folders: DocumentFolder[] = (folderRows ?? []).map((f) => ({
+    ...f,
+    is_system: f.is_system ?? true,
+    is_custom: f.is_custom ?? false,
+    documents: [],
+  }))
 
   // Build document query
   let docQuery = adminClient
@@ -80,10 +90,13 @@ export async function getStaffDocumentRepository(opts: {
       original_filename, applicant_id, staff_profile_id, folder_id,
       verification_status, verified_by, verified_at, verification_method,
       original_seen, rejected_reason, resubmission_requested,
-      approved_by, approved_at
+      approved_by, approved_at, source_label, deleted_at
     `)
     .eq('company_id', companyId)
     .order('created_at', { ascending: false })
+
+  // Never return permanently-deleted documents
+  docQuery = docQuery.is('deleted_at', null)
 
   if (!includeArchived) {
     docQuery = docQuery.is('archived_at', null)

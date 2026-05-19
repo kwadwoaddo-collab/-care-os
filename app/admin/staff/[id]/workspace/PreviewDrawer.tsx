@@ -22,7 +22,7 @@ interface AuditEntry {
 interface Props {
   doc:            WorkspaceDocument | null
   onClose:        () => void
-  onAction:       (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive', docId: string) => void
+  onAction:       (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive' | 'move' | 'delete', docId: string) => void
   onStatusChange: (docId: string, newStatus: string) => void
 }
 
@@ -337,11 +337,23 @@ export default function PreviewDrawer({ doc, onClose, onAction, onStatusChange }
               Download
             </a>
           )}
+          <button onClick={() => onAction('move', doc.id)}
+            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors">
+            <span className="material-symbols-outlined text-[11px]">drive_file_move</span>
+            Move
+          </button>
           <button onClick={() => onAction('archive', doc.id)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-colors">
+            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-gray-400 hover:text-amber-700 hover:bg-amber-50 border border-gray-200 hover:border-amber-200 transition-colors">
             <span className="material-symbols-outlined text-[11px]">archive</span>
             Archive
           </button>
+          {doc.archived_at && (
+            <button onClick={() => onAction('delete', doc.id)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] text-red-400 hover:text-red-700 hover:bg-red-50 border border-red-100 hover:border-red-300 transition-colors">
+              <span className="material-symbols-outlined text-[11px]">delete_forever</span>
+              Delete
+            </button>
+          )}
         </div>
 
         {/* Tab bar */}

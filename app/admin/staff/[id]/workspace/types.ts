@@ -8,6 +8,8 @@ export interface WorkspaceFolder {
   icon:        string | null
   colour:      string | null
   description: string | null
+  is_system:   boolean
+  is_custom:   boolean
   documents:   WorkspaceDocument[]
 }
 
@@ -33,6 +35,7 @@ export interface WorkspaceDocument {
   resubmission_requested: boolean
   approved_by:            string | null
   approved_at:            string | null
+  source_label:           string | null
   worker_visible:         boolean
   visibility:             string
   compliance_linked:      boolean

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { linkApplicantDocumentsToStaff } from '@/lib/documents/lifecycle'
+import { linkApplicationPdfToStaff } from '@/lib/documents/application-pdf'
 
 // ── Form slug → staff_profile column mapping ──────────────────────────────────
 //
@@ -229,6 +230,13 @@ export async function POST(
     staffProfileId: staffProfile.id,
     companyId:      applicant.company_id,
   }).catch((err) => console.error('[convert] document routing error:', err))
+
+  // Link application form PDF (if any) to the new staff profile
+  void linkApplicationPdfToStaff({
+    applicantId,
+    staffProfileId: staffProfile.id,
+    companyId:      applicant.company_id,
+  }).catch((err) => console.error('[convert] application PDF link error:', err))
 
   // ── 7. Update applicant status → hired ────────────────────────────────────
   const { error: statusError } = await adminClient

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { adminClient } from '@/lib/supabase/admin'
+import { generateAndStoreApplicationPdf } from '@/lib/documents/application-pdf'
 
 const FORM_NAME = 'Application: Personal Details'
 
@@ -275,6 +276,19 @@ export async function POST(request: NextRequest) {
       console.error('[apply] submit status update failed:', submitError)
       return NextResponse.json({ error: 'Could not mark application as submitted' }, { status: 500 })
     }
+
+    // Generate PDF copy asynchronously — errors here are non-fatal to submission
+    generateAndStoreApplicationPdf({
+      applicantId: applicantId,
+      companyId:   companyId,
+      responseId:  responseId,
+    }).then((result) => {
+      if (!result.ok) {
+        console.warn('[apply] PDF generation skipped or failed:', result.error)
+      }
+    }).catch((err: unknown) => {
+      console.error('[apply] PDF generation threw:', err)
+    })
   }
 
   return NextResponse.json({ success: true, response_id: responseId, submitted: isSubmit })

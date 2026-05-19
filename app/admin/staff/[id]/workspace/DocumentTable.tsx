@@ -12,7 +12,7 @@ interface Props {
   onSelect:       (id: string, multi: boolean) => void
   onSelectAll:    (checked: boolean) => void
   onPreview:      (doc: WorkspaceDocument) => void
-  onQuickAction:  (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive', docId: string) => void
+  onQuickAction:  (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive' | 'move' | 'delete', docId: string) => void
   staffProfileId: string
 }
 
@@ -48,7 +48,7 @@ function DocRow({ doc, selected, onSelect, onPreview, onQuickAction, staffProfil
   selected:       boolean
   onSelect:       (id: string, multi: boolean) => void
   onPreview:      (doc: WorkspaceDocument) => void
-  onQuickAction:  (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive', docId: string) => void
+  onQuickAction:  (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive' | 'move' | 'delete', docId: string) => void
   staffProfileId: string
 }) {
   const vs = doc.verification_status ?? 'pending_verification'

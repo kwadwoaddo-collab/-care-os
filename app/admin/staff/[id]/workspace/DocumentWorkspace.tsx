@@ -105,6 +105,8 @@ function UploadButton({ folderId, folderSlug, staffProfileId }: {
       <select value={docType} onChange={(e) => setDocType(e.target.value)}
         className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">Type…</option>
+        <option value="application_form">Application Form</option>
+        <option value="cv">CV / Résumé</option>
         <option value="passport">Passport</option>
         <option value="brp">BRP</option>
         <option value="right_to_work">Right to Work</option>
@@ -134,6 +136,121 @@ function UploadButton({ folderId, folderSlug, staffProfileId }: {
   )
 }
 
+// ── Move document dialog ──────────────────────────────────────────────────────
+
+function MoveDocumentDialog({
+  doc,
+  folders,
+  onMove,
+  onClose,
+}: {
+  doc:     WorkspaceDocument
+  folders: WorkspaceFolder[]
+  onMove:  (folderId: string | null) => Promise<void>
+  onClose: () => void
+}) {
+  const [targetId, setTargetId] = useState<string>('')
+  const [loading, setLoading]   = useState(false)
+
+  const handleMove = async () => {
+    setLoading(true)
+    await onMove(targetId || null)
+    setLoading(false)
+    onClose()
+  }
+
+  const visibleFolders = folders.filter((f) => f.slug !== 'archive')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">Move document</h3>
+        <p className="text-xs text-gray-500 mb-3 truncate">{doc.file_name}</p>
+        <select
+          value={targetId}
+          onChange={(e) => setTargetId(e.target.value)}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-indigo-500 bg-white"
+        >
+          <option value="">Unclassified</option>
+          {visibleFolders.map((f) => (
+            <option key={f.id} value={f.id} disabled={f.id === doc.folder_id}>
+              {f.name}{f.is_system ? ' 🔒' : ''}
+            </option>
+          ))}
+        </select>
+        <div className="flex gap-2">
+          <button
+            onClick={() => void handleMove()}
+            disabled={loading || targetId === doc.folder_id}
+            className="flex-1 bg-indigo-600 text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Moving…' : 'Move'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Permanent delete confirmation ─────────────────────────────────────────────
+
+function DeleteConfirmDialog({
+  doc,
+  onDelete,
+  onClose,
+}: {
+  doc:      WorkspaceDocument
+  onDelete: () => Promise<void>
+  onClose:  () => void
+}) {
+  const [loading, setLoading] = useState(false)
+
+  const handleDelete = async () => {
+    setLoading(true)
+    await onDelete()
+    setLoading(false)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-xl p-5 w-80 border border-red-200">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="material-symbols-outlined text-red-600 text-[22px]">delete_forever</span>
+          <h3 className="text-sm font-semibold text-gray-900">Permanently delete document?</h3>
+        </div>
+        <p className="text-xs text-gray-500 mb-1">
+          <span className="font-medium text-gray-700">{doc.file_name}</span> will be permanently removed.
+        </p>
+        <p className="text-xs text-red-600 mb-4">
+          This action cannot be undone. The file will be removed from storage and the record deleted.
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => void handleDelete()}
+            disabled={loading}
+            className="flex-1 bg-red-600 text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Deleting…' : 'Delete permanently'}
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function DocumentWorkspace({ staffProfileId, companyId, folders, unclassified }: Props) {
@@ -155,8 +272,12 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
   const [vDrawerMode, setVMode]   = useState<DrawerMode>('approve')
   const [vDrawerDoc,  setVDoc]    = useState<DrawerDocument | null>(null)
 
+  // Move and delete dialogs
+  const [moveDoc,   setMoveDoc]   = useState<WorkspaceDocument | null>(null)
+  const [deleteDoc, setDeleteDoc] = useState<WorkspaceDocument | null>(null)
+
   // Live documents state (enables optimistic updates)
-  const [liveFolders,    setLiveFolders]    = useState<WorkspaceFolder[]>(folders)
+  const [liveFolders,      setLiveFolders]      = useState<WorkspaceFolder[]>(folders)
   const [liveUnclassified, setLiveUnclassified] = useState<WorkspaceDocument[]>(unclassified)
 
   // ── Derived data ─────────────────────────────────────────────────────────────
@@ -211,7 +332,7 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
     ))
   }, [])
 
-  const archiveDoc = useCallback((docId: string) => {
+  const removeDoc = useCallback((docId: string) => {
     setLiveFolders((prev) => prev.map((f) => ({
       ...f, documents: f.documents.filter((d) => d.id !== docId),
     })))
@@ -219,20 +340,55 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
     setPreview((p) => p?.id === docId ? null : p)
   }, [])
 
-  const openVerificationDrawer = useCallback((action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive', docId: string) => {
+  const openVerificationDrawer = useCallback((action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive' | 'move' | 'delete', docId: string) => {
+    const doc = allDocs.find((d) => d.id === docId)
+
     if (action === 'archive') {
       fetch('/api/admin/documents/archive', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ documentId: docId }),
-      }).then(() => archiveDoc(docId))
+      }).then(() => removeDoc(docId))
       return
     }
-    const doc = allDocs.find((d) => d.id === docId)
+
+    if (action === 'move') {
+      if (doc) setMoveDoc(doc)
+      return
+    }
+
+    if (action === 'delete') {
+      if (doc) setDeleteDoc(doc)
+      return
+    }
+
     if (!doc) return
     setVDoc(doc as unknown as DrawerDocument)
     setVMode(action as DrawerMode)
     setVOpen(true)
-  }, [allDocs, archiveDoc])
+  }, [allDocs, removeDoc])
+
+  const handleMoveDoc = useCallback(async (targetFolderId: string | null) => {
+    if (!moveDoc) return
+    await fetch('/api/admin/documents/move', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ documentId: moveDoc.id, folderId: targetFolderId }),
+    })
+    // Optimistic: remove from current location, will reload on next page visit
+    removeDoc(moveDoc.id)
+    setMoveDoc(null)
+  }, [moveDoc, removeDoc])
+
+  const handleDeleteDoc = useCallback(async () => {
+    if (!deleteDoc) return
+    await fetch('/api/admin/documents/delete', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ documentId: deleteDoc.id, confirm: true, deleteFromStorage: true }),
+    })
+    removeDoc(deleteDoc.id)
+    setDeleteDoc(null)
+  }, [deleteDoc, removeDoc])
 
   const handleBulkApprove = useCallback(async () => {
     if (selectedIds.size === 0) return
@@ -255,12 +411,17 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ documentIds: Array.from(selectedIds), action: 'archive' }),
       })
-      for (const id of selectedIds) archiveDoc(id)
+      for (const id of selectedIds) removeDoc(id)
       setSelected(new Set())
     } finally { setBulkLoad(false) }
-  }, [selectedIds, archiveDoc])
+  }, [selectedIds, removeDoc])
 
-  const currentFolderId = currentFolderObj?.id ?? liveFolders[0]?.id ?? ''
+  // Reload page when folders change (server-rendered data)
+  const handleFoldersChange = useCallback(() => {
+    window.location.reload()
+  }, [])
+
+  const currentFolderId   = currentFolderObj?.id ?? liveFolders[0]?.id ?? ''
   const currentFolderSlug = currentFolderObj?.slug ?? liveFolders[0]?.slug ?? 'training-certs'
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -309,6 +470,8 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
               selectedSlug={selectedFolder}
               onSelect={setFolder}
               staffProfileId={staffProfileId}
+              companyId={companyId}
+              onFoldersChange={handleFoldersChange}
             />
           </div>
         </aside>
@@ -447,6 +610,9 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
                       <div className="min-w-0">
                         <p className="text-xs font-medium text-gray-900 truncate">{doc.file_name}</p>
                         <p className="text-[11px] text-gray-400 mt-0.5">{doc.document_type.replace(/_/g, ' ')}</p>
+                        {doc.source_label && (
+                          <p className="text-[10px] text-indigo-500 mt-0.5 italic">{doc.source_label}</p>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -480,6 +646,25 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
           setVOpen(false)
         }}
       />
+
+      {/* Move document dialog */}
+      {moveDoc && (
+        <MoveDocumentDialog
+          doc={moveDoc}
+          folders={liveFolders}
+          onMove={handleMoveDoc}
+          onClose={() => setMoveDoc(null)}
+        />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deleteDoc && (
+        <DeleteConfirmDialog
+          doc={deleteDoc}
+          onDelete={handleDeleteDoc}
+          onClose={() => setDeleteDoc(null)}
+        />
+      )}
     </div>
   )
 }
