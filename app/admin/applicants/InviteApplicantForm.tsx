@@ -27,6 +27,7 @@ export default function InviteApplicantForm() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<InviteResult | null>(null)
   const [conflictId, setConflictId] = useState<string | null>(null)
+  const [conflictStatus, setConflictStatus] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -39,6 +40,7 @@ export default function InviteApplicantForm() {
     setError(null)
     setResult(null)
     setConflictId(null)
+    setConflictStatus(null)
     setCopied(false)
   }
 
@@ -69,6 +71,7 @@ export default function InviteApplicantForm() {
       if (!res.ok) {
         if (res.status === 409 && data.existingId && data.error?.includes('Use Resend Invite')) {
           setConflictId(data.existingId)
+          setConflictStatus(data.existingStatus ?? null)
           setError(null)
           return
         }
@@ -95,6 +98,20 @@ export default function InviteApplicantForm() {
     setError(null)
 
     try {
+      if (conflictStatus === 'rejected') {
+        const restoreRes = await fetch(`/api/admin/applicants/${conflictId}/restore`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_status: 'applied', restore_note: 'Restored via invite modal' }),
+        })
+        const restoreData = await restoreRes.json()
+        if (!restoreRes.ok) {
+          setError(restoreData.error ?? 'Failed to restore rejected applicant')
+          setLoading(false)
+          return
+        }
+      }
+
       const res = await fetch(`/api/admin/applicants/${conflictId}/resend-invite`, {
         method: 'POST',
       })
@@ -109,6 +126,7 @@ export default function InviteApplicantForm() {
         expires_at: data.expires_at,
       })
       setConflictId(null)
+      setConflictStatus(null)
       router.refresh()
     } catch {
       setError('Network error — please try again')
@@ -204,9 +222,13 @@ export default function InviteApplicantForm() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">Applicant Already Exists</h3>
+                        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                          {conflictStatus === 'rejected' ? 'Applicant is Rejected' : 'Applicant Already Exists'}
+                        </h3>
                         <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
-                          An applicant profile with this email already exists. Would you like to resend their invitation link instead?
+                          {conflictStatus === 'rejected' 
+                            ? 'An applicant profile with this email exists but was rejected. Would you like to restore their profile and resend their invitation link?'
+                            : 'An applicant profile with this email already exists. Would you like to resend their invitation link instead?'}
                         </p>
                       </div>
                     </div>
@@ -216,7 +238,9 @@ export default function InviteApplicantForm() {
                       disabled={loading}
                       className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
                     >
-                      {loading ? 'Resending...' : 'Resend Invite'}
+                      {loading 
+                        ? (conflictStatus === 'rejected' ? 'Restoring & Resending...' : 'Resending...') 
+                        : (conflictStatus === 'rejected' ? 'Restore & Resend Invite' : 'Resend Invite')}
                     </button>
                   </div>
                 )}

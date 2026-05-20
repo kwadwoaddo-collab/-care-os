@@ -64,16 +64,16 @@ export async function POST(request: NextRequest) {
 
   if (existing) {
     if (existing.status === 'hired') {
-      return NextResponse.json({ error: 'Applicant has already been hired', existingId: existing.id }, { status: 409 })
+      return NextResponse.json({ error: 'Applicant has already been hired', existingId: existing.id, existingStatus: existing.status }, { status: 409 })
     }
     if (existing.status === 'withdrawn') {
       return NextResponse.json(
-        { error: 'Applicant has withdrawn. Re-activate them before re-inviting', existingId: existing.id },
+        { error: 'Applicant has withdrawn. Re-activate them before re-inviting', existingId: existing.id, existingStatus: existing.status },
         { status: 409 }
       )
     }
     return NextResponse.json(
-      { error: 'Applicant already exists. Use Resend Invite from the table.', existingId: existing.id },
+      { error: 'Applicant already exists. Use Resend Invite from the table.', existingId: existing.id, existingStatus: existing.status },
       { status: 409 }
     )
   }
