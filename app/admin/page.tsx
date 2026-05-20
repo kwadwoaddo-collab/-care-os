@@ -1,9 +1,11 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import { adminClient } from '@/lib/supabase/admin'
 import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alerts/route'
 import type { OnboardingResponse } from '@/app/api/admin/onboarding/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
 import AdminDashboardDesktop from '@/components/admin/AdminDashboardDesktop'
+import { fmtTime, staffName, settle } from '@/lib/utils/formatters'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -35,37 +37,9 @@ interface Incident {
   staff_profiles:  { first_name: string | null; last_name: string | null } | null
 }
 
-interface AuditEntry {
-  id:          string
-  created_at:  string
-  action:      string
-  actor_id:    string | null
-  entity_type: string | null
-  entity_id:   string | null
-  metadata:    Record<string, unknown> | null
-}
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-}
 
-function fmtTs(iso: string) {
-  const d = new Date(iso)
-  return (
-    d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) +
-    ' ' +
-    d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-  )
-}
-
-function fmtTime(t: string) { return t.slice(0, 5) }
-
-function staffName(p: { first_name: string | null; last_name: string | null } | null): string {
-  if (!p) return '—'
-  return [p.first_name, p.last_name].filter(Boolean).join(' ') || '—'
-}
 
 const SHIFT_STATUS_CLS: Record<string, string> = {
   scheduled: 'bg-blue-50   text-blue-700',
@@ -83,15 +57,6 @@ const NOTE_STATUS_CLS: Record<string, string> = {
 
 
 
-const AUDIT_ACTION_CLS: Record<string, string> = {
-  staff:        'bg-indigo-50 text-indigo-700',
-  shift:        'bg-blue-50   text-blue-700',
-  care_package: 'bg-green-50  text-green-700',
-  applicant:    'bg-yellow-50 text-yellow-700',
-  document:     'bg-purple-50 text-purple-700',
-  visit_note:   'bg-pink-50   text-pink-700',
-  incident:     'bg-red-50    text-red-700',
-}
 
 const INCIDENT_SEVERITY_CLS: Record<string, string> = {
   low:      'bg-gray-50    text-gray-600',
@@ -107,16 +72,7 @@ const INCIDENT_STATUS_CLS: Record<string, string> = {
   closed:        'bg-gray-50    text-on-surface-variant',
 }
 
-function auditActionCls(action: string) {
-  const prefix = action.split('.')[0] ?? ''
-  return AUDIT_ACTION_CLS[prefix] ?? 'bg-gray-50 text-gray-600'
-}
 
-function metaPreview(meta: Record<string, unknown> | null): string {
-  if (!meta) return '—'
-  const entries = Object.entries(meta).slice(0, 2)
-  return entries.map(([k, v]) => `${k}: ${String(v).slice(0, 30)}`).join(' · ')
-}
 
 // ── Shared UI primitives ──────────────────────────────────────────────────────
 
@@ -173,6 +129,18 @@ function SummaryCard({ label, count, sub, href, urgent }: {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function AdminDashboard() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  let companyName = 'Care OS'
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('companies(name)')
+      .eq('id', user.id)
+      .maybeSingle()
+    companyName = (profile?.companies as any)?.name ?? 'Care OS'
+  }
+
   const today = new Date().toISOString().slice(0, 10)
 
   // All queries fire in parallel — no waterfalls
@@ -180,27 +148,7 @@ export default async function AdminDashboard() {
 
   const todayStart = `${today}T00:00:00.000Z`
 
-  const [
-    staffStatusResult,
-    todayShiftsResult,
-    openShiftsCountResult,
-    clientCountResult,
-    pkgCountResult,
-    draftNotesCountResult,
-    hrIncompleteResult,
-    declinedShiftsResult,
-    runningLateResult,
-    unacknowledgedResult,
-    notifFailedResult,
-    notifTodayResult,
-    incidentsResult,
-    complianceRes,
-    auditRes,
-    onboardingRes,
-    pendingCertsResult,
-    recentlyApprovedResult,
-    expiring7dResult,
-  ] = await Promise.all([
+  const results1 = await Promise.allSettled([
     // Staff statuses (for active count + non-compliant from compliance)
     adminClient
       .from('staff_profiles')
@@ -306,9 +254,6 @@ export default async function AdminDashboard() {
     // Compliance alerts API (complex calculation, reuse existing)
     adminFetch(`${BASE}/api/admin/compliance/alerts`, { cache: 'no-store' }),
 
-    // Audit log API (reuse existing, last 10)
-    adminFetch(`${BASE}/api/admin/audit-log`, { cache: 'no-store' }),
-
     // Onboarding summary
     adminFetch(`${BASE}/api/admin/onboarding`, { cache: 'no-store' }),
 
@@ -336,14 +281,32 @@ export default async function AdminDashboard() {
       .lte('expiry_date', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)),
   ])
 
+  const getValue = <T,>(idx: number, fallback: T): T =>
+    results1[idx].status === 'fulfilled' ? (results1[idx] as PromiseFulfilledResult<any>).value : fallback
+
+  const staffStatusResult      = getValue(0, { data: [] })
+  const todayShiftsResult      = getValue(1, { data: [] })
+  const openShiftsCountResult  = getValue(2, { count: 0 })
+  const clientCountResult      = getValue(3, { count: 0 })
+  const pkgCountResult         = getValue(4, { count: 0 })
+  const draftNotesCountResult  = getValue(5, { count: 0 })
+  const hrIncompleteResult     = getValue(6, { count: 0 })
+  const declinedShiftsResult   = getValue(7, { count: 0 })
+  const runningLateResult      = getValue(8, { count: 0 })
+  const unacknowledgedResult   = getValue(9, { count: 0 })
+  const notifFailedResult      = getValue(10, { count: 0 })
+  const notifTodayResult       = getValue(11, { count: 0 })
+  const incidentsResult        = getValue(12, { data: [] })
+  const complianceRes          = getValue(13, { ok: false, json: async () => null }) as any
+  const onboardingRes          = getValue(14, { ok: false, json: async () => null }) as any
+  const pendingCertsResult     = getValue(15, { count: 0 })
+  const recentlyApprovedResult = getValue(16, { count: 0 })
+  const expiring7dResult       = getValue(17, { count: 0 })
+
   // Parse HTTP responses
   const compliance: AlertsResponse | null = complianceRes.ok
     ? (await complianceRes.json() as AlertsResponse)
     : null
-
-  const auditEntries: AuditEntry[] = auditRes.ok
-    ? ((await auditRes.json() as AuditEntry[]).slice(0, 10))
-    : []
 
   const onboarding: OnboardingResponse | null = onboardingRes.ok
     ? (await onboardingRes.json() as OnboardingResponse)
@@ -351,7 +314,7 @@ export default async function AdminDashboard() {
 
   // Derive summary numbers
   const allStaff      = staffStatusResult.data ?? []
-  const activeStaff   = allStaff.filter((s) => s.status === 'active').length
+  const activeStaff   = allStaff.filter((s: any) => s.status === 'active').length
   const openShifts    = openShiftsCountResult.count ?? 0
   const activeClients = clientCountResult.count     ?? 0
   const draftNotes    = draftNotesCountResult.count  ?? 0
@@ -378,15 +341,7 @@ export default async function AdminDashboard() {
 
   // ── Pilot analytics — separate lightweight parallel set ────────────────────
   const analyticsWindow = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
-  const [
-    pilotTotalStaffResult,
-    pilotOnboardedResult,
-    pilotInvitedResult,
-    pilotInviteLoginResult,
-    pilotAcceptedResult,
-    pilotCompletedResult,
-    pilotTotalAssignedResult,
-  ] = await Promise.all([
+  const results2 = await Promise.allSettled([
     adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).not('status', 'eq', 'terminated'),
     adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).eq('onboarding_completed', true),
     adminClient.from('staff_profiles').select('id', { count: 'exact', head: true }).not('portal_invite_sent_at', 'is', null),
@@ -396,13 +351,16 @@ export default async function AdminDashboard() {
     adminClient.from('shifts').select('id', { count: 'exact', head: true }).not('assigned_staff_id', 'is', null).gte('shift_date', analyticsWindow),
   ])
 
-  const pilotTotalStaff     = pilotTotalStaffResult.count    ?? 0
-  const pilotOnboarded      = pilotOnboardedResult.count     ?? 0
-  const pilotInvited        = pilotInvitedResult.count       ?? 0
-  const pilotInviteLogin    = pilotInviteLoginResult.count   ?? 0
-  const pilotAccepted       = pilotAcceptedResult.count      ?? 0
-  const pilotCompleted      = pilotCompletedResult.count     ?? 0
-  const pilotTotalAssigned  = pilotTotalAssignedResult.count ?? 0
+  const getValue2 = <T,>(idx: number, fallback: T): T =>
+    results2[idx].status === 'fulfilled' ? (results2[idx] as PromiseFulfilledResult<any>).value : fallback
+
+  const pilotTotalStaff     = getValue2(0, { count: 0 }).count ?? 0
+  const pilotOnboarded      = getValue2(1, { count: 0 }).count ?? 0
+  const pilotInvited        = getValue2(2, { count: 0 }).count ?? 0
+  const pilotInviteLogin    = getValue2(3, { count: 0 }).count ?? 0
+  const pilotAccepted       = getValue2(4, { count: 0 }).count ?? 0
+  const pilotCompleted      = getValue2(5, { count: 0 }).count ?? 0
+  const pilotTotalAssigned  = getValue2(6, { count: 0 }).count ?? 0
 
   const onboardingPct   = pilotTotalStaff     > 0 ? Math.round((pilotOnboarded  / pilotTotalStaff)      * 100) : 0
   const inviteSuccessPct = pilotInvited       > 0 ? Math.round((pilotInviteLogin / pilotInvited)        * 100) : 0
@@ -584,7 +542,7 @@ export default async function AdminDashboard() {
           todayShifts={todayShifts}
           incidents={incidents}
           topAlerts={topAlerts}
-          auditEntries={auditEntries}
+
           onboardingPct={onboardingPct}
           inviteSuccessPct={inviteSuccessPct}
           acceptancePct={acceptancePct}
@@ -598,6 +556,7 @@ export default async function AdminDashboard() {
           pilotTotalAssigned={pilotTotalAssigned}
           today={today}
           unassignedToday={unassignedToday}
+          companyName={companyName}
         />
       </div>
 

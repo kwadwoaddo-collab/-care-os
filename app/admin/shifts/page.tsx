@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import ShiftsGrid, { type Shift } from './ShiftsGrid'
 import CreateShiftForm, { type ReadyStaff, type ActiveClient } from './CreateShiftForm'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
@@ -27,25 +28,38 @@ async function getShifts(
   params: URLSearchParams
 ): Promise<{ data: Shift[]; meta: PaginationMeta }> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await adminFetch(`${baseUrl}/api/admin/shifts?${params.toString()}`, { cache: 'no-store' })
-  if (!res.ok) return { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
-  return res.json() as Promise<{ data: Shift[]; meta: PaginationMeta }>
+  const fallback = { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 1, hasNext: false, hasPrev: false } }
+  try {
+    const res = await adminFetch(`${baseUrl}/api/admin/shifts?${params.toString()}`, { cache: 'no-store' })
+    if (!res.ok) return fallback
+    return await res.json() as { data: Shift[]; meta: PaginationMeta }
+  } catch {
+    return fallback
+  }
 }
 
 async function getReadyStaff(): Promise<ReadyStaff[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await adminFetch(`${baseUrl}/api/admin/staff`, { cache: 'no-store' })
-  if (!res.ok) return []
-  const json = await res.json() as { data: StaffListItem[]; meta: PaginationMeta }
-  return json.data.filter((s) => s.status === 'active' && s.readiness.ready)
+  try {
+    const res = await adminFetch(`${baseUrl}/api/admin/staff`, { cache: 'no-store' })
+    if (!res.ok) return []
+    const json = await res.json() as { data: StaffListItem[]; meta: PaginationMeta }
+    return json.data.filter((s) => s.status === 'active' && s.readiness.ready)
+  } catch {
+    return []
+  }
 }
 
 async function getActiveClients(): Promise<ActiveClient[]> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const res = await adminFetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
-  if (!res.ok) return []
-  const json = await res.json() as { data: (ActiveClient & { status: string })[]; meta: PaginationMeta }
-  return json.data.filter((c) => c.status === 'active')
+  try {
+    const res = await adminFetch(`${baseUrl}/api/admin/clients`, { cache: 'no-store' })
+    if (!res.ok) return []
+    const json = await res.json() as { data: (ActiveClient & { status: string })[]; meta: PaginationMeta }
+    return json.data.filter((c) => c.status === 'active')
+  } catch {
+    return []
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -90,9 +104,18 @@ export default async function ShiftsPage({
   const inProgressCount = shifts.filter((s) => s.status === 'in_progress').length
   const openCount     = shifts.filter((s) => s.status === 'open' || s.status === 'declined').length
 
-  // Hard-code company_id for now (same pattern used in rest of app)
-  // TODO: derive from session when auth is restored
-  const companyId = 'dev-company'
+  // Derive company_id from session
+  let companyId = 'dev-company'
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_id')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.company_id) companyId = profile.company_id
+  }
 
   // Mobile: group shifts by date
   const shiftsByDate = shifts.reduce<Record<string, Shift[]>>((acc, s) => {

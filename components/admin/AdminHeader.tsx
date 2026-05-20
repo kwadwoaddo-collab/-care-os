@@ -21,7 +21,7 @@ interface ClientResult {
 }
 
 const PAGES = [
-  { name: 'Dashboard Home', path: '/admin/dashboard' },
+  { name: 'Dashboard Home', path: '/admin' },
   { name: 'Compliance & Audits', path: '/admin/compliance' },
   { name: 'Workforce Directory', path: '/admin/workforce' },
   { name: 'Shifts Scheduler', path: '/admin/shifts' },
@@ -91,12 +91,15 @@ export default function AdminHeader() {
       return
     }
 
+    const controller = new AbortController()
+    const { signal } = controller
+
     const delayDebounce = setTimeout(async () => {
       setIsLoading(true)
       try {
         const [staffRes, clientsRes] = await Promise.all([
-          fetch(`/api/admin/staff?search=${encodeURIComponent(query)}&pageSize=5`),
-          fetch(`/api/admin/clients?search=${encodeURIComponent(query)}&pageSize=5`)
+          fetch(`/api/admin/staff?search=${encodeURIComponent(query)}&pageSize=5`, { signal }),
+          fetch(`/api/admin/clients?search=${encodeURIComponent(query)}&pageSize=5`, { signal })
         ])
 
         const staffData = staffRes.ok ? await staffRes.json() : { data: [] }
@@ -106,15 +109,22 @@ export default function AdminHeader() {
           staff: staffData.data || [],
           clients: clientsData.data || [],
         })
-      } catch (err) {
-        console.error('Search failed', err)
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('Search failed', err)
+        }
       } finally {
-        setIsLoading(false)
-        setSelectedIndex(0)
+        if (!signal.aborted) {
+          setIsLoading(false)
+          setSelectedIndex(0)
+        }
       }
     }, 250)
 
-    return () => clearTimeout(delayDebounce)
+    return () => {
+      clearTimeout(delayDebounce)
+      controller.abort()
+    }
   }, [query, isOpen])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

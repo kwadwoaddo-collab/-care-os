@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Icon from '@/components/ui/Icon'
+import { fmt, fmtTime, staffName, fmtDateDisplay } from '@/lib/utils/formatters'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -39,15 +40,7 @@ interface AlertItem {
   severity: string
 }
 
-interface AuditEntry {
-  id: string
-  created_at: string
-  action: string
-  actor_id: string | null
-  entity_type: string | null
-  entity_id: string | null
-  metadata: Record<string, unknown> | null
-}
+
 
 interface Props {
   // KPI counts
@@ -66,7 +59,7 @@ interface Props {
   todayShifts: TodayShift[]
   incidents: Incident[]
   topAlerts: AlertItem[]
-  auditEntries: AuditEntry[]
+
   // Pilot
   onboardingPct: number
   inviteSuccessPct: number
@@ -82,21 +75,10 @@ interface Props {
   // Misc
   today: string
   unassignedToday: number
+  companyName: string
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-function fmt(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-function fmtTime(t: string) { return t.slice(0, 5) }
-function staffName(p: { first_name: string | null; last_name: string | null } | null) {
-  if (!p) return '—'
-  return [p.first_name, p.last_name].filter(Boolean).join(' ') || '—'
-}
-function fmtDateDisplay(iso: string) {
-  return new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
-}
 
 const SHIFT_STATUS: Record<string, string> = {
   scheduled: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
@@ -228,7 +210,7 @@ export default function AdminDashboardDesktop({
   onboardingPct, inviteSuccessPct, acceptancePct, completionPct,
   pilotOnboarded, pilotTotalStaff, pilotInviteLogin, pilotInvited,
   pilotAccepted, pilotCompleted, pilotTotalAssigned,
-  today, unassignedToday,
+  today, unassignedToday, companyName
 }: Props) {
   const opsAlerts = declinedShifts + runningLate
 
@@ -243,7 +225,7 @@ export default function AdminDashboardDesktop({
           </h1>
           <p className="text-sm text-on-surface-variant mt-0.5 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block shrink-0" />
-            <span>Care Center North</span>
+            <span>{companyName}</span>
             <span className="text-outline-variant/60">·</span>
             <span className="text-xs tabular-nums">{fmtDateDisplay(today + 'T00:00:00')}</span>
           </p>

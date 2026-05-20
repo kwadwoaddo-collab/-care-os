@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter }           from 'next/navigation'
 import type { AssignmentOutcome } from '@/lib/scheduling/assignmentSafety'
+import { fmtTime } from '@/lib/utils/formatters'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,7 +40,6 @@ interface Props {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatTime(t: string) { return t.slice(0, 5) }
 
 function ScoreBadge({ score, eligible }: { score: number; eligible: boolean }) {
   const cls = !eligible
@@ -262,7 +262,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
             <p className="text-sm text-on-surface-variant mt-0.5">
               {shift.title}
               {shift.client_name && <> · {shift.client_name}</>}
-              {' · '}{shift.shift_date} · {formatTime(shift.start_time)}–{formatTime(shift.end_time)}
+              {' · '}{shift.shift_date} · {fmtTime(shift.start_time)}–{fmtTime(shift.end_time)}
             </p>
           </div>
           <button

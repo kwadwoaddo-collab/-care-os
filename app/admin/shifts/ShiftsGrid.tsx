@@ -3,6 +3,7 @@
 import { useState }    from 'react'
 import { useRouter }   from 'next/navigation'
 import AssignShiftModal, { type AssignableShift } from './AssignShiftModal'
+import { fmtDateDisplay, fmtTime } from '@/lib/utils/formatters'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,15 +44,7 @@ type FilterKey = 'all' | 'today' | 'upcoming' | 'completed' | 'cancelled'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function formatDate(iso: string): string {
-  return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
-}
 
-function formatTime(t: string): string {
-  return t.slice(0, 5)
-}
 
 function isToday(dateStr: string): boolean {
   const today = new Date().toISOString().slice(0, 10)
@@ -290,7 +283,7 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
                 pillText = 'text-tertiary-fixed';
                 contextIcon = 'history';
                 contextIconColor = 'text-tertiary-container';
-                contextText = `Starts ${formatDate(shift.shift_date)}`;
+                contextText = `Starts ${fmtDateDisplay(shift.shift_date + 'T00:00:00')}`;
                 contextTextColor = 'text-on-surface-variant';
               }
             } else if (shift.status === 'completed') {
@@ -325,7 +318,7 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
                     <div>
                       <p className="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
                       <p className="font-label-md text-label-md text-primary">
-                        {formatTime(shift.start_time)} - {formatTime(shift.end_time)}
+                        {fmtTime(shift.start_time)} - {fmtTime(shift.end_time)}
                       </p>
                       {shiftIsToday && <p className="text-[10px] text-blue-600 font-medium mt-0.5">Today</p>}
                     </div>
