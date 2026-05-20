@@ -104,3 +104,71 @@ export async function PATCH(
 
   return NextResponse.json(shift)
 }
+
+// ── DELETE /api/admin/shifts/[id] ─────────────────────────────────────────────
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireAdmin()
+  if (!auth.ok) return auth.response
+  const { companyId } = auth.ctx
+
+  const { id } = await params
+
+  // Fetch shift before deletion for notification purposes
+  const { data: shift } = await adminClient
+    .from('shifts')
+    .select('id, title, shift_date, assigned_staff_id')
+    .eq('id', id)
+    .eq('company_id', companyId)
+    .single()
+
+  if (!shift) {
+    return NextResponse.json({ error: 'Shift not found' }, { status: 404 })
+  }
+
+  const { error } = await adminClient
+    .from('shifts')
+    .delete()
+    .eq('id', id)
+    .eq('company_id', companyId)
+
+  if (error) {
+    console.error('[admin/shifts/[id]] delete error:', error.message)
+    return NextResponse.json(
+      { error: 'Failed to delete shift', supabase_message: error.message },
+      { status: 500 }
+    )
+  }
+
+  // ── Audit log ──────────────────────────────────────────────────────────────
+  try {
+    await adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    null,
+      action:      'shift.deleted',
+      entity_type: 'shift',
+      entity_id:   id,
+      metadata:    { title: shift.title, shift_date: shift.shift_date },
+    })
+  } catch { /* non-critical */ }
+
+  // ── In-app notification: shift deleted (if assigned) ───────────────────────
+  if (shift.assigned_staff_id) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    void createNotification({
+      recipient:      'worker',
+      staffProfileId: shift.assigned_staff_id as string,
+      companyId,
+      eventType:      'shift_cancelled',
+      title:          `Shift removed: ${shift.title as string}`,
+      message:        `Your shift on ${shift.shift_date as string} has been removed by an administrator.`,
+      actionUrl:      `${appUrl}/worker/shifts`,
+      entityId:       id,
+    })
+  }
+
+  return NextResponse.json({ success: true })
+}

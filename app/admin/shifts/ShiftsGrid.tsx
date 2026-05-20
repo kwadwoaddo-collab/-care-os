@@ -1,6 +1,6 @@
 'use client'
 
-import { useState }    from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter }   from 'next/navigation'
 import AssignShiftModal, { type AssignableShift } from './AssignShiftModal'
 import { fmtDateDisplay, fmtTime } from '@/lib/utils/formatters'
@@ -44,8 +44,6 @@ type FilterKey = 'all' | 'today' | 'upcoming' | 'completed' | 'cancelled'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-
-
 function isToday(dateStr: string): boolean {
   const today = new Date().toISOString().slice(0, 10)
   return dateStr === today
@@ -56,53 +54,163 @@ function isUpcoming(dateStr: string): boolean {
   return dateStr > today
 }
 
-// Statuses per migration 031_operational_shifts.sql
-const STATUS_CLS: Record<string, string> = {
-  open:        'bg-blue-50   text-blue-700   ring-blue-600/20',
-  offered:     'bg-purple-50 text-purple-700 ring-purple-600/20',
-  accepted:    'bg-green-50  text-green-700  ring-green-600/20',
-  declined:    'bg-red-50    text-red-700    ring-red-600/20',
-  in_progress: 'bg-sky-50    text-sky-700    ring-sky-600/20',
-  completed:   'bg-gray-50   text-gray-600   ring-gray-500/20',
-  missed:      'bg-orange-50 text-orange-700 ring-orange-600/20',
-  cancelled:   'bg-red-50    text-red-700    ring-red-600/20',
+// ── Status config ─────────────────────────────────────────────────────────────
+
+interface StatusConfig {
+  badge: string
+  dot: string
+  border: string
+  cardGlow: string
+  label: string
+  pulse: boolean
 }
 
-const TIMESHEET_STATUS_CLS: Record<string, string> = {
-  pending:    'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
-  clocked_in: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  completed:  'bg-green-50  text-green-700  ring-green-600/20',
-  missed:     'bg-red-50    text-red-700    ring-red-600/20',
-  adjusted:   'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
+function getStatusConfig(shift: Shift): StatusConfig {
+  const isUnassigned = !shift.assigned_staff_id
+  const shiftIsToday = isToday(shift.shift_date)
+
+  if (shift.status === 'in_progress') {
+    return {
+      badge: 'bg-blue-500/10 text-blue-400',
+      dot: 'bg-blue-400',
+      border: 'border-blue-500/30 hover:border-blue-400',
+      cardGlow: 'before:absolute before:-top-10 before:-right-10 before:w-32 before:h-32 before:bg-primary/5 before:blur-3xl before:pointer-events-none',
+      label: 'In Progress',
+      pulse: true,
+    }
+  }
+  if (shift.status === 'completed') {
+    return {
+      badge: 'bg-gray-500/10 text-gray-400',
+      dot: 'bg-gray-400',
+      border: 'border-white/10 hover:border-white/20',
+      cardGlow: '',
+      label: 'Completed',
+      pulse: false,
+    }
+  }
+  if (shift.status === 'cancelled' || shift.status === 'missed') {
+    return {
+      badge: 'bg-red-500/10 text-red-400',
+      dot: 'bg-red-400',
+      border: 'border-red-500/20 hover:border-red-400/40',
+      cardGlow: '',
+      label: shift.status === 'cancelled' ? 'Cancelled' : 'Missed',
+      pulse: false,
+    }
+  }
+  if (isUnassigned && shiftIsToday) {
+    return {
+      badge: 'bg-red-500/10 text-red-400',
+      dot: 'bg-red-400',
+      border: 'border-red-500/30 hover:border-red-400',
+      cardGlow: '',
+      label: 'Urgent Unassigned',
+      pulse: true,
+    }
+  }
+  if (isUnassigned) {
+    return {
+      badge: 'bg-orange-500/10 text-orange-400',
+      dot: 'bg-orange-400',
+      border: 'border-white/10 hover:border-orange-400/40',
+      cardGlow: '',
+      label: 'Unassigned',
+      pulse: false,
+    }
+  }
+  // Assigned
+  return {
+    badge: 'bg-emerald-500/10 text-emerald-400',
+    dot: 'bg-emerald-400',
+    border: 'border-white/10 hover:border-primary/40',
+    cardGlow: '',
+    label: 'Assigned',
+    pulse: false,
+  }
 }
 
-const TYPE_CLS: Record<string, string> = {
-  day:       'bg-sky-50    text-sky-700    ring-sky-600/20',
-  night:     'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
-  sleep_in:  'bg-purple-50 text-purple-700 ring-purple-600/20',
-  live_in:   'bg-pink-50   text-pink-700   ring-pink-600/20',
-  emergency: 'bg-red-50    text-red-700    ring-red-600/20',
-}
+// ── Delete Button ─────────────────────────────────────────────────────────────
 
-const ACK_CLS: Record<string, string> = {
-  accepted:     'bg-green-50  text-green-700  ring-green-600/20',
-  declined:     'bg-red-50    text-red-700    ring-red-600/20',
-  running_late: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-}
+function DeleteButton({ shiftId, shiftTitle }: { shiftId: string; shiftTitle: string }) {
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
-function Badge({ value, map }: { value: string; map: Record<string, string> }) {
-  const cls = map[value] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
+  // Close on outside click
+  useEffect(() => {
+    if (!showConfirm) return
+    function handler(e: MouseEvent) {
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+        setShowConfirm(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showConfirm])
+
+  async function handleDelete() {
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/admin/shifts/${shiftId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setShowConfirm(false)
+        router.refresh()
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
-    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}`}>
-      {value.replace(/_/g, ' ')}
-    </span>
+    <div className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowConfirm(true) }}
+        className="text-on-surface-variant hover:text-error transition-colors p-1 rounded"
+        title="Delete shift"
+        aria-label="Delete shift"
+      >
+        <span className="material-symbols-outlined text-[18px]">delete</span>
+      </button>
+
+      {showConfirm && (
+        <div
+          ref={dialogRef}
+          className="absolute right-0 top-8 z-50 w-56 rounded-xl border border-error/30 bg-[rgba(39,39,42,0.97)] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.6)] p-4 flex flex-col gap-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-start gap-2">
+            <span className="material-symbols-outlined text-error text-[18px] mt-0.5 shrink-0">warning</span>
+            <p className="text-[12px] text-on-surface-variant leading-relaxed">
+              Delete <span className="font-semibold text-on-surface">"{shiftTitle}"</span>? This cannot be undone.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowConfirm(false)}
+              className="flex-1 py-1.5 text-[12px] font-semibold rounded-lg bg-white/5 border border-white/10 text-on-surface-variant hover:bg-white/10 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={busy}
+              className="flex-1 py-1.5 text-[12px] font-semibold rounded-lg bg-error text-on-error hover:opacity-90 disabled:opacity-50 transition-all"
+            >
+              {busy ? '…' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
 // ── Unassign button ───────────────────────────────────────────────────────────
 
 function UnassignButton({ shiftId, staffName }: { shiftId: string; staffName: string }) {
-  const router  = useRouter()
+  const router = useRouter()
   const [busy, setBusy] = useState(false)
 
   async function handleUnassign() {
@@ -120,7 +228,7 @@ function UnassignButton({ shiftId, staffName }: { shiftId: string; staffName: st
     <button
       onClick={handleUnassign}
       disabled={busy}
-      className="text-xs text-red-600 hover:underline disabled:opacity-40 whitespace-nowrap"
+      className="flex-1 py-2 text-label-md font-label-md rounded-lg bg-surface-container border border-white/10 text-error hover:bg-error/10 transition-colors disabled:opacity-40"
     >
       {busy ? '…' : 'Unassign'}
     </button>
@@ -153,10 +261,192 @@ function VisitNoteButton({ shiftId }: { shiftId: string }) {
     <button
       onClick={handleClick}
       disabled={loading}
-      className="text-xs text-indigo-600 hover:underline disabled:opacity-40"
+      className="flex-1 py-2 text-label-md font-label-md rounded-lg bg-surface-container border border-white/10 text-on-surface-variant hover:bg-white/5 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
     >
-      {loading ? '…' : 'Visit Note'}
+      <span className="material-symbols-outlined text-[14px]">note_alt</span>
+      {loading ? '…' : 'Note'}
     </button>
+  )
+}
+
+// ── Context note ──────────────────────────────────────────────────────────────
+
+function ContextNote({ shift }: { shift: Shift }) {
+  const isUnassigned = !shift.assigned_staff_id
+  const shiftIsToday = isToday(shift.shift_date)
+
+  if (shift.status === 'in_progress') {
+    return (
+      <div className="mt-4 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+          <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Live</span>
+        </div>
+        <p className="text-[12px] text-on-surface-variant leading-relaxed">Shift currently active</p>
+      </div>
+    )
+  }
+  if (isUnassigned && shiftIsToday) {
+    return (
+      <div className="mt-4 p-3 rounded-lg bg-error/5 border border-error/10">
+        <p className="text-[12px] text-error leading-relaxed">
+          <span className="font-semibold">Alert:</span> Today's shift needs coverage now.
+        </p>
+      </div>
+    )
+  }
+  if (isUnassigned) {
+    return (
+      <div className="mt-4 p-3 rounded-lg bg-surface-container-high/50 border border-white/5">
+        <p className="text-[12px] text-on-surface-variant leading-relaxed">
+          <span className="font-semibold text-primary/70">Starts:</span>{' '}
+          {fmtDateDisplay(shift.shift_date + 'T00:00:00')}
+        </p>
+      </div>
+    )
+  }
+  return (
+    <div className="mt-4 p-3 rounded-lg bg-surface-container-high/50 border border-white/5">
+      <p className="text-[12px] text-on-surface-variant leading-relaxed">
+        <span className="font-semibold text-primary/70">Status:</span>{' '}
+        {shift.status.replace(/_/g, ' ')}
+      </p>
+    </div>
+  )
+}
+
+// ── Shift Card ────────────────────────────────────────────────────────────────
+
+function ShiftCard({
+  shift,
+  onAssign,
+}: {
+  shift: Shift
+  onAssign: (s: AssignableShift) => void
+}) {
+  const isUnassigned = !shift.assigned_staff_id
+  const cfg = getStatusConfig(shift)
+  const shiftIdTruncated = `SH-${shift.id.slice(0, 4).toUpperCase()}`
+
+  const staffName = shift.staff_profiles
+    ? [shift.staff_profiles.first_name, shift.staff_profiles.last_name].filter(Boolean).join(' ') ||
+      shift.staff_profiles.email ||
+      '—'
+    : '—'
+
+  const clientName = shift.clients
+    ? `${shift.clients.first_name} ${shift.clients.last_name}`
+    : (shift.client_name ?? null)
+
+  const assignableShift: AssignableShift = {
+    id:         shift.id,
+    title:      shift.title,
+    shift_date: shift.shift_date,
+    start_time: shift.start_time,
+    end_time:   shift.end_time,
+    client_name: clientName ?? '—',
+    shift_type: shift.shift_type,
+  }
+
+  return (
+    <div
+      className={[
+        'relative flex flex-col rounded-xl overflow-visible',
+        'border transition-all duration-300',
+        'bg-[rgba(24,24,27,0.8)] backdrop-blur-xl',
+        cfg.border,
+        cfg.cardGlow,
+      ].join(' ')}
+    >
+      {/* Card body */}
+      <div className="p-5 flex-1 relative overflow-hidden">
+        {/* Header row */}
+        <div className="flex justify-between items-start mb-4">
+          {/* Status badge */}
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${cfg.badge}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot} ${cfg.pulse ? 'animate-ping' : ''}`} />
+            {cfg.label}
+          </span>
+          {/* ID + Delete */}
+          <div className="flex items-center gap-2">
+            <span className="text-on-surface-variant font-label-md text-[11px]">#{shiftIdTruncated}</span>
+            <DeleteButton shiftId={shift.id} shiftTitle={shift.title} />
+          </div>
+        </div>
+
+        {/* Title */}
+        <h4 className="text-[18px] font-semibold leading-snug mb-4 text-on-surface truncate">{shift.title}</h4>
+
+        {/* Details */}
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[18px] shrink-0">location_on</span>
+            <span className="text-[14px] truncate">{shift.location || 'No location'}</span>
+          </div>
+          <div className="flex items-center gap-3 text-on-surface-variant">
+            <span className="material-symbols-outlined text-[18px] shrink-0">schedule</span>
+            <span className="text-[14px]">
+              {fmtTime(shift.start_time)} – {fmtTime(shift.end_time)}
+              {isToday(shift.shift_date) && (
+                <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded-full">Today</span>
+              )}
+            </span>
+          </div>
+          {isUnassigned ? (
+            <div className="flex items-center gap-3 text-primary-fixed-dim">
+              <span className="material-symbols-outlined text-[18px] shrink-0">medical_information</span>
+              <span className="text-[14px]">Role Required: {shift.shift_type ?? 'Any'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[18px] text-emerald-400 shrink-0">person_check</span>
+              <span className="text-[14px] text-on-surface truncate">{staffName}</span>
+            </div>
+          )}
+          {clientName && (
+            <div className="flex items-center gap-3 text-on-surface-variant">
+              <span className="material-symbols-outlined text-[18px] shrink-0">person</span>
+              <span className="text-[14px] truncate">{clientName}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Context note */}
+        <ContextNote shift={shift} />
+      </div>
+
+      {/* Footer actions */}
+      <div className="p-4 border-t border-white/5 bg-white/[0.02]">
+        {isUnassigned ? (
+          <button
+            onClick={() => onAssign(assignableShift)}
+            className={[
+              'w-full py-2.5 rounded-lg font-semibold text-[13px] transition-all',
+              (shift.status === 'open' || shift.status === 'declined') && isToday(shift.shift_date)
+                ? 'bg-error text-white hover:opacity-90 shadow-lg shadow-error/20'
+                : 'bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] text-white hover:opacity-90 shadow-lg shadow-indigo-500/20',
+            ].join(' ')}
+          >
+            Assign Professional
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => onAssign(assignableShift)}
+              className="w-full py-2 rounded-lg text-[13px] font-semibold bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 transition-colors"
+            >
+              Edit Assignment
+            </button>
+            <div className="flex gap-2">
+              <VisitNoteButton shiftId={shift.id} />
+              {shift.status !== 'completed' && shift.status !== 'cancelled' && (
+                <UnassignButton shiftId={shift.id} staffName={staffName} />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -165,8 +455,6 @@ function VisitNoteButton({ shiftId }: { shiftId: string }) {
 export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
   const [filter, setFilter] = useState<FilterKey>('all')
   const [selectedShift, setSelectedShift] = useState<AssignableShift | null>(null)
-
-  const today = new Date().toISOString().slice(0, 10)
 
   const filtered = shifts.filter((s) => {
     if (filter === 'today')     return isToday(s.shift_date)
@@ -192,18 +480,8 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
     { key: 'cancelled', label: `Cancelled (${counts.cancelled})` },
   ]
 
-  const staffName = (s: Shift) => {
-    if (!s.staff_profiles) return '—'
-    return (
-      [s.staff_profiles.first_name, s.staff_profiles.last_name].filter(Boolean).join(' ') ||
-      s.staff_profiles.email ||
-      '—'
-    )
-  }
-
   return (
-    <div className="space-y-3">
-
+    <div className="space-y-4">
       {/* Filter pills */}
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
@@ -212,10 +490,10 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
             type="button"
             onClick={() => setFilter(f.key)}
             className={[
-              'rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors cursor-pointer',
+              'rounded-full px-3.5 py-1.5 text-[12px] font-semibold tracking-wide transition-all cursor-pointer',
               filter === f.key
-                ? 'bg-gray-900 text-white ring-gray-900'
-                : 'bg-surface-container-lowest text-gray-600 ring-gray-300 hover:bg-gray-50',
+                ? 'bg-primary/20 text-primary border border-primary/30 shadow-sm shadow-primary/10'
+                : 'bg-white/5 text-on-surface-variant border border-white/10 hover:bg-white/10 hover:text-on-surface',
             ].join(' ')}
           >
             {f.label}
@@ -233,153 +511,26 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
+        <div className="rounded-xl border border-white/10 bg-[rgba(24,24,27,0.8)] backdrop-blur-xl p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">calendar_today</span>
-          <p className="text-sm font-medium text-primary">
+          <p className="text-[15px] font-semibold text-on-surface">
             {filter === 'all' ? 'No shifts yet' : 'No shifts match this filter'}
           </p>
-          <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
+          <p className="text-[13px] text-on-surface-variant max-w-xs mx-auto">
             {filter === 'all'
               ? 'Create shifts manually or generate them from a care package.'
               : 'Try a different filter or clear the current one to see all shifts.'}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filtered.map((shift) => {
-            const isUnassigned = !shift.assigned_staff_id;
-            const shiftIsToday = isToday(shift.shift_date);
-            const clientName = shift.clients ? `${shift.clients.first_name} ${shift.clients.last_name}` : (shift.client_name ?? '—');
-            const shiftIdTruncated = `SH-${shift.id.slice(0, 4).toUpperCase()}`;
-            
-            // Determine styling based on state
-            let headerBg = 'bg-surface-container-low';
-            let headerBorder = 'border-outline-variant/30';
-            let pillBg = 'bg-primary';
-            let pillText = 'text-on-primary';
-            let statusLabel = 'Assigned';
-            let contextIcon = 'check_circle';
-            let contextIconColor = 'text-primary';
-            let contextText = shift.status.replace(/_/g, ' ');
-            let contextTextColor = 'text-on-surface-variant';
-            
-            if (isUnassigned) {
-              statusLabel = 'Unassigned';
-              if (shiftIsToday) {
-                // High Priority Unassigned
-                headerBg = 'bg-error/5';
-                headerBorder = 'border-error/10';
-                pillBg = 'bg-error';
-                pillText = 'text-on-error';
-                contextIcon = 'warning';
-                contextIconColor = 'text-error';
-                contextText = 'Urgent Coverage Needed';
-                contextTextColor = 'text-error';
-              } else {
-                // Future Unassigned
-                headerBg = 'bg-tertiary-fixed/20';
-                headerBorder = 'border-tertiary-fixed/30';
-                pillBg = 'bg-tertiary-container';
-                pillText = 'text-tertiary-fixed';
-                contextIcon = 'history';
-                contextIconColor = 'text-tertiary-container';
-                contextText = `Starts ${fmtDateDisplay(shift.shift_date + 'T00:00:00')}`;
-                contextTextColor = 'text-on-surface-variant';
-              }
-            } else if (shift.status === 'completed') {
-              pillBg = 'bg-gray-500';
-              contextText = 'Completed';
-            }
-
-            return (
-              <div key={shift.id} className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col group">
-                <div className={`${headerBg} p-4 border-b ${headerBorder} flex justify-between items-center`}>
-                  <span className={`${pillBg} ${pillText} text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider`}>
-                    {statusLabel}
-                  </span>
-                  <span className="text-on-surface-variant font-label-md text-[11px]">ID: {shiftIdTruncated}</span>
-                </div>
-                
-                <div className="p-card-padding flex flex-col gap-4 flex-grow">
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <h4 className="font-headline-md text-headline-md text-primary truncate">{shift.title}</h4>
-                      <p className="text-body-md text-on-surface-variant flex items-center gap-1 mt-0.5">
-                        <span className="material-symbols-outlined text-[16px] flex-shrink-0">pin_drop</span>
-                        <span className="truncate">{shift.location || 'No location'}</span>
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-surface-container-low flex items-center justify-center">
-                      <span className="material-symbols-outlined text-on-surface-variant">{isUnassigned ? 'person_search' : 'person'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-outline-variant/30">
-                    <div>
-                      <p className="font-label-md text-[10px] text-on-surface-variant uppercase">Shift Time</p>
-                      <p className="font-label-md text-label-md text-primary">
-                        {fmtTime(shift.start_time)} - {fmtTime(shift.end_time)}
-                      </p>
-                      {shiftIsToday && <p className="text-[10px] text-blue-600 font-medium mt-0.5">Today</p>}
-                    </div>
-                    <div>
-                      <p className="font-label-md text-[10px] text-on-surface-variant uppercase">
-                        {isUnassigned ? 'Role Required' : 'Assigned To'}
-                      </p>
-                      <p className="font-label-md text-label-md text-secondary truncate">
-                        {isUnassigned ? (shift.shift_type || 'Any') : staffName(shift)}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <span className={`material-symbols-outlined ${contextIconColor}`}>{contextIcon}</span>
-                    <p className={`text-body-md font-medium ${contextTextColor}`}>{contextText}</p>
-                  </div>
-                  
-                  <div className="mt-auto pt-4 flex flex-col gap-2">
-                    {isUnassigned ? (
-                      <button 
-                        onClick={() => setSelectedShift({
-                          id: shift.id,
-                          title: shift.title,
-                          shift_date: shift.shift_date,
-                          start_time: shift.start_time,
-                          end_time: shift.end_time,
-                          client_name: clientName,
-                          shift_type: shift.shift_type
-                        })}
-                        className="w-full text-center bg-secondary text-on-secondary font-bold py-3 rounded-xl hover:bg-secondary/90 transition-all cursor-pointer">
-                        Assign Professional
-                      </button>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <button 
-                          onClick={() => setSelectedShift({
-                            id: shift.id,
-                            title: shift.title,
-                            shift_date: shift.shift_date,
-                            start_time: shift.start_time,
-                            end_time: shift.end_time,
-                            client_name: clientName,
-                            shift_type: shift.shift_type
-                          })}
-                          className="w-full text-center border border-outline-variant text-primary font-bold py-2.5 rounded-xl hover:bg-surface-container-low transition-all cursor-pointer">
-                          Edit Assignment
-                        </button>
-                        <div className="flex justify-between items-center px-1">
-                          <VisitNoteButton shiftId={shift.id} />
-                          {shift.status !== 'completed' && shift.status !== 'cancelled' && (
-                            <UnassignButton shiftId={shift.id} staffName={staffName(shift)} />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map((shift) => (
+            <ShiftCard
+              key={shift.id}
+              shift={shift}
+              onAssign={setSelectedShift}
+            />
+          ))}
         </div>
       )}
     </div>
