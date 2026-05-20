@@ -128,10 +128,10 @@ function CardHeader({ title, action }: { title: string; action?: React.ReactNode
 }
 
 function CommandMetric({
-  title, count, sub, variant, href
+  title, count, sub, variant, href, icon
 }: {
   title: string; count: number | string; sub: string;
-  variant: 'urgent' | 'warning' | 'neutral' | 'success'; href: string
+  variant: 'urgent' | 'warning' | 'neutral' | 'success'; href: string; icon: string
 }) {
   const borders = {
     urgent:  'border-l-red-500',
@@ -151,19 +151,30 @@ function CommandMetric({
     neutral: 'hover:bg-surface-container-low',
     success: 'hover:bg-indigo-500/5',
   }
+  const iconBg = {
+    urgent:  'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400',
+    warning: 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',
+    neutral: 'bg-surface-container-high text-on-surface-variant',
+    success: 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400',
+  }
   return (
     <Link
       href={href}
       className={`group block bg-surface-container-lowest/90 dark:backdrop-blur-sm p-6 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.3)] border-l-4 ${borders[variant]} border border-outline-variant/50 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${hoverBg[variant]}`}
     >
-      <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">{title}</p>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className={`text-4xl font-extrabold tabular-nums ${textColors[variant]} transition-transform duration-200 group-hover:scale-110 inline-block`}>{count}</span>
-        <span className="text-sm font-medium text-on-surface-variant">{sub}</span>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider pt-0.5">{title}</p>
+        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110 ${iconBg[variant]}`}>
+          <span className="material-symbols-outlined text-[18px]">{icon}</span>
+        </div>
       </div>
-      <div className="mt-3 flex items-center gap-1 text-xs text-on-surface-variant/60 group-hover:text-on-surface-variant transition-colors">
+      <div className="mt-3 flex items-baseline gap-2">
+        <span className={`text-4xl font-extrabold tabular-nums ${textColors[variant]} transition-transform duration-200 group-hover:scale-105 inline-block`}>{count}</span>
+      </div>
+      <p className="text-sm font-medium text-on-surface-variant mt-1">{sub}</p>
+      <div className="mt-4 flex items-center gap-1 text-xs text-on-surface-variant/60 group-hover:text-on-surface-variant transition-colors">
         <span>View details</span>
-        <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+        <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
       </div>
     </Link>
   )
@@ -279,30 +290,34 @@ export default function AdminDashboardDesktop({
         <CommandMetric
           title="Unassigned Shifts"
           count={openShifts}
-          sub="Next 24h"
+          sub={openShifts > 0 ? 'Need coverage now' : 'All shifts covered'}
           variant={openShifts > 0 ? 'urgent' : 'success'}
-          href="/admin/shifts/open"
+          href="/admin/shifts?assigned=unassigned"
+          icon="event_busy"
         />
         <CommandMetric
           title="Urgent Incidents"
           count={activeIncidents}
-          sub="Pending review"
+          sub={activeIncidents > 0 ? 'Pending review' : 'No open incidents'}
           variant={activeIncidents > 0 ? 'urgent' : 'success'}
           href="/admin/incidents"
+          icon="warning"
         />
         <CommandMetric
           title="Compliance Gaps"
           count={nonCompliant + expiring7d}
-          sub="Expiring soon"
+          sub={(nonCompliant + expiring7d) > 0 ? 'Docs expiring soon' : 'All staff compliant'}
           variant={(nonCompliant + expiring7d) > 0 ? 'warning' : 'success'}
           href="/admin/compliance"
+          icon="verified_user"
         />
         <CommandMetric
-          title="Staff Coverage"
-          count={`${activeStaff}`}
-          sub="Active staff"
+          title="Active Staff"
+          count={activeStaff}
+          sub="View all profiles"
           variant="success"
-          href="/admin/workforce"
+          href="/admin/staff"
+          icon="group"
         />
       </div>
 
