@@ -26,6 +26,7 @@ export default function InviteApplicantForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<InviteResult | null>(null)
+  const [conflictId, setConflictId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -37,6 +38,7 @@ export default function InviteApplicantForm() {
     setFields(EMPTY_FORM)
     setError(null)
     setResult(null)
+    setConflictId(null)
     setCopied(false)
   }
 
@@ -65,6 +67,11 @@ export default function InviteApplicantForm() {
       const data = await res.json()
 
       if (!res.ok) {
+        if (res.status === 409 && data.existingId && data.error?.includes('Use Resend Invite')) {
+          setConflictId(data.existingId)
+          setError(null)
+          return
+        }
         if (Array.isArray(data.errors)) {
           setError(data.errors.join('\n'))
         } else {
@@ -74,6 +81,34 @@ export default function InviteApplicantForm() {
       }
 
       setResult(data as InviteResult)
+      router.refresh()
+    } catch {
+      setError('Network error — please try again')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleResend() {
+    if (!conflictId) return
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/admin/applicants/${conflictId}/resend-invite`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to resend invite')
+        return
+      }
+      setResult({
+        applicant_id: conflictId,
+        magic_link: data.magic_link,
+        expires_at: data.expires_at,
+      })
+      setConflictId(null)
       router.refresh()
     } catch {
       setError('Network error — please try again')
@@ -157,6 +192,32 @@ export default function InviteApplicantForm() {
                 {error && (
                   <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 whitespace-pre-line">
                     {error}
+                  </div>
+                )}
+                
+                {conflictId && (
+                  <div className="rounded-xl bg-amber-500/10 dark:bg-amber-500/[0.08] border border-amber-300/30 dark:border-amber-800/40 p-4 flex flex-col gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">Applicant Already Exists</h3>
+                        <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                          An applicant profile with this email already exists. Would you like to resend their invitation link instead?
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={loading}
+                      className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'Resending...' : 'Resend Invite'}
+                    </button>
                   </div>
                 )}
 
