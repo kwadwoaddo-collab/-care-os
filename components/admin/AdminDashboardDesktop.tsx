@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
 import { fmt, fmtTime, staffName, fmtDateDisplay } from '@/lib/utils/formatters'
+import { ReportExportModal } from './ReportExportModal'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -213,6 +215,7 @@ export default function AdminDashboardDesktop({
   today, unassignedToday, companyName
 }: Props) {
   const opsAlerts = declinedShifts + runningLate
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
 
   return (
     <div className="space-y-6">
@@ -231,15 +234,20 @@ export default function AdminDashboardDesktop({
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href="/admin/compliance"
+          <button
+            onClick={() => setIsExportModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
           >
             <Icon name="file_download" size="sm" fill />
             Generate Report
-          </Link>
+          </button>
         </div>
       </div>
+
+      <ReportExportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+      />
 
       {/* ── Ops alert banner ─────────────────────────────────────────────── */}
       {(opsAlerts > 0 || unacknowledged > 0) && (
