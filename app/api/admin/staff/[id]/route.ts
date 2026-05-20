@@ -335,6 +335,10 @@ export async function DELETE(
 
   // Delete related records (compliance items, documents references, etc.)
   await adminClient.from('compliance_items').delete().eq('staff_profile_id', staffProfileId)
+  
+  // Clean up records that reference staff_profiles without ON DELETE CASCADE
+  await adminClient.from('documents').delete().eq('staff_profile_id', staffProfileId)
+  await adminClient.from('staff_document_folders').delete().eq('staff_profile_id', staffProfileId)
 
   // Delete staff profile
   const { error: deleteErr } = await adminClient
@@ -345,7 +349,7 @@ export async function DELETE(
 
   if (deleteErr) {
     console.error('[staff/delete] error:', deleteErr.message)
-    return NextResponse.json({ error: 'Failed to delete staff profile' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to delete staff profile', details: deleteErr.message }, { status: 500 })
   }
 
   // Audit log

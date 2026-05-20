@@ -10,6 +10,11 @@ interface CreateResult {
   created_at: string
 }
 
+interface ConflictResult {
+  id: string
+  status: string
+}
+
 const STATUSES = [
   { value: 'pre_employment', label: 'Pre-employment' },
   { value: 'active',         label: 'Active' },
@@ -35,6 +40,7 @@ export default function AddExistingStaffForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
   const [result, setResult]   = useState<CreateResult | null>(null)
+  const [conflict, setConflict] = useState<ConflictResult | null>(null)
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -47,6 +53,7 @@ export default function AddExistingStaffForm() {
     setFields(EMPTY_FORM)
     setError(null)
     setResult(null)
+    setConflict(null)
   }
 
   function handleClose() {
@@ -76,6 +83,10 @@ export default function AddExistingStaffForm() {
       const data = await res.json()
 
       if (!res.ok) {
+        if (res.status === 409 && data.existingId && data.existingStatus === 'terminated') {
+          setConflict({ id: data.existingId, status: data.existingStatus })
+          return
+        }
         if (Array.isArray(data.errors)) {
           setError(data.errors.join('\n'))
         } else {
@@ -85,6 +96,38 @@ export default function AddExistingStaffForm() {
       }
 
       setResult(data as CreateResult)
+      router.refresh()
+    } catch {
+      setError('Network error — please try again')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleRestore() {
+    if (!conflict) return
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/admin/staff/${conflict.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'active' }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to restore staff profile')
+        return
+      }
+
+      setResult({
+        id: data.staff_profile.id,
+        status: data.staff_profile.status,
+        created_at: new Date().toISOString(),
+      })
+      setConflict(null)
       router.refresh()
     } catch {
       setError('Network error — please try again')
@@ -150,6 +193,32 @@ export default function AddExistingStaffForm() {
                 {error && (
                   <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 whitespace-pre-line">
                     {error}
+                  </div>
+                )}
+                
+                {conflict && (
+                  <div className="rounded-xl bg-amber-500/10 dark:bg-amber-500/[0.08] border border-amber-300/30 dark:border-amber-800/40 p-4 flex flex-col gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">Staff Profile Exists</h3>
+                        <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+                          This person is currently archived (terminated). Would you like to restore their profile instead of creating a new one?
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRestore}
+                      disabled={loading}
+                      className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'Restoring...' : 'Restore Profile'}
+                    </button>
                   </div>
                 )}
 

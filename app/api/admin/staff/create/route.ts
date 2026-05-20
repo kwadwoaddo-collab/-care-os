@@ -45,14 +45,18 @@ export async function POST(request: NextRequest) {
 
   const { data: existing } = await adminClient
     .from('staff_profiles')
-    .select('id')
+    .select('id, status')
     .eq('company_id', companyId)
     .eq('email', normalizedEmail)
     .maybeSingle()
 
   if (existing) {
     return NextResponse.json(
-      { error: 'A staff profile with this email already exists in your organisation' },
+      { 
+        error: 'A staff profile with this email already exists in your organisation',
+        existingId: existing.id,
+        existingStatus: existing.status
+      },
       { status: 409 }
     )
   }
