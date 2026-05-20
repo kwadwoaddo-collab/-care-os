@@ -39,7 +39,7 @@ export default function Skeleton({ variant = 'row', count, rows, className = '' 
     return (
       <div className={`grid grid-cols-2 md:grid-cols-4 gap-3 ${className}`} aria-label="Loading metrics">
         {Array.from({ length: n }).map((_, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 space-y-2">
+          <div key={i} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-2">
             <Pulse className="h-7 w-16" />
             <Pulse className="h-3 w-24" />
           </div>
@@ -52,7 +52,7 @@ export default function Skeleton({ variant = 'row', count, rows, className = '' 
     return (
       <div className={`grid grid-cols-1 gap-4 ${className}`} aria-label="Loading content">
         {Array.from({ length: n }).map((_, i) => (
-          <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+          <div key={i} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-3">
             <Pulse className="h-5 w-1/3" />
             <Pulse className="h-4 w-full" />
             <Pulse className="h-4 w-4/5" />
@@ -81,7 +81,7 @@ interface SkeletonTableProps {
 
 export function SkeletonTable({ rows = 5, cols = 4 }: SkeletonTableProps) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden" aria-label="Loading table">
+    <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden" aria-label="Loading table">
       {/* Header */}
       <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex gap-4">
         {Array.from({ length: cols }).map((_, i) => (

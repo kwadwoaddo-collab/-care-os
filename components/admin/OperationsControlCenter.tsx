@@ -78,7 +78,7 @@ function FocusModeToggle({
       className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
         enabled
           ? 'border-indigo-300 bg-indigo-600 text-white shadow-sm'
-          : 'border-outline-variant bg-white text-on-surface-variant hover:bg-gray-50'
+          : 'border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-gray-50'
       }`}
       title={enabled ? 'Focus Mode on — showing critical items only' : 'Enable Focus Mode'}
     >
@@ -161,7 +161,7 @@ function QuickAction({
   const cls =
     variant === 'primary' ? 'bg-indigo-600 text-white hover:bg-indigo-700 border-indigo-600'
     : variant === 'danger'  ? 'bg-red-50 text-red-700 hover:bg-red-100 border-red-200'
-    : 'bg-white text-on-surface-variant hover:bg-gray-50 border-outline-variant'
+    : 'bg-surface-container-lowest text-on-surface-variant hover:bg-gray-50 border-outline-variant'
 
   const base = `inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors min-h-[32px] ${cls}`
 
@@ -782,7 +782,7 @@ export default function OperationsControlCenter({
           </Link>
           <Link
             href="/admin/operations/briefing"
-            className="hidden lg:flex items-center gap-1.5 rounded-lg border border-outline-variant bg-white px-3 py-2 text-xs font-medium text-primary hover:bg-gray-50 transition-colors"
+            className="hidden lg:flex items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-xs font-medium text-primary hover:bg-gray-50 transition-colors"
           >
             Briefing
           </Link>
@@ -868,16 +868,16 @@ export default function OperationsControlCenter({
 
         {/* Mobile quick links */}
         <div className="grid grid-cols-2 gap-2">
-          <Link href="/admin/operations/handover" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
+          <Link href="/admin/operations/handover" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
             ↕ Handover
           </Link>
-          <Link href="/admin/operations/briefing" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
+          <Link href="/admin/operations/briefing" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
             📋 Briefing
           </Link>
-          <Link href="/admin/operations/queue" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
+          <Link href="/admin/operations/queue" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
             ⚡ Queue
           </Link>
-          <Link href="/admin/incidents" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-white px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
+          <Link href="/admin/incidents" className="flex items-center justify-center gap-1.5 rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 text-sm font-semibold text-primary active:scale-[0.98] transition-all min-h-[48px]">
             ⚠ Incidents
           </Link>
         </div>

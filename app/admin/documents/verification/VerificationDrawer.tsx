@@ -142,7 +142,7 @@ function VerifyPanel({ doc, onSuccess, onClose }: {
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">Verification method</label>
         <select value={method} onChange={(e) => setMethod(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
           {VERIFICATION_METHODS.map((m) => (
             <option key={m.value} value={m.value}>{m.label}</option>
           ))}
@@ -163,7 +163,7 @@ function VerifyPanel({ doc, onSuccess, onClose }: {
             <div>
               <label className="block text-xs font-semibold text-blue-700 mb-1">How was it seen?</label>
               <select value={osMethod} onChange={(e) => setOsM(e.target.value)}
-                className="w-full rounded-lg border border-blue-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                className="w-full rounded-lg border border-blue-300 px-3 py-2 text-sm bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-blue-500">
                 {ORIGINAL_SEEN_METHODS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
@@ -340,7 +340,7 @@ export default function VerificationDrawer({ open, onClose, mode, doc, onSuccess
 
       {/* Panel */}
       <div
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col"
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-surface-container-lowest shadow-2xl flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-label={MODE_TITLES[mode]}

@@ -173,7 +173,7 @@ function ActionMenu({ item, onAction, loading }: ActionMenuProps) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="absolute right-0 top-8 z-20 w-48 bg-white rounded-xl border border-slate-200 shadow-lg py-1">
+          <div className="absolute right-0 top-8 z-20 w-48 bg-surface-container-lowest rounded-xl border border-slate-200 shadow-lg py-1">
             <button
               onClick={() => { onAction(item.id, 'acknowledged'); setOpen(false) }}
               className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -247,7 +247,7 @@ function PriorityCard({ item, onAction, loading }: PriorityCardProps) {
   const hasOwner  = !!item.owner
 
   return (
-    <article className="bg-white rounded-xl border border-slate-200 overflow-hidden transition-shadow hover:shadow-sm">
+    <article className="bg-surface-container-lowest rounded-xl border border-slate-200 overflow-hidden transition-shadow hover:shadow-sm">
       {/* Severity bar */}
       <div className={`h-1 ${SEVERITY_BAR[item.severity]}`} role="presentation" />
 

@@ -48,7 +48,7 @@ export default function ComplianceActions() {
         href="/api/admin/compliance/reminders/preview"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
+        className="inline-flex items-center rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
       >
         Preview reminders ↗
       </a>

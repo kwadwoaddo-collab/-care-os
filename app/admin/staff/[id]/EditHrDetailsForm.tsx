@@ -224,7 +224,7 @@ export default function EditHrDetailsForm({ staff }: { staff: HrProfile }) {
     return (
       <button
         onClick={() => { reset(); setOpen(true) }}
-        className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        className="rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
       >
         Edit HR details
       </button>

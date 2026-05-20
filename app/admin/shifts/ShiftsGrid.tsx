@@ -215,7 +215,7 @@ export default function ShiftsGrid({ shifts }: { shifts: Shift[] }) {
               'rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors cursor-pointer',
               filter === f.key
                 ? 'bg-gray-900 text-white ring-gray-900'
-                : 'bg-white text-gray-600 ring-gray-300 hover:bg-gray-50',
+                : 'bg-surface-container-lowest text-gray-600 ring-gray-300 hover:bg-gray-50',
             ].join(' ')}
           >
             {f.label}

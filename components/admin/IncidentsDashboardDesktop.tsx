@@ -114,7 +114,7 @@ const TABS = [
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-white rounded-lg border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] ${className}`}>
+    <div className={`bg-surface-container-lowest rounded-lg border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] ${className}`}>
       {children}
     </div>
   )
@@ -220,7 +220,7 @@ export default function IncidentsDashboardDesktop({
 
         {/* Top Bar */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 flex items-center gap-2 bg-white border border-outline-variant rounded-lg px-3 py-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+          <div className="flex-1 flex items-center gap-2 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2.5 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
             <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
             <form className="flex-1" method="GET" action="/admin/incidents">
               <input
@@ -233,14 +233,14 @@ export default function IncidentsDashboardDesktop({
           </div>
           <Link
             href="/admin/notifications"
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant bg-white hover:bg-surface-container transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container transition-colors"
             title="Notifications"
           >
             <span className="material-symbols-outlined text-[20px] text-on-surface-variant">notifications</span>
           </Link>
           <Link
             href="/admin/system"
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant bg-white hover:bg-surface-container transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container transition-colors"
             title="Help"
           >
             <span className="material-symbols-outlined text-[20px] text-on-surface-variant">help</span>
@@ -260,7 +260,7 @@ export default function IncidentsDashboardDesktop({
           <div className="flex items-center gap-3">
             <Link
               href="/admin/incidents/intelligence"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-white text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">insights</span>
               Intelligence
@@ -285,7 +285,7 @@ export default function IncidentsDashboardDesktop({
                 href={tabHref(tab.status)}
                 className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all duration-150 ${
                   activeTab.label === tab.label
-                    ? 'bg-white text-on-surface shadow-sm'
+                    ? 'bg-surface-container-lowest text-on-surface shadow-sm'
                     : 'text-on-surface-variant hover:text-on-surface'
                 }`}
               >
@@ -301,7 +301,7 @@ export default function IncidentsDashboardDesktop({
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold transition-colors ${
               showFilters
                 ? 'border-[#4f46e5] bg-indigo-50 text-[#4f46e5]'
-                : 'border-outline-variant bg-white text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
+                : 'border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:text-on-surface hover:bg-surface-container'
             }`}
           >
             <span className="material-symbols-outlined text-[16px]">tune</span>
@@ -319,7 +319,7 @@ export default function IncidentsDashboardDesktop({
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Severity</label>
               <select name="severity" defaultValue={typeof searchParams.severity === 'string' ? searchParams.severity : ''}
-                className="px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm text-on-surface outline-none focus:ring-2 focus:ring-[#4f46e5]/30">
+                className="px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface outline-none focus:ring-2 focus:ring-[#4f46e5]/30">
                 <option value="">All severities</option>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -330,7 +330,7 @@ export default function IncidentsDashboardDesktop({
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Type</label>
               <select name="incident_type" defaultValue={typeof searchParams.incident_type === 'string' ? searchParams.incident_type : ''}
-                className="px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm text-on-surface outline-none focus:ring-2 focus:ring-[#4f46e5]/30">
+                className="px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm text-on-surface outline-none focus:ring-2 focus:ring-[#4f46e5]/30">
                 <option value="">All types</option>
                 <option value="fall">Fall</option>
                 <option value="medication_error">Medication Error</option>
@@ -347,7 +347,7 @@ export default function IncidentsDashboardDesktop({
               className="px-4 py-2 rounded-lg bg-[#4f46e5] text-white text-sm font-bold hover:bg-[#4338ca] transition-colors">
               Apply
             </button>
-            <Link href="/admin/incidents" className="px-4 py-2 rounded-lg border border-outline-variant bg-white text-sm font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">
+            <Link href="/admin/incidents" className="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface-variant hover:bg-surface-container transition-colors">
               Clear
             </Link>
           </form>
@@ -371,7 +371,7 @@ export default function IncidentsDashboardDesktop({
                 <Link
                   key={inc.id}
                   href={`/admin/incidents/${inc.id}`}
-                  className={`group flex items-stretch bg-white rounded-lg border border-outline-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#4f46e5]/30 transition-all duration-200 overflow-hidden border-l-4 ${SEVERITY_BORDER[inc.severity] ?? 'border-l-gray-300'}`}
+                  className={`group flex items-stretch bg-surface-container-lowest rounded-lg border border-outline-variant shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] hover:border-[#4f46e5]/30 transition-all duration-200 overflow-hidden border-l-4 ${SEVERITY_BORDER[inc.severity] ?? 'border-l-gray-300'}`}
                 >
                   {/* Content */}
                   <div className="flex-1 px-5 py-4 min-w-0">
@@ -442,7 +442,7 @@ export default function IncidentsDashboardDesktop({
               {meta.hasPrev && (
                 <Link
                   href={`/admin/incidents?page=${meta.page - 1}${activeStatus ? `&status=${activeStatus}` : ''}`}
-                  className="px-3 py-1.5 rounded-lg border border-outline-variant bg-white text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
                 >
                   ← Previous
                 </Link>
@@ -450,7 +450,7 @@ export default function IncidentsDashboardDesktop({
               {meta.hasNext && (
                 <Link
                   href={`/admin/incidents?page=${meta.page + 1}${activeStatus ? `&status=${activeStatus}` : ''}`}
-                  className="px-3 py-1.5 rounded-lg border border-outline-variant bg-white text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
                 >
                   Next →
                 </Link>

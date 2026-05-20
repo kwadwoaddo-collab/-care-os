@@ -100,7 +100,7 @@ export default function MessageDetailPage() {
       </div>
 
       {/* Message card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-bold text-slate-900">{message.subject}</h1>
@@ -138,7 +138,7 @@ export default function MessageDetailPage() {
             { label: 'Ack\'d',     value: stats.acknowledged,  colour: 'text-indigo-600' },
             { label: 'Failed',     value: stats.failed,        colour: stats.failed > 0 ? 'text-red-600' : undefined },
           ].map(({ label, value, colour }) => (
-            <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
+            <div key={label} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
               <p className={`text-2xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
               <p className="text-xs text-slate-500 mt-0.5">{label}</p>
             </div>
@@ -147,7 +147,7 @@ export default function MessageDetailPage() {
       )}
 
       {stats && stats.total > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-slate-600">Read rate</span>
             <span className="text-xs font-bold text-slate-800">{deliveryPct}%</span>
@@ -159,7 +159,7 @@ export default function MessageDetailPage() {
       )}
 
       {/* Tabs: Recipients | Thread */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
         <div className="flex border-b border-slate-100">
           <button
             onClick={() => setTab('recipients')}

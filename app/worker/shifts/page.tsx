@@ -133,7 +133,7 @@ export default function WorkerShiftsPage() {
               'flex-shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-colors',
               filter === f.key
                 ? 'bg-indigo-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-indigo-300',
+                : 'bg-surface-container-lowest border border-gray-200 text-gray-600 hover:border-indigo-300',
             ].join(' ')}
           >
             {f.label}
@@ -143,7 +143,7 @@ export default function WorkerShiftsPage() {
 
       {/* Shifts list */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-200 px-4 py-10 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 px-4 py-10 text-center text-sm text-gray-400">
           No shifts for this filter.
         </div>
       ) : (
@@ -158,7 +158,7 @@ export default function WorkerShiftsPage() {
               <Link
                 key={s.id}
                 href={`/worker/shifts/${s.id}`}
-                className="block bg-white rounded-2xl border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 active:scale-[0.98] transition-all"
+                className="block bg-surface-container-lowest rounded-2xl border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 active:scale-[0.98] transition-all"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">

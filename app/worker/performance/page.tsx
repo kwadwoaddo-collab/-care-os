@@ -113,17 +113,17 @@ export default function WorkerPerformancePage() {
 
       {/* Score rings */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
           <ScoreRing value={data.attendance.rate} color={attColor} />
           <p className="text-xs font-semibold text-gray-700 text-center leading-tight">Attendance</p>
           <p className="text-[10px] text-gray-400">{data.attendance.completed_shifts}/{data.attendance.total_shifts}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
           <ScoreRing value={data.compliance.score} color={compColor} />
           <p className="text-xs font-semibold text-gray-700 text-center leading-tight">Compliance</p>
           <p className="text-[10px] text-gray-400">{data.compliance.approved_docs}/{data.compliance.total_docs} docs</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl p-3 flex flex-col items-center gap-1.5">
           <ScoreRing value={data.onboarding.progress} color={onboardColor} />
           <p className="text-xs font-semibold text-gray-700 text-center leading-tight">Onboarding</p>
           <p className="text-[10px] text-gray-400">{data.onboarding.completed ? 'Complete' : 'In progress'}</p>
@@ -132,12 +132,12 @@ export default function WorkerPerformancePage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl px-4 py-3">
           <p className="text-xs text-gray-500">Visits Done</p>
           <p className="text-3xl font-bold text-gray-900 mt-1 tabular-nums">{data.attendance.completed_shifts}</p>
           <p className="text-xs text-gray-400 mt-0.5">this month</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl px-4 py-3">
           <p className="text-xs text-gray-500">Visit Notes</p>
           <p className="text-3xl font-bold text-gray-900 mt-1 tabular-nums">{data.visits.submitted_notes}</p>
           <p className="text-xs text-gray-400 mt-0.5">submitted</p>
@@ -166,7 +166,7 @@ export default function WorkerPerformancePage() {
           <h2 className="text-sm font-semibold text-gray-700 mb-2">Recent Shift Responses</h2>
           <div className="space-y-2">
             {data.acknowledgements.map(ack => (
-              <div key={ack.id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
+              <div key={ack.id} className="flex items-center justify-between bg-surface-container-lowest border border-gray-200 rounded-xl px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-800 truncate">{ack.title}</p>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -184,10 +184,10 @@ export default function WorkerPerformancePage() {
 
       {/* Links */}
       <div className="flex gap-3">
-        <Link href="/worker/documents" className="flex-1 py-3 rounded-xl bg-white border border-gray-200 text-center text-sm font-medium text-gray-700 hover:border-indigo-300">
+        <Link href="/worker/documents" className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-gray-200 text-center text-sm font-medium text-gray-700 hover:border-indigo-300">
           Manage Documents
         </Link>
-        <Link href="/worker/onboarding" className="flex-1 py-3 rounded-xl bg-white border border-gray-200 text-center text-sm font-medium text-gray-700 hover:border-indigo-300">
+        <Link href="/worker/onboarding" className="flex-1 py-3 rounded-xl bg-surface-container-lowest border border-gray-200 text-center text-sm font-medium text-gray-700 hover:border-indigo-300">
           Onboarding
         </Link>
       </div>

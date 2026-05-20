@@ -2,7 +2,7 @@
  * MetricCard — standardised KPI / stat display card.
  *
  * Replaces the repeated pattern of:
- *   <div className="bg-white border border-slate-200 rounded-xl p-4">
+ *   <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
  *     <p className="text-2xl font-bold text-slate-900">{value}</p>
  *     <p className="text-xs text-slate-500">{label}</p>
  *   </div>
@@ -50,7 +50,7 @@ export default function MetricCard({
   const valueSize = compact ? 'text-xl' : 'text-2xl'
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-xl ${padding} ${className}`}>
+    <div className={`bg-surface-container-lowest border border-slate-200 rounded-xl ${padding} ${className}`}>
       <p className={`${valueSize} font-bold ${COLOUR_CLS[colour]}`}>{value}</p>
       <p className="text-xs text-slate-500 mt-0.5 leading-tight">{label}</p>
       {sub && <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>}

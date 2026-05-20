@@ -103,7 +103,7 @@ function ShiftCard({ s, isToday }: { s: Shift; isToday: boolean }) {
   return (
     <Link
       href={`/worker/shifts/${s.id}`}
-      className="block bg-white rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 active:scale-[0.98] transition-all"
+      className="block bg-surface-container-lowest rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 active:scale-[0.98] transition-all"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -135,7 +135,7 @@ function QuickAction({ href, icon, label }: { href: string; icon: string; label:
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 rounded-xl bg-white border border-gray-200 px-3 py-4 hover:border-indigo-300 hover:bg-indigo-50/30 active:scale-95 transition-all"
+      className="flex flex-col items-center gap-2 rounded-xl bg-surface-container-lowest border border-gray-200 px-3 py-4 hover:border-indigo-300 hover:bg-indigo-50/30 active:scale-95 transition-all"
     >
       <span className="text-2xl">{icon}</span>
       <span className="text-xs font-medium text-gray-700 text-center leading-tight">{label}</span>
@@ -302,7 +302,7 @@ export default function WorkerDashboard() {
       )}
 
       {/* Profile header */}
-      <div className="bg-white rounded-2xl border border-gray-200 px-4 py-4 flex items-center gap-3">
+      <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 px-4 py-4 flex items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg flex-shrink-0">
           {(worker.first_name?.[0] ?? '?').toUpperCase()}
         </div>
@@ -343,7 +343,7 @@ export default function WorkerDashboard() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 px-4 py-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3">
           <p className="text-xs font-medium text-gray-500 mb-0.5">Hours this week</p>
           <p className="text-2xl font-bold text-gray-900 tabular-nums">
             {hoursWeek !== null ? `${hoursWeek}h` : '—'}
@@ -418,7 +418,7 @@ export default function WorkerDashboard() {
       <section>
         <h2 className="text-sm font-semibold text-gray-700 mb-2">Today&apos;s Shifts</h2>
         {todayShifts.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 px-4 py-5 text-sm text-gray-400 text-center">
+          <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-5 text-sm text-gray-400 text-center">
             No shifts today.
           </div>
         ) : (
@@ -454,7 +454,7 @@ export default function WorkerDashboard() {
 
       {/* Safety — emergency access */}
       <section>
-        <div className="bg-white border border-gray-200 rounded-xl px-4 py-3">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl px-4 py-3">
           <p className="text-xs font-semibold text-gray-500 mb-2">Safety</p>
           <div className="flex gap-2">
             <Link

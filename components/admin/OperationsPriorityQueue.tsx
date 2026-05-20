@@ -115,7 +115,7 @@ function SelBtn({
       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[32px] ${
         active
           ? 'bg-indigo-600 text-white'
-          : 'bg-white border border-outline-variant text-on-surface-variant hover:bg-gray-50'
+          : 'bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:bg-gray-50'
       }`}
     >
       {children}
@@ -170,7 +170,7 @@ function CreateItemForm({ onCreated }: { onCreated: (item: QueueItem) => void })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-outline-variant rounded-xl p-4 space-y-3 shadow-sm">
+    <form onSubmit={handleSubmit} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 space-y-3 shadow-sm">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-gray-800">New queue item</h4>
         <button type="button" onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-xs">✕ Cancel</button>
@@ -281,7 +281,7 @@ function QueueRow({ item, onUpdate }: { item: QueueItem; onUpdate: (id: string, 
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           {item.entity_url && (
             <a href={item.entity_url}
-              className="inline-flex items-center rounded px-2 py-1 text-[10px] font-semibold border border-outline-variant bg-white text-on-surface-variant hover:bg-gray-50 transition-colors min-h-[28px]"
+              className="inline-flex items-center rounded px-2 py-1 text-[10px] font-semibold border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-gray-50 transition-colors min-h-[28px]"
             >
               View
             </a>
@@ -359,7 +359,7 @@ function QueueRow({ item, onUpdate }: { item: QueueItem; onUpdate: (id: string, 
 
           {/* Resolved info */}
           {item.status === 'resolved' && item.resolution_notes && (
-            <p className="text-xs text-gray-600 bg-white rounded-lg border border-outline-variant p-3 leading-relaxed">
+            <p className="text-xs text-gray-600 bg-surface-container-lowest rounded-lg border border-outline-variant p-3 leading-relaxed">
               <span className="font-semibold">Resolution: </span>{item.resolution_notes}
             </p>
           )}

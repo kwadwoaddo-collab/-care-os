@@ -104,7 +104,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
 
         {/* 4 Equal KPI Cards */}
         <div className="grid grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
                 <span className="material-symbols-outlined text-slate-600 text-[20px]">bar_chart</span>
@@ -117,7 +117,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
                 <span className="material-symbols-outlined text-indigo-600 text-[20px]">check_circle</span>
@@ -130,7 +130,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-lg bg-red-50 border border-red-100 flex items-center justify-center">
                 <span className="material-symbols-outlined text-red-600 text-[20px]">error</span>
@@ -143,7 +143,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
+          <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6 flex flex-col justify-between h-32">
             <div className="flex justify-between items-start">
               <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center">
                 <span className="material-symbols-outlined text-slate-600 text-[20px]">block</span>
@@ -159,7 +159,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
       </div>
 
       {/* ── Transmission History Table ───────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm overflow-hidden flex flex-col">
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1e293b]">Transmission History</h2>
           <div className="flex items-center gap-4 text-slate-400">
@@ -287,7 +287,7 @@ export default function NotificationsDesktop({ logs, counts, onSendDigest, onSen
         </div>
 
         {/* Top Channels */}
-        <div className="bg-white rounded-xl border border-surface-container-highest shadow-sm p-6">
+        <div className="bg-surface-container-lowest rounded-xl border border-surface-container-highest shadow-sm p-6">
           <h3 className="text-base font-bold text-[#1e293b] mb-6">Top Channels</h3>
           <div className="space-y-4">
             <div>

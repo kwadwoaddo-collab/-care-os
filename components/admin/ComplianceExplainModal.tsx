@@ -125,7 +125,7 @@ function OverrideForm({ staffId, onSuccess, onCancel }: {
           onChange={(e) => setReason(e.target.value)}
           rows={3}
           placeholder="e.g. DBS renewal in progress — certificate applied for 2026-01-10, expected 2026-02-15. Worker covered by existing enhanced check during transition."
-          className="w-full rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white resize-none"
+          className="w-full rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-surface-container-lowest resize-none"
           required
           minLength={10}
         />
@@ -140,7 +140,7 @@ function OverrideForm({ staffId, onSuccess, onCancel }: {
           min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
           max={maxExpiry}
           onChange={(e) => setExpires(e.target.value)}
-          className="rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
+          className="rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-surface-container-lowest"
           required
         />
         <p className="text-[11px] text-orange-600 mt-0.5">Maximum 30 days. Auto-expires — no manual removal needed.</p>
@@ -161,7 +161,7 @@ function OverrideForm({ staffId, onSuccess, onCancel }: {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-orange-700 bg-white border border-orange-300 rounded-lg hover:bg-orange-50 transition-colors"
+          className="px-4 py-2 text-sm text-orange-700 bg-surface-container-lowest border border-orange-300 rounded-lg hover:bg-orange-50 transition-colors"
         >
           Cancel
         </button>
@@ -237,7 +237,7 @@ export default function ComplianceExplainModal({ staffId, staffName, open, onClo
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
@@ -314,7 +314,7 @@ export default function ComplianceExplainModal({ staffId, staffName, open, onClo
                   <button
                     onClick={revokeOverride}
                     disabled={revoking}
-                    className="text-xs text-orange-700 bg-white border border-orange-300 rounded-lg px-3 py-1.5 hover:bg-orange-50 transition-colors whitespace-nowrap disabled:opacity-50"
+                    className="text-xs text-orange-700 bg-surface-container-lowest border border-orange-300 rounded-lg px-3 py-1.5 hover:bg-orange-50 transition-colors whitespace-nowrap disabled:opacity-50"
                   >
                     {revoking ? 'Revoking…' : 'Revoke'}
                   </button>

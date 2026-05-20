@@ -81,7 +81,7 @@ function FolderMenu({
       </button>
 
       {open && !renaming && (
-        <div className="absolute right-0 top-6 z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-36 text-xs">
+        <div className="absolute right-0 top-6 z-50 bg-surface-container-lowest rounded-lg shadow-lg border border-gray-200 py-1 w-36 text-xs">
           <button
             onClick={(e) => { e.stopPropagation(); setRenaming(true); setOpen(false) }}
             className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 text-gray-700"
@@ -103,7 +103,7 @@ function FolderMenu({
 
       {renaming && (
         <div
-          className="absolute right-0 top-6 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-3 w-52 text-xs"
+          className="absolute right-0 top-6 z-50 bg-surface-container-lowest rounded-lg shadow-lg border border-gray-200 p-3 w-52 text-xs"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-gray-500 mb-1.5 font-medium">Rename folder</p>
@@ -177,7 +177,7 @@ function NewFolderDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+      <div className="bg-surface-container-lowest rounded-xl shadow-xl p-5 w-80">
         <h3 className="text-sm font-semibold text-gray-900 mb-3">New document folder</h3>
         <input
           autoFocus

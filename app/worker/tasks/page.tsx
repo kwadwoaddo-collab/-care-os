@@ -124,7 +124,7 @@ export default function WorkerTasksPage() {
       </div>
 
       {totalCount === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 flex flex-col items-center gap-3 text-center">
+        <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 p-12 flex flex-col items-center gap-3 text-center">
           <span className="text-4xl">✅</span>
           <p className="text-sm font-medium text-gray-700">Nothing outstanding</p>
           <p className="text-xs text-gray-400">New tasks will appear here as they come in.</p>
@@ -200,7 +200,7 @@ export default function WorkerTasksPage() {
               const isBusy   = updating === task.id
 
               return (
-                <div key={task.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div key={task.id} className="bg-surface-container-lowest border border-gray-200 rounded-xl overflow-hidden">
                   <div className="p-3.5">
                     <div className="flex items-start gap-3">
                       <span className="text-xl shrink-0 mt-0.5">{TYPE_ICON[task.task_type] ?? '📋'}</span>

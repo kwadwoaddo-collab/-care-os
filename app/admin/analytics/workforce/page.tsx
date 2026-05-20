@@ -6,7 +6,7 @@ import type { WorkforceAnalytics } from '@/app/api/admin/analytics/workforce/rou
 
 function StatCard({ label, value, colour, sub }: { label: string; value: string | number; colour?: string; sub?: string }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
+    <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
       <p className={`text-2xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
       <p className="text-sm font-medium text-slate-600 mt-0.5">{label}</p>
       {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
@@ -79,7 +79,7 @@ export default function WorkforceAnalyticsPage() {
 
       {/* Deployability + Overtime side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold text-slate-700">Deployability Breakdown</h2>
           <PctBar label="Fully Deployable" pct={data.deployability.pct_deployable}                                   colour="#10b981" />
           <PctBar label="At Risk"          pct={data.headcount.total > 0 ? Math.round((data.deployability.at_risk / data.headcount.total) * 100) : 0} colour="#f59e0b" />
@@ -91,7 +91,7 @@ export default function WorkforceAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold text-slate-700">Overtime & Hours</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -120,7 +120,7 @@ export default function WorkforceAnalyticsPage() {
 
       {/* Top missed staff */}
       {data.top_missed_staff.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
           <div className="px-5 py-3 border-b border-slate-100">
             <h2 className="text-sm font-semibold text-slate-700">Workers with Most Missed Shifts (30d)</h2>
           </div>

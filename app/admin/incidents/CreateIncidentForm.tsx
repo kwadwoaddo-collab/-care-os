@@ -167,7 +167,7 @@ export default function CreateIncidentForm({
       <div className="relative bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] shadow-xl w-full max-w-xl max-h-[80vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-xl z-10">
+        <div className="sticky top-0 bg-surface-container-lowest border-b border-gray-100 px-5 py-4 flex items-center justify-between rounded-t-xl z-10">
           <h2 className="text-base font-semibold text-primary">Create Incident</h2>
           <button
             onClick={handleClose}

@@ -67,7 +67,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
 
       {/* Bottom tab bar */}
       <nav
-        className="sticky bottom-0 z-30 bg-white border-t border-gray-200 shadow-lg"
+        className="sticky bottom-0 z-30 bg-surface-container-lowest border-t border-gray-200 shadow-lg"
         aria-label="Worker navigation"
       >
         <div className="max-w-2xl mx-auto flex">

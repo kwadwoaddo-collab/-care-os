@@ -96,7 +96,7 @@ export default function AuditLogMobile({
               className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
                 activeFilter === f.id
                   ? 'bg-slate-900 text-white'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  : 'bg-surface-container-lowest text-slate-600 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               {f.label}
@@ -129,7 +129,7 @@ export default function AuditLogMobile({
               </div>
 
               {/* Card */}
-              <div className="flex-1 bg-white rounded-lg border border-surface-container-highest p-4 shadow-sm">
+              <div className="flex-1 bg-surface-container-lowest rounded-lg border border-surface-container-highest p-4 shadow-sm">
                 
                 <div className="flex justify-between items-start gap-2 mb-2">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeCls}`}>
@@ -168,7 +168,7 @@ export default function AuditLogMobile({
           <button
             onClick={onLoadMore}
             disabled={loading}
-            className="w-full py-3 bg-white border border-slate-200 text-slate-700 font-medium text-sm rounded-lg shadow-sm active:bg-slate-50 disabled:opacity-50 transition-colors"
+            className="w-full py-3 bg-surface-container-lowest border border-slate-200 text-slate-700 font-medium text-sm rounded-lg shadow-sm active:bg-slate-50 disabled:opacity-50 transition-colors"
           >
             {loading ? 'Loading...' : 'Load Previous Activity'}
           </button>

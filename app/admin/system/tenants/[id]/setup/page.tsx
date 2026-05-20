@@ -182,7 +182,7 @@ export default function SetupWizardPage() {
       </div>
 
       {/* Step card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-5">
         <h2 className="text-lg font-semibold text-slate-800">
           Step {step + 1} of {STEPS.length}: {currentStep.title}
         </h2>
@@ -355,7 +355,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         onClick={() => onChange(!value)}
         className={`relative w-10 h-5 rounded-full transition-colors ${value ? 'bg-indigo-600' : 'bg-slate-300'}`}
       >
-        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
+        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-surface-container-lowest shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
       </div>
       <span className="text-sm text-slate-700">{label}</span>
     </label>

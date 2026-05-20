@@ -132,7 +132,7 @@ function MessagesInner() {
               setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, acknowledged_at: new Date().toISOString(), read_at: m.read_at ?? new Date().toISOString() } : m))
               setUnread(prev => Math.max(0, prev - 1))
             }}
-            className="w-full py-2 bg-white text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
+            className="w-full py-2 bg-surface-container-lowest text-red-700 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors"
           >
             Acknowledge — I have read this
           </button>
@@ -173,7 +173,7 @@ function MessagesInner() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 animate-pulse">
+            <div key={i} className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 animate-pulse">
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-gray-100 rounded-full shrink-0" />
                 <div className="flex-1 space-y-2">
@@ -187,7 +187,7 @@ function MessagesInner() {
       ) : error ? (
         <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 flex flex-col items-center text-center space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-12 flex flex-col items-center text-center space-y-3">
           <span className="text-4xl">📬</span>
           <p className="text-sm font-medium text-gray-700">
             {filter === 'all' ? "You're all caught up" : `No ${filter} messages`}
@@ -207,7 +207,7 @@ function MessagesInner() {
               <div
                 key={msg.id}
                 className={[
-                  'bg-white rounded-xl border transition-all overflow-hidden',
+                  'bg-surface-container-lowest rounded-xl border transition-all overflow-hidden',
                   isUnread ? 'border-indigo-200 shadow-sm' : 'border-gray-200',
                   PRIORITY_CLASSES[msg.priority] ?? '',
                 ].join(' ')}

@@ -76,7 +76,7 @@ function NotificationsInner() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-4 flex gap-3 animate-pulse">
+            <div key={i} className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 flex gap-3 animate-pulse">
               <div className="w-8 h-8 bg-gray-100 rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-gray-100 rounded w-3/5" />
@@ -96,7 +96,7 @@ function NotificationsInner() {
           </button>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 flex flex-col items-center text-center space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-12 flex flex-col items-center text-center space-y-3">
           <span className="text-4xl">🔔</span>
           <p className="text-sm font-medium text-gray-700">You&apos;re all caught up</p>
           <p className="text-xs text-gray-400">New shift offers, document updates, and reminders will appear here.</p>
@@ -108,7 +108,7 @@ function NotificationsInner() {
             const inner = (
               <div
                 className={[
-                  'flex gap-3 items-start p-4 bg-white rounded-xl border transition-colors',
+                  'flex gap-3 items-start p-4 bg-surface-container-lowest rounded-xl border transition-colors',
                   !n.read_at ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-200 hover:bg-gray-50',
                 ].join(' ')}
               >

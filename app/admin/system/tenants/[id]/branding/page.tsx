@@ -110,7 +110,7 @@ export default function BrandingPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-5">
         <Field label="Company Name (display override)">
           <input type="text" value={form.company_name} onChange={e => set('company_name', e.target.value)} placeholder="e.g. Sunrise Care Ltd" className="input" />
           <p className="text-xs text-slate-400 mt-1">Shown in the portal header and branded emails.</p>

@@ -150,7 +150,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                 id="doc-type"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value)}
-                className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="block w-full rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 {DOCUMENT_TYPES.map((dt) => (
                   <option key={dt.value} value={dt.value}>{dt.label}</option>
@@ -169,7 +169,7 @@ export default function StaffDocumentUpload({ staffProfileId }: StaffDocumentUpl
                     id="training-category"
                     value={trainingCategory}
                     onChange={(e) => setTrainingCategory(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-2 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="">— Select category —</option>
                     {TRAINING_CATEGORIES.map((tc) => (

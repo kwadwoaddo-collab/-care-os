@@ -150,7 +150,7 @@ export default async function OnboardingPipelinePage() {
         </div>
         <div className="flex items-center gap-2">
           <a href="/admin/documents/verification"
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-1.5 transition-colors">
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700 bg-surface-container-lowest border border-gray-200 rounded-lg px-3 py-1.5 transition-colors">
             <span className="material-symbols-outlined text-[13px]">fact_check</span>
             Verification queue
           </a>

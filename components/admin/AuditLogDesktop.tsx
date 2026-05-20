@@ -170,7 +170,7 @@ export default function AuditLogDesktop({
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
                   activeFilter === f.id
                     ? 'bg-primary border-primary text-on-primary'
-                    : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low'
+                    : 'bg-surface-container-lowest border-outline-variant text-on-surface hover:bg-surface-container-low'
                 }`}
               >
                 <span className="material-symbols-outlined text-[14px]">{f.icon}</span>
@@ -194,7 +194,7 @@ export default function AuditLogDesktop({
               Filter
             </button>
             {(activeFilter !== 'all' || searchEntityId) && (
-              <button type="button" onClick={onClearFilters} className="px-3 py-2 bg-white text-on-surface border border-outline-variant rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors cursor-pointer">
+              <button type="button" onClick={onClearFilters} className="px-3 py-2 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-lg text-xs font-semibold hover:bg-surface-container-low transition-colors cursor-pointer">
                 Clear
               </button>
             )}
@@ -264,7 +264,7 @@ export default function AuditLogDesktop({
             <button
               onClick={onLoadMore}
               disabled={loading}
-              className="px-6 py-2 bg-white border border-outline-variant text-on-surface font-semibold text-sm rounded-lg shadow-sm hover:bg-surface-container-low disabled:opacity-50 transition-colors cursor-pointer"
+              className="px-6 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-semibold text-sm rounded-lg shadow-sm hover:bg-surface-container-low disabled:opacity-50 transition-colors cursor-pointer"
             >
               {loading ? 'Loading...' : 'Load Previous Activity'}
             </button>
@@ -334,7 +334,7 @@ export default function AuditLogDesktop({
               <span className="text-xs font-semibold text-on-surface">{anomalies}</span>
             </div>
             <button className={`w-full mt-4 py-2 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
-              isAnomalous ? 'bg-error text-on-error hover:opacity-90' : 'bg-white text-secondary border border-outline-variant hover:bg-surface-container-low'
+              isAnomalous ? 'bg-error text-on-error hover:opacity-90' : 'bg-surface-container-lowest text-secondary border border-outline-variant hover:bg-surface-container-low'
             }`}>
               Run Full Diagnostic
             </button>

@@ -100,7 +100,7 @@ function VerificationStatusBadge({ verificationStatus, reviewedStatus, resubmiss
 function DocCard({ d }: { d: WorkerDocument }) {
   const expired = isExpired(d.expiry_date)
   const soon    = !expired && isExpiringSoon(d.expiry_date)
-  const cardCls = expired ? 'bg-red-50 border-red-200' : soon ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'
+  const cardCls = expired ? 'bg-red-50 border-red-200' : soon ? 'bg-amber-50 border-amber-200' : 'bg-surface-container-lowest border-gray-200'
 
   return (
     <div className={`rounded-xl border p-4 space-y-2 ${cardCls}`}>
@@ -188,7 +188,7 @@ function ComplianceStatusPanel({ reqs }: { reqs: Requirements }) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 bg-white rounded-full overflow-hidden border border-gray-100">
+      <div className="h-2 bg-surface-container-lowest rounded-full overflow-hidden border border-gray-100">
         <div
           className={`h-full rounded-full transition-all ${
             state === 'blocked'       ? 'bg-red-500' :
@@ -437,19 +437,19 @@ export default function WorkerDocumentsPage() {
 
       {/* Document status summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-center">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest px-3 py-2.5 text-center">
           <p className="text-xl font-bold text-gray-900 tabular-nums">{docs.length}</p>
           <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Total</p>
         </div>
-        <div className={`rounded-xl border px-3 py-2.5 text-center ${approvedDocs.length > 0 ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-white'}`}>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${approvedDocs.length > 0 ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-surface-container-lowest'}`}>
           <p className={`text-xl font-bold tabular-nums ${approvedDocs.length > 0 ? 'text-green-700' : 'text-gray-400'}`}>{approvedDocs.length}</p>
           <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Approved</p>
         </div>
-        <div className={`rounded-xl border px-3 py-2.5 text-center ${pendingDocs.length > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${pendingDocs.length > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200 bg-surface-container-lowest'}`}>
           <p className={`text-xl font-bold tabular-nums ${pendingDocs.length > 0 ? 'text-amber-700' : 'text-gray-400'}`}>{pendingDocs.length}</p>
           <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-0.5">Under review</p>
         </div>
-        <div className={`rounded-xl border px-3 py-2.5 text-center ${(resubmissionDocs.length + rejectedDocs.length) > 0 ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-white'}`}>
+        <div className={`rounded-xl border px-3 py-2.5 text-center ${(resubmissionDocs.length + rejectedDocs.length) > 0 ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-surface-container-lowest'}`}>
           <p className={`text-xl font-bold tabular-nums ${(resubmissionDocs.length + rejectedDocs.length) > 0 ? 'text-red-700' : 'text-gray-400'}`}>
             {resubmissionDocs.length + rejectedDocs.length}
           </p>
@@ -467,7 +467,7 @@ export default function WorkerDocumentsPage() {
             </p>
           </div>
           {resubmissionDocs.map((d) => (
-            <div key={d.id} className="rounded-lg border border-red-200 bg-white px-3 py-2.5">
+            <div key={d.id} className="rounded-lg border border-red-200 bg-surface-container-lowest px-3 py-2.5">
               <p className="text-xs font-semibold text-gray-800">{d.file_name}</p>
               {(d.rejected_reason || d.review_notes) && (
                 <p className="text-xs text-red-600 mt-0.5">{d.rejected_reason ?? d.review_notes}</p>
@@ -489,13 +489,13 @@ export default function WorkerDocumentsPage() {
             <p className="text-sm font-semibold text-amber-800">Document expiry reminders</p>
           </div>
           {expiredDocs.map((d) => (
-            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-white rounded-lg border border-red-200 px-3 py-1.5">
+            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-surface-container-lowest rounded-lg border border-red-200 px-3 py-1.5">
               <span className="font-medium text-gray-800">{d.file_name}</span>
               <span className="text-red-700 font-semibold shrink-0">Expired {fmtDate(d.expiry_date)}</span>
             </div>
           ))}
           {soonDocs.map((d) => (
-            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-white rounded-lg border border-amber-200 px-3 py-1.5">
+            <div key={d.id} className="flex items-center justify-between gap-2 text-xs bg-surface-container-lowest rounded-lg border border-amber-200 px-3 py-1.5">
               <span className="font-medium text-gray-800">{d.file_name}</span>
               <span className="text-amber-700 font-semibold shrink-0">Expires {fmtDate(d.expiry_date)}</span>
             </div>
@@ -547,7 +547,7 @@ export default function WorkerDocumentsPage() {
       )}
 
       {/* Upload form */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-4">
+      <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 p-4 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700">Upload a document</h2>
 
         {uploadOk && (
@@ -723,7 +723,7 @@ export default function WorkerDocumentsPage() {
           <span className="ml-1.5 text-gray-400 font-normal">({docs.length})</span>
         </h2>
         {docs.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 px-4 py-8 text-center text-sm text-gray-400">
+          <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-8 text-center text-sm text-gray-400">
             No documents uploaded yet.
           </div>
         ) : (

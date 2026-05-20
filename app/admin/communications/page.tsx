@@ -152,7 +152,7 @@ export default function CommunicationsPage() {
         <select
           value={typeFilter}
           onChange={e => setTypeFilter(e.target.value)}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-white"
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-surface-container-lowest"
         >
           <option value="">All types</option>
           {['announcement','compliance_reminder','staffing_alert','onboarding_reminder','safeguarding_escalation','shift_communication','broadcast'].map(t => (
@@ -162,7 +162,7 @@ export default function CommunicationsPage() {
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-white"
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-400 bg-surface-container-lowest"
         >
           <option value="">All statuses</option>
           {['draft','sent','failed','scheduled'].map(s => (

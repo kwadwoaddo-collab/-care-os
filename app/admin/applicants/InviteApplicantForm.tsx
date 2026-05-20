@@ -101,7 +101,7 @@ export default function InviteApplicantForm() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-md rounded-lg bg-surface-container-lowest p-6 shadow-xl">
             <h2 className="text-base font-semibold text-primary mb-4">Invite Applicant</h2>
 
             {result ? (

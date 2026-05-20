@@ -170,7 +170,7 @@ function DocumentCard({ doc, staffProfileId, onArchived }: {
   }, [doc.id, onArchived])
 
   return (
-    <div className={`rounded-lg border bg-white p-3.5 hover:shadow-sm transition-all ${needsAttention ? 'border-amber-200' : 'border-gray-100 hover:border-gray-200'}`}>
+    <div className={`rounded-lg border bg-surface-container-lowest p-3.5 hover:shadow-sm transition-all ${needsAttention ? 'border-amber-200' : 'border-gray-100 hover:border-gray-200'}`}>
       {/* File name + actions */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
@@ -275,7 +275,7 @@ function UploadZone({ folderId, folderSlug, staffProfileId, onUploaded }: {
         <select
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
-          className="text-xs rounded-md border border-gray-300 px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1"
+          className="text-xs rounded-md border border-gray-300 px-2 py-1 bg-surface-container-lowest text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1"
         >
           <option value="">Select document type…</option>
           <option value="passport">Passport</option>
@@ -358,7 +358,7 @@ function FolderPanel({ folder, staffProfileId }: {
   }, [])
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-surface-container-lowest overflow-hidden shadow-sm">
       {/* Folder header */}
       <button
         onClick={() => setOpen((p) => !p)}
@@ -487,26 +487,26 @@ export default function DocumentRepositoryTab({ staffProfileId, companyId, folde
     <div className="space-y-5">
       {/* Summary strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 text-center shadow-sm">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3 text-center shadow-sm">
           <p className="text-2xl font-bold text-gray-900 tabular-nums">{totalDocs}</p>
           <p className="text-xs text-gray-500 mt-0.5">Total documents</p>
         </div>
-        <div className={`bg-white rounded-xl border px-4 py-3 text-center shadow-sm ${expiredCount > 0 ? 'border-red-200' : 'border-gray-200'}`}>
+        <div className={`bg-surface-container-lowest rounded-xl border px-4 py-3 text-center shadow-sm ${expiredCount > 0 ? 'border-red-200' : 'border-gray-200'}`}>
           <p className={`text-2xl font-bold tabular-nums ${expiredCount > 0 ? 'text-red-700' : 'text-gray-900'}`}>{expiredCount}</p>
           <p className="text-xs text-gray-500 mt-0.5">Expired</p>
         </div>
-        <div className={`bg-white rounded-xl border px-4 py-3 text-center shadow-sm ${expiringCount > 0 ? 'border-yellow-200' : 'border-gray-200'}`}>
+        <div className={`bg-surface-container-lowest rounded-xl border px-4 py-3 text-center shadow-sm ${expiringCount > 0 ? 'border-yellow-200' : 'border-gray-200'}`}>
           <p className={`text-2xl font-bold tabular-nums ${expiringCount > 0 ? 'text-yellow-700' : 'text-gray-900'}`}>{expiringCount}</p>
           <p className="text-xs text-gray-500 mt-0.5">Expiring soon</p>
         </div>
-        <div className={`bg-white rounded-xl border px-4 py-3 text-center shadow-sm ${pendingCount > 0 ? 'border-amber-200' : 'border-gray-200'}`}>
+        <div className={`bg-surface-container-lowest rounded-xl border px-4 py-3 text-center shadow-sm ${pendingCount > 0 ? 'border-amber-200' : 'border-gray-200'}`}>
           <p className={`text-2xl font-bold tabular-nums ${pendingCount > 0 ? 'text-amber-700' : 'text-gray-900'}`}>{pendingCount}</p>
           <p className="text-xs text-gray-500 mt-0.5">Pending review</p>
         </div>
       </div>
 
       {/* Search + filter */}
-      <div className="flex flex-wrap items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center gap-3 bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3 shadow-sm">
         <div className="relative flex-1 min-w-[180px]">
           <span className="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[14px] text-gray-400">search</span>
           <input
@@ -514,7 +514,7 @@ export default function DocumentRepositoryTab({ staffProfileId, companyId, folde
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search documents…"
-            className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <div className="flex items-center gap-1">
@@ -566,7 +566,7 @@ export default function DocumentRepositoryTab({ staffProfileId, companyId, folde
             </p>
             <div className="space-y-2">
               {unclassified.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2">
+                <div key={doc.id} className="flex items-center justify-between gap-2 rounded-lg border border-amber-200 bg-surface-container-lowest px-3 py-2">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-gray-800 truncate">{doc.file_name}</p>
                     <p className="text-[11px] text-gray-400">{doc.document_type.replace(/_/g, ' ')} · {fmt(doc.created_at)}</p>

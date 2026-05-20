@@ -97,7 +97,7 @@ export default function ArchivedApplicantActions({ applicantId, applicantName, c
       {/* ── Restore modal ──────────────────────────────────────────────────────── */}
       {showRestore && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Restore Applicant</h2>
             <p className="text-sm text-on-surface-variant">
               <span className="font-medium text-primary">{applicantName}</span> will be moved back into the active pipeline.
@@ -151,7 +151,7 @@ export default function ArchivedApplicantActions({ applicantId, applicantName, c
       {/* ── Delete modal ───────────────────────────────────────────────────────── */}
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
                 <span className="material-symbols-outlined text-red-600 text-lg">warning</span>

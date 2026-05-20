@@ -105,7 +105,7 @@ export default function IncidentEditForm({ incidentId, initial }: Props) {
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ring-1 ring-inset ${
                   severity === s
                     ? `${SEVERITY_CLS[s]} ring-current`
-                    : 'bg-white text-gray-400 ring-gray-200 hover:bg-gray-50'
+                    : 'bg-surface-container-lowest text-gray-400 ring-gray-200 hover:bg-gray-50'
                 }`}
               >
                 {s}
@@ -126,7 +126,7 @@ export default function IncidentEditForm({ incidentId, initial }: Props) {
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ring-1 ring-inset ${
                   status === s
                     ? `${STATUS_CLS[s]} ring-current`
-                    : 'bg-white text-gray-400 ring-gray-200 hover:bg-gray-50'
+                    : 'bg-surface-container-lowest text-gray-400 ring-gray-200 hover:bg-gray-50'
                 }`}
               >
                 {s.replace(/_/g, ' ')}

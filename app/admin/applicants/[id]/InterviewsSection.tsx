@@ -185,7 +185,7 @@ function ScheduleForm({ applicantId, onCreated, onCancel }: ScheduleFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-white text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-surface-container-lowest text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
         >
           Cancel
         </button>
@@ -241,7 +241,7 @@ function InterviewCard({ interview, onUpdated }: InterviewCardProps) {
   const inputCls = 'rounded border border-gray-300 px-2.5 py-1.5 text-sm text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white space-y-3">
+    <div className="border border-gray-200 rounded-lg p-4 bg-surface-container-lowest space-y-3">
       {/* Header row */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="space-y-0.5">
@@ -349,7 +349,7 @@ export default function InterviewsSection({ applicantId, initialInterviews }: Pr
           <button
             id="btn-schedule-interview"
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-surface-container-lowest text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
           >
             + Schedule Interview
           </button>

@@ -43,7 +43,7 @@ function RiskBadge({ level }: { level: string }) {
 
 function StatCard({ label, value, sub, colour }: { label: string; value: number | string; sub?: string; colour?: string }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
+    <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
       <p className={`text-3xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
       <p className="text-sm font-medium text-slate-700 mt-1">{label}</p>
       {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
@@ -66,7 +66,7 @@ function GoLiveGauge({ score }: { score: number }) {
   const colour = score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-amber-600' : 'text-red-600'
   const label  = score >= 80 ? 'Ready to go live' : score >= 60 ? 'Nearly ready' : 'Action required'
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-5">
+    <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 flex items-center gap-5">
       <div className="relative w-20 h-20 shrink-0">
         <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
           <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f0" strokeWidth="3" />
@@ -188,7 +188,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
       )}
 
       {/* Onboarding checklist */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
         <h2 className="font-semibold text-slate-800 mb-4">Onboarding Checklist</h2>
         <div className="space-y-2">
           {[
@@ -228,7 +228,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           <Link
             key={href}
             href={href}
-            className="bg-white border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
+            className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
           >
             {label} &rarr;
           </Link>

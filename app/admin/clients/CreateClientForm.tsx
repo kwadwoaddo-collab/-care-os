@@ -116,7 +116,7 @@ export default function CreateClientForm() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden">
 
             <div className="bg-gray-50 border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-800">Create client</h2>

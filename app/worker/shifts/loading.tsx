@@ -15,7 +15,7 @@ export default function ShiftsLoading() {
       {[1, 2, 3, 4].map((i) => (
         <div
           key={i}
-          className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 animate-pulse"
+          className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3 animate-pulse"
           style={{ animationDelay: `${i * 80}ms` }}
         >
           <div className="flex items-start justify-between">

@@ -164,7 +164,7 @@ function UploadForm({
           id="cad-doc-type"
           value={documentType}
           onChange={(e) => setDocumentType(e.target.value)}
-          className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="block w-full rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           {DOCUMENT_TYPES.map((dt) => (
             <option key={dt.value} value={dt.value}>{dt.label}</option>
@@ -183,7 +183,7 @@ function UploadForm({
               id="cad-training-cat"
               value={trainingCategory}
               onChange={(e) => setTrainingCategory(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="block w-full rounded-md border border-gray-300 bg-surface-container-lowest px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               <option value="">— Select category —</option>
               {TRAINING_CATEGORIES.map((tc) => (
@@ -624,7 +624,7 @@ export default function ComplianceActionDrawer({
         role="dialog"
         aria-modal="true"
         aria-label={ACTION_LABELS[action]}
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-surface-container-lowest shadow-2xl transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4">

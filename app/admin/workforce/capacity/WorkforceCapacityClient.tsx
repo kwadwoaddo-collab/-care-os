@@ -50,7 +50,7 @@ function StatCard({
       'rounded-xl border px-5 py-4 flex flex-col gap-1 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]',
       urgent && Number(value) > 0
         ? 'bg-red-50 border-red-200'
-        : 'bg-white border-gray-200',
+        : 'bg-surface-container-lowest border-gray-200',
     ].join(' ')}>
       <p className="text-xs font-medium text-on-surface-variant">{label}</p>
       <p className={`text-3xl font-bold tabular-nums ${urgent && Number(value) > 0 ? 'text-red-700' : 'text-primary'}`}>
@@ -142,7 +142,7 @@ function OverviewTab({ data }: { data: CapacityResponse }) {
       </div>
 
       {/* Distribution bar */}
-      <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] space-y-3">
+      <div className="bg-surface-container-lowest border border-gray-200 rounded-xl px-5 py-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] space-y-3">
         <h3 className="text-sm font-semibold text-primary">Workforce State Distribution</h3>
         <DistributionBar
           counts={{
@@ -188,7 +188,7 @@ function OverviewTab({ data }: { data: CapacityResponse }) {
 
       {/* Expiry cluster table */}
       {data.expiryCluster.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-primary">Compliance Expiry Concentration</h3>
             <p className="text-xs text-on-surface-variant mt-0.5">Items expiring per document / training type in next 30 days</p>
@@ -273,7 +273,7 @@ function StaffTab({ staff }: { staff: StaffReadinessRow[] }) {
                 'rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
                 filter === state
                   ? 'bg-gray-900 text-white ring-gray-900'
-                  : 'bg-white text-gray-600 ring-gray-300 hover:bg-gray-50',
+                  : 'bg-surface-container-lowest text-gray-600 ring-gray-300 hover:bg-gray-50',
               ].join(' ')}
             >
               {label}
@@ -282,7 +282,7 @@ function StaffTab({ staff }: { staff: StaffReadinessRow[] }) {
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
+      <div className="bg-surface-container-lowest border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 text-xs font-medium text-on-surface-variant uppercase tracking-wider">
@@ -354,7 +354,7 @@ function StaffTab({ staff }: { staff: StaffReadinessRow[] }) {
 
 function RolesTab({ byRole }: { byRole: RoleCapacity[] }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
+    <div className="bg-surface-container-lowest border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
       <div className="px-5 py-4 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-primary">Deployable Staff by Role</h3>
         <p className="text-xs text-on-surface-variant mt-0.5">Breakdown of workforce capacity per job role</p>
@@ -427,7 +427,7 @@ function CoverageTab({ coverage }: { coverage: CapacityResponse['coverage'] }) {
           No understaffed days in the next 14 days.
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
+        <div className="bg-surface-container-lowest border border-gray-200 rounded-xl overflow-hidden shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)]">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-primary">Understaffed Days</h3>
             <p className="text-xs text-on-surface-variant mt-0.5">Days with one or more unassigned shifts</p>
@@ -504,7 +504,7 @@ function OnboardingTab({ onboarding }: { onboarding: CapacityResponse['onboardin
         </Link>
         <Link
           href="/admin/applicants"
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-surface-container-lowest px-4 py-2.5 text-sm font-semibold text-primary hover:bg-gray-50 transition-colors"
         >
           View Applicants
         </Link>
@@ -561,7 +561,7 @@ export default function WorkforceCapacityClient({ initial }: { initial: Capacity
           <button
             onClick={refresh}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-surface-container-lowest px-3 py-2 text-xs font-medium text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`} style={{ fontSize: '16px' }}>
               refresh

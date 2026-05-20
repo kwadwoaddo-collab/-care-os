@@ -52,7 +52,7 @@ export default function DeleteStaffButton({ staffProfileId, staffName }: DeleteS
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl p-6 space-y-4">
+          <div className="w-full max-w-md rounded-xl bg-surface-container-lowest shadow-xl p-6 space-y-4">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-red-600 text-[24px]">warning</span>
               <h3 className="text-base font-semibold text-primary">Delete Staff Member</h3>

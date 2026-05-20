@@ -53,7 +53,7 @@ function StatCard({ label, value, icon, urgent }: {
   urgent?: boolean
 }) {
   return (
-    <div className={`rounded-xl border bg-white px-4 py-3 flex items-start gap-3 shadow-sm ${urgent && value > 0 ? 'border-red-200' : 'border-gray-200'}`}>
+    <div className={`rounded-xl border bg-surface-container-lowest px-4 py-3 flex items-start gap-3 shadow-sm ${urgent && value > 0 ? 'border-red-200' : 'border-gray-200'}`}>
       <span className={`material-symbols-outlined text-[20px] mt-0.5 ${urgent && value > 0 ? 'text-red-600' : 'text-gray-400'}`}>{icon}</span>
       <div>
         <p className={`text-xl font-bold tabular-nums ${urgent && value > 0 ? 'text-red-700' : 'text-gray-900'}`}>{value}</p>
@@ -260,7 +260,7 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
         </div>
 
         {/* Filter bar */}
-        <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-sm space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3 shadow-sm space-y-3">
           {/* Status tabs */}
           <div className="flex flex-wrap gap-1.5">
             {([
@@ -295,18 +295,18 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
               <input
                 type="text" value={searchTerm} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search staff or document…"
-                className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <select value={folderFilter} onChange={(e) => setFolder(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="">All folders</option>
               {uniqueFolders.map((f) => (
                 <option key={f.slug} value={f.slug}>{f.name}</option>
               ))}
             </select>
             <select value={typeFilter} onChange={(e) => setType(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="">All types</option>
               {uniqueTypes.map((t) => (
                 <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
@@ -316,7 +316,7 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
         </div>
 
         {/* Queue table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="border-b border-gray-100 px-4 py-3 flex items-center gap-2">
             <span className="material-symbols-outlined text-gray-500 text-[18px]">fact_check</span>
             <h2 className="text-sm font-semibold text-gray-700">

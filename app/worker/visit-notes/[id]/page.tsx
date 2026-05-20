@@ -335,7 +335,7 @@ export default function WorkerVisitNotePage() {
 
 function FormSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+    <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3">
       <p className="text-sm font-semibold text-gray-700">{label}</p>
       {children}
     </div>

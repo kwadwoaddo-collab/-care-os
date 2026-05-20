@@ -120,7 +120,7 @@ export default function DocumentApprovalButton({
           <button
             onClick={() => setShowReject(true)}
             disabled={saving}
-            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-white text-red-600 ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-surface-container-lowest text-red-600 ring-1 ring-inset ring-red-300 hover:bg-red-50 disabled:opacity-50 transition-colors"
             aria-label={`Reject ${docType.replace(/_/g, ' ')}`}
           >
             ✕ Reject
@@ -168,7 +168,7 @@ export default function DocumentApprovalButton({
             </button>
             <button
               onClick={() => { setShowReject(false); setRejectNotes('') }}
-              className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-300 bg-white hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-300 bg-surface-container-lowest hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>

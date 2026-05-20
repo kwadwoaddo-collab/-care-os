@@ -26,7 +26,7 @@ function WorkforceCard({ href, icon, title, description, badge }: SectionCard) {
   return (
     <Link
       href={href}
-      className="group flex items-start gap-4 bg-white rounded-xl border border-outline-variant px-5 py-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] hover:border-[#4f46e5]/30 hover:shadow-[0_4px_16px_-4px_rgba(79,70,229,0.12)] transition-all duration-200"
+      className="group flex items-start gap-4 bg-surface-container-lowest rounded-xl border border-outline-variant px-5 py-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.06)] hover:border-[#4f46e5]/30 hover:shadow-[0_4px_16px_-4px_rgba(79,70,229,0.12)] transition-all duration-200"
     >
       <div className="w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-[#4f46e5]/10 flex items-center justify-center shrink-0 transition-colors duration-200">
         <span

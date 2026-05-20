@@ -137,7 +137,7 @@ export default function StaffGrid({ staff }: { staff: StaffProfileWithCompliance
               'rounded-full px-3 py-1 text-xs font-medium border transition-colors cursor-pointer',
               filter === f.key
                 ? 'bg-primary border-primary text-on-primary'
-                : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
+                : 'bg-surface-container-lowest border-outline-variant text-on-surface hover:bg-surface-container-low',
             ].join(' ')}
           >
             {f.label}

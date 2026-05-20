@@ -129,7 +129,7 @@ export default function BroadcastPage() {
 
       {/* Template picker */}
       {templates.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 space-y-3">
           <p className="text-sm font-semibold text-slate-700">Start from a template</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {templates.slice(0, 6).map(t => (
@@ -166,7 +166,7 @@ export default function BroadcastPage() {
       )}
 
       {/* Message compose */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-5">
         <Section title="Message Content">
           <Field label="Subject">
             <input
@@ -303,7 +303,7 @@ export default function BroadcastPage() {
 
       {/* Preview toggle */}
       {subject && body && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
           <button
             onClick={() => setPreview(!preview)}
             className="w-full text-left px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"

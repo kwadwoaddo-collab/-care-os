@@ -114,7 +114,7 @@ function SummaryCard({ label, count, sub, href, urgent }: {
         'rounded-lg border px-4 py-3 block hover:shadow-sm transition-shadow',
         urgent && count > 0
           ? 'bg-red-50 border-red-200 text-red-900'
-          : 'bg-white border-gray-200 text-primary',
+          : 'bg-surface-container-lowest border-gray-200 text-primary',
       ].join(' ')}
     >
       <p className="text-xs font-medium text-on-surface-variant">{label}</p>

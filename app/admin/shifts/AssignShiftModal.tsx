@@ -253,7 +253,7 @@ export default function AssignShiftModal({ shift, onClose, onAssigned }: Props) 
       className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">

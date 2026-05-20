@@ -79,7 +79,7 @@ export default async function TenantsPage() {
           { label: 'Pilot',           value: tenants.filter(t => t.is_pilot).length },
           { label: 'Setup Complete',  value: tenants.filter(t => t.setup_completed).length },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
+          <div key={label} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
             <p className="text-2xl font-bold text-slate-900">{value}</p>
             <p className="text-xs text-slate-500 mt-0.5">{label}</p>
           </div>
@@ -88,11 +88,11 @@ export default async function TenantsPage() {
 
       {/* Tenant table */}
       {tenants.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-12 text-center">
           <p className="text-slate-500 text-sm">No tenants registered yet.</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">

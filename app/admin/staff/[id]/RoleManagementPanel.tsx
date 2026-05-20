@@ -298,7 +298,7 @@ export default function RoleManagementPanel({
       </div>
 
       {/* ── Role detail ────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
+      <div className="flex items-start justify-between gap-4 p-4 rounded-lg bg-surface-container-lowest border border-gray-200 shadow-sm">
         <div className="flex-1">
           <h4 className="text-xs font-medium text-on-surface-variant uppercase tracking-wider mb-3">System Permissions</h4>
           {profileId ? (
@@ -343,7 +343,7 @@ export default function RoleManagementPanel({
             id="change-role-btn"
             type="button"
             onClick={openModal}
-            className="flex-shrink-0 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+            className="flex-shrink-0 inline-flex items-center rounded-md bg-surface-container-lowest px-3 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
           >
             Change role
           </button>
@@ -568,7 +568,7 @@ function ResendInviteButton({
         type="button"
         disabled={state === 'loading'}
         onClick={() => void handleResend()}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-50 border border-indigo-200 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-wait"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-indigo-700 bg-surface-container-lowest hover:bg-indigo-50 border border-indigo-200 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-wait"
       >
         <span className="material-symbols-outlined text-[13px]">send</span>
         {state === 'loading' ? 'Sending…' : adminInviteSentAt ? 'Resend Admin Invite' : 'Send Admin Invite'}

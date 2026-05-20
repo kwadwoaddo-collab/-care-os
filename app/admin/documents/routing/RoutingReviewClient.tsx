@@ -71,7 +71,7 @@ function fmt(iso: string) {
 
 function StatCard({ label, value, icon, colour }: { label: string; value: number; icon: string; colour: string }) {
   return (
-    <div className={`rounded-xl border bg-white p-4 flex items-start gap-3 shadow-sm ${colour}`}>
+    <div className={`rounded-xl border bg-surface-container-lowest p-4 flex items-start gap-3 shadow-sm ${colour}`}>
       <span className="material-symbols-outlined text-[22px] mt-0.5" aria-hidden="true">{icon}</span>
       <div>
         <p className="text-2xl font-bold tabular-nums">{value}</p>
@@ -154,7 +154,7 @@ function ReviewRow({
           <select
             value={selectedSlug}
             onChange={(e) => setSelectedSlug(e.target.value)}
-            className="text-xs rounded-md border border-gray-300 px-2 py-1 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="text-xs rounded-md border border-gray-300 px-2 py-1 bg-surface-container-lowest text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             aria-label={`Select folder for ${doc.file_name}`}
           >
             <option value="">— Move to folder —</option>
@@ -234,7 +234,7 @@ export default function RoutingReviewClient({ diagnostics, pending, unrecognised
       </div>
 
       {/* Batch action + filter */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3 shadow-sm">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-gray-700">Routing actions</span>
           <button
@@ -288,7 +288,7 @@ export default function RoutingReviewClient({ diagnostics, pending, unrecognised
       )}
 
       {/* Review table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="border-b border-gray-100 px-4 py-3 flex items-center gap-2">
           <span className="material-symbols-outlined text-gray-500 text-[18px]" aria-hidden="true">table</span>
           <h2 className="text-sm font-semibold text-gray-700">

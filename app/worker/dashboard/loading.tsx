@@ -21,7 +21,7 @@ export default function DashboardLoading() {
         {[1, 2].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-xl border border-gray-200 p-4 space-y-3 animate-pulse"
+            className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3 animate-pulse"
             style={{ animationDelay: `${i * 100}ms` }}
           >
             <div className="flex justify-between items-start">

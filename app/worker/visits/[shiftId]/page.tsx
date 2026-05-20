@@ -42,7 +42,7 @@ const TASK_STATUS_CLS: Record<string, string> = {
   skipped:   'bg-slate-100 text-slate-500',
   partial:   'bg-amber-100 text-amber-700',
   refused:   'bg-red-100 text-red-700',
-  pending:   'bg-white text-slate-700 border border-slate-200',
+  pending:   'bg-surface-container-lowest text-slate-700 border border-slate-200',
 }
 
 const MED_ACTION_CLS: Record<string, string> = {
@@ -278,7 +278,7 @@ function VisitExecutionInner() {
 
           {/* Previous medication */}
           {g.medication_notes.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+            <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 space-y-2">
               <p className="text-sm font-semibold text-gray-800">Previous medication (last visit)</p>
               {g.medication_notes.map((m, i) => (
                 <div key={i} className="flex items-start justify-between text-sm">
@@ -301,7 +301,7 @@ function VisitExecutionInner() {
 
           {/* Care package context */}
           {g.care_package && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4">
+            <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
               <p className="text-sm font-semibold text-gray-800 mb-1">Care package</p>
               <p className="text-sm text-gray-700">{g.care_package.title}</p>
             </div>
@@ -309,7 +309,7 @@ function VisitExecutionInner() {
 
           {/* Escalation contacts */}
           {g.escalation_contacts.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-2">
+            <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 space-y-2">
               <p className="text-sm font-semibold text-gray-800">Escalation contacts</p>
               {g.escalation_contacts.map((c, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
@@ -345,7 +345,7 @@ function VisitExecutionInner() {
             <p className="text-sm text-slate-400 text-center py-8">No tasks yet. Add a task below.</p>
           ) : (
             tasks.map(t => (
-              <div key={t.id} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div key={t.id} className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 flex-1">
                     <span className="text-lg shrink-0">{TASK_TYPE_ICON[t.task_type] ?? '📋'}</span>
@@ -372,7 +372,7 @@ function VisitExecutionInner() {
           )}
 
           {/* Add task */}
-          <div className="bg-white border border-dashed border-slate-300 rounded-xl p-4 space-y-3">
+          <div className="bg-surface-container-lowest border border-dashed border-slate-300 rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Add task</p>
             <div className="flex gap-2">
               <select value={newTask.task_type} onChange={e => setNewTask(p => ({...p, task_type: e.target.value}))} className="input flex-none w-28 text-xs">
@@ -397,7 +397,7 @@ function VisitExecutionInner() {
           {meds.length > 0 && (
             <div className="space-y-2">
               {meds.map(m => (
-                <div key={m.id} className={`bg-white rounded-xl border p-4 ${m.requires_escalation ? 'border-red-300' : 'border-gray-200'}`}>
+                <div key={m.id} className={`bg-surface-container-lowest rounded-xl border p-4 ${m.requires_escalation ? 'border-red-300' : 'border-gray-200'}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-gray-800">💊 {m.medication_name}</p>
@@ -417,7 +417,7 @@ function VisitExecutionInner() {
           )}
 
           {/* Record medication */}
-          <div className="bg-white border border-dashed border-slate-300 rounded-xl p-4 space-y-3">
+          <div className="bg-surface-container-lowest border border-dashed border-slate-300 rounded-xl p-4 space-y-3">
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Record medication</p>
             <input type="text" value={newMed.medication_name} onChange={e => setNewMed(p => ({...p, medication_name: e.target.value}))} placeholder="Medication name *" className="input text-sm" />
             <div className="grid grid-cols-2 gap-2">
@@ -461,7 +461,7 @@ function VisitExecutionInner() {
               <button onClick={() => setPhase('checklist')} className="text-indigo-600 text-sm hover:underline mt-2 inline-block">Back to checklist</button>
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4">
+            <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-4">
               <p className="text-sm font-semibold text-gray-800">Raise a concern or escalation</p>
               <p className="text-xs text-gray-500">This will immediately notify your coordinator and create an incident record.</p>
 

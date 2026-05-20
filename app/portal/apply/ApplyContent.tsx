@@ -473,7 +473,7 @@ function Field({ label, required, hint, children }: {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+    <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">{title}</h2>
       {children}
     </div>
@@ -641,7 +641,7 @@ export default function ApplyContent() {
         )}
 
         {/* ── Role Selector ─────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-4">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Applying For</h2>
             <p className="mt-1 text-sm text-gray-500">Select the role you are applying for. The form will adapt to show only the sections relevant to your role.</p>
@@ -734,7 +734,7 @@ export default function ApplyContent() {
         </SectionCard>
 
         {/* Section 2 — Employment / Education History (CQC Reg 19 compliant) */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Employment History</h2>
             <p className="mt-1 text-sm text-gray-500">
@@ -931,7 +931,7 @@ export default function ApplyContent() {
         </div>
 
         {/* Section 2 — Employment Gap Declaration */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Employment Gap Declaration</h2>
             <p className="mt-1 text-sm text-gray-500">
@@ -1014,7 +1014,7 @@ export default function ApplyContent() {
         </div>
 
         {/* Section 2 — References */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">References</h2>
             <p className="mt-1 text-sm text-gray-500">
@@ -1295,7 +1295,7 @@ export default function ApplyContent() {
 
         {/* Section 3 — Training (care roles only) */}
         {showSection('training_qualifications') && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Training &amp; Qualifications</h2>
             <p className="mt-1 text-sm text-gray-500">Please tick all training you have completed and provide the completion date.</p>
@@ -1406,7 +1406,7 @@ export default function ApplyContent() {
 
         {/* Section — Professional Qualifications (care roles only) */}
         {showSection('professional_qualifications') && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Professional Qualifications</h2>
             <p className="mt-1 text-sm text-gray-500">
@@ -1501,7 +1501,7 @@ export default function ApplyContent() {
 
         {/* Section — Professional Registration (care roles only) */}
         {showSection('professional_registration') && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+        <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-6 space-y-5">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Professional Registration</h2>
             <p className="mt-1 text-sm text-gray-500">List any professional bodies you are registered with.</p>
@@ -1956,7 +1956,7 @@ export default function ApplyContent() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
             <div className="space-y-2">
               <p className="text-sm font-medium text-gray-700">Signature <span className="text-red-500">*</span></p>
-              <div className="border border-gray-300 rounded-lg bg-white overflow-hidden">
+              <div className="border border-gray-300 rounded-lg bg-surface-container-lowest overflow-hidden">
                 <SignatureCanvas
                   ref={sigRef}
                   penColor="black"
@@ -2033,7 +2033,7 @@ export default function ApplyContent() {
                 'rounded-lg px-5 py-2.5 text-sm font-medium transition-colors border',
                 saveState === 'saved'
                   ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100'
-                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+                  : 'border-gray-300 bg-surface-container-lowest text-gray-700 hover:bg-gray-50',
                 saveState === 'saving' ? 'opacity-60 cursor-not-allowed' : '',
               ].join(' ')}
             >

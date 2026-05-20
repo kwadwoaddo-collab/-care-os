@@ -85,7 +85,7 @@ export default function TemplatesPage() {
 
       {/* Create form */}
       {creating && (
-        <div className="bg-white border border-indigo-200 rounded-xl p-5 space-y-4">
+        <div className="bg-surface-container-lowest border border-indigo-200 rounded-xl p-5 space-y-4">
           <h2 className="text-sm font-semibold text-slate-800">New Template</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -141,7 +141,7 @@ export default function TemplatesPage() {
 
       {/* Selected template detail */}
       {selected && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-3">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900">{selected.name}</h2>
@@ -170,7 +170,7 @@ export default function TemplatesPage() {
       {systemTemplates.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">System Templates</h2>
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
             {systemTemplates.map((t, i) => (
               <div
                 key={t.id}
@@ -202,7 +202,7 @@ export default function TemplatesPage() {
       {customTemplates.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Custom Templates</h2>
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
             {customTemplates.map((t, i) => (
               <div
                 key={t.id}
@@ -221,7 +221,7 @@ export default function TemplatesPage() {
       )}
 
       {customTemplates.length === 0 && !creating && (
-        <div className="bg-white border border-slate-200 rounded-xl p-8 text-center">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-8 text-center">
           <p className="text-slate-500 text-sm">No custom templates yet.</p>
           <button onClick={() => setCreating(true)} className="text-indigo-600 text-sm mt-2 hover:underline">
             Create your first template →

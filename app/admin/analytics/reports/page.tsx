@@ -84,7 +84,7 @@ export default function ReportsPage() {
       </div>
 
       {/* ── Printable report ───────────────────────────────────────────────── */}
-      <div id="report" className="bg-white border border-slate-200 rounded-xl print:border-0 print:rounded-none print:shadow-none space-y-0">
+      <div id="report" className="bg-surface-container-lowest border border-slate-200 rounded-xl print:border-0 print:rounded-none print:shadow-none space-y-0">
 
         {/* Report header */}
         <div className="bg-slate-900 text-white px-8 py-6 print:bg-slate-900 rounded-t-xl print:rounded-none">
@@ -195,7 +195,7 @@ export default function ReportsPage() {
           { label: 'Safeguarding Report',   href: '/admin/analytics/safeguarding', desc: 'Incident trends, risk clusters' },
           { label: 'Compliance Summary',    href: '/admin/compliance', desc: 'Full compliance detail view' },
         ].map(({ label, href, desc }) => (
-          <Link key={href} href={href} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
+          <Link key={href} href={href} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
             <p className="text-sm font-semibold text-slate-800">{label}</p>
             <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
           </Link>

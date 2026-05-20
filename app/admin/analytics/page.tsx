@@ -272,7 +272,7 @@ export default function AnalyticsDashboardPage() {
       {loading && !data ? (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+            <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-4">
               <div className="w-24 h-24 rounded-full bg-slate-100 animate-pulse" />
               <Skeleton variant="text" />
             </div>

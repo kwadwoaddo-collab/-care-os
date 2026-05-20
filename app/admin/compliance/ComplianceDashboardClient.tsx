@@ -413,8 +413,8 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
                   active
                     ? 'bg-primary border-primary text-on-primary'
                     : chip.urgent
-                    ? 'bg-white border-outline-variant text-on-surface hover:border-error hover:text-error'
-                    : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
+                    ? 'bg-surface-container-lowest border-outline-variant text-on-surface hover:border-error hover:text-error'
+                    : 'bg-surface-container-lowest border-outline-variant text-on-surface hover:bg-surface-container-low',
                 ].join(' ')}
               >
                 {chip.label}
@@ -434,7 +434,7 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitSearch()}
-              className="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
             />
             <button
               onClick={submitSearch}
@@ -557,7 +557,7 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
                         <span className="material-symbols-outlined text-[20px]">more_vert</span>
                       </button>
                       {openMenuId === row.staffId && (
-                        <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-outline-variant shadow-lg rounded-xl overflow-hidden z-10 py-1" onClick={e => e.stopPropagation()}>
+                        <div className="absolute right-0 top-full mt-1 w-48 bg-surface-container-lowest border border-outline-variant shadow-lg rounded-xl overflow-hidden z-10 py-1" onClick={e => e.stopPropagation()}>
                           <Link href={`/admin/staff/${row.staffId}`} className="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low w-full text-left">View Profile</Link>
                           <button
                             onClick={() => { setOpenMenuId(null); setExplainId(row.staffId); setExplainName(row.staffName) }}

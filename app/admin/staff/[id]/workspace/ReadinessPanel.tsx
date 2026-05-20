@@ -91,7 +91,7 @@ export default function ReadinessPanel({ staffProfileId, initialReadiness }: Pro
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4 animate-pulse">
+      <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-4 animate-pulse">
         <div className="h-4 bg-gray-100 rounded w-32 mb-3" />
         <div className="h-10 bg-gray-100 rounded w-full mb-2" />
         <div className="h-3 bg-gray-100 rounded w-3/4" />
@@ -101,7 +101,7 @@ export default function ReadinessPanel({ staffProfileId, initialReadiness }: Pro
 
   if (error || !readiness) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="rounded-xl border border-gray-200 bg-surface-container-lowest p-4">
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">Readiness panel</p>
           <button onClick={refresh} className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
@@ -122,7 +122,7 @@ export default function ReadinessPanel({ staffProfileId, initialReadiness }: Pro
     'text-red-700'
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-gray-200 bg-surface-container-lowest shadow-sm overflow-hidden">
       {/* Header */}
       <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function ReadinessPanel({ staffProfileId, initialReadiness }: Pro
               <p className="text-xs font-semibold text-gray-600 mb-1.5">Expiry alerts</p>
               <div className="space-y-1.5">
                 {readiness.expiryAlerts.slice(0, 5).map((a, i) => (
-                  <div key={i} className="flex items-center justify-between gap-2 text-xs rounded-lg border border-gray-200 bg-white px-2.5 py-1.5">
+                  <div key={i} className="flex items-center justify-between gap-2 text-xs rounded-lg border border-gray-200 bg-surface-container-lowest px-2.5 py-1.5">
                     <span className="text-gray-700 font-medium truncate">{a.fileName}</span>
                     <span className={`shrink-0 font-semibold ${a.daysRemaining <= 14 ? 'text-red-700' : a.daysRemaining <= 30 ? 'text-orange-700' : 'text-amber-700'}`}>
                       {a.daysRemaining}d

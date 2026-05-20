@@ -31,7 +31,7 @@ function ToggleSwitch({ enabled, onChange, label, description }: { enabled: bool
         role="switch"
         aria-checked={enabled}
       >
-        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface-container-lowest shadow ring-0 transition duration-200 ease-in-out ${enabled ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
     </div>
   )

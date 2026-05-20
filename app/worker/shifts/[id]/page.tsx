@@ -257,7 +257,7 @@ export default function WorkerShiftDetailPage() {
       </div>
 
       {/* Shift details card */}
-      <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+      <div className="bg-surface-container-lowest rounded-xl border border-gray-200 divide-y divide-gray-100">
         <InfoRow label="Date"          value={formatDate(shift.shift_date)} />
         <InfoRow label="Time"          value={`${formatTime(shift.start_time)} – ${formatTime(shift.end_time)}`} />
         <InfoRow label="Client"        value={shift.client_name} />
@@ -270,7 +270,7 @@ export default function WorkerShiftDetailPage() {
 
       {/* Acknowledgement card */}
       {shift.status !== 'cancelled' && shift.status !== 'completed' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-700">Shift Action</h2>
             {shift.status === 'accepted' && (
@@ -361,7 +361,7 @@ export default function WorkerShiftDetailPage() {
 
       {/* Clock in / out — sticky action bar */}
       {(shift.status === 'accepted' || shift.status === 'in_progress' || shift.status === 'completed') && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3">
           <h2 className="text-sm font-semibold text-gray-700">Attendance</h2>
 
           <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
@@ -428,7 +428,7 @@ export default function WorkerShiftDetailPage() {
 
       {/* Visit note card */}
       {(shift.status === 'in_progress' || shift.status === 'completed') && (
-        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-700">Visit Note</h2>
             {shift.visit_note && (

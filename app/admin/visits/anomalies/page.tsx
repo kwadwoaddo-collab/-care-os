@@ -90,7 +90,7 @@ export default function AnomaliesPage() {
         <select
           value={severity}
           onChange={e => setSeverity(e.target.value)}
-          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none bg-white"
+          className="text-sm border border-slate-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none bg-surface-container-lowest"
         >
           <option value="">All severities</option>
           <option value="critical">Critical</option>

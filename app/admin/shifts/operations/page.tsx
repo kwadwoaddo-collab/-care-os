@@ -84,7 +84,7 @@ function SummaryCard({
           ? 'ring-2 ring-indigo-500 border-indigo-200 bg-indigo-50'
           : urgent && count > 0
             ? 'bg-red-50 border-red-200'
-            : 'bg-white border-gray-200',
+            : 'bg-surface-container-lowest border-gray-200',
       ].join(' ')}
     >
       <p className="text-xs font-medium text-on-surface-variant">{label}</p>
@@ -243,7 +243,7 @@ export default function ShiftOperationsPage() {
               'rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
               filter === f
                 ? 'bg-gray-900 text-white ring-gray-900'
-                : 'bg-white text-gray-600 ring-gray-300 hover:bg-gray-50',
+                : 'bg-surface-container-lowest text-gray-600 ring-gray-300 hover:bg-gray-50',
             ].join(' ')}
           >
             {FILTER_LABELS[f]}

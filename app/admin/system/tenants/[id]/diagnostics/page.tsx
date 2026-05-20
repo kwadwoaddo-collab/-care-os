@@ -79,7 +79,7 @@ export default async function DiagnosticsPage({ params }: { params: Promise<{ id
       </div>
 
       {/* Migration Version */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Database & Migrations</h2>
         <StatusRow
           label="Applied Migrations"
@@ -99,7 +99,7 @@ export default async function DiagnosticsPage({ params }: { params: Promise<{ id
       </div>
 
       {/* Queue & Jobs */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Jobs & Queue</h2>
         <StatusRow
           label="Failed Notifications"
@@ -116,7 +116,7 @@ export default async function DiagnosticsPage({ params }: { params: Promise<{ id
       </div>
 
       {/* Record Health */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5">
+      <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Record Health</h2>
         <StatusRow
           label="Stale Compliance Records"

@@ -164,7 +164,7 @@ function MoreDrawer({ items, onClose }: { items: MoreItem[]; onClose: () => void
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-20 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-gray-100 pb-safe animate-in slide-in-from-bottom duration-200">
+      <div className="fixed bottom-20 left-0 right-0 z-50 bg-surface-container-lowest rounded-t-2xl shadow-2xl border-t border-gray-100 pb-safe animate-in slide-in-from-bottom duration-200">
         <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mt-3 mb-4" />
         
         <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 px-5 mb-2">

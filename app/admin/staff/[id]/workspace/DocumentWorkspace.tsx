@@ -40,7 +40,7 @@ function BulkBar({ count, onApprove, onArchive, onClear, loading }: {
         <button
           onClick={onApprove}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white text-indigo-700 hover:bg-indigo-50 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-surface-container-lowest text-indigo-700 hover:bg-indigo-50 transition-colors disabled:opacity-50"
         >
           {loading
             ? <span className="material-symbols-outlined text-[13px] animate-spin">progress_activity</span>
@@ -103,7 +103,7 @@ function UploadButton({ folderId, folderSlug, staffProfileId }: {
   return (
     <div className="flex items-center gap-2">
       <select value={docType} onChange={(e) => setDocType(e.target.value)}
-        className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">Type…</option>
         <option value="application_form">Application Form</option>
         <option value="cv">CV / Résumé</option>
@@ -163,13 +163,13 @@ function MoveDocumentDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-xl shadow-xl p-5 w-80">
+      <div className="bg-surface-container-lowest rounded-xl shadow-xl p-5 w-80">
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Move document</h3>
         <p className="text-xs text-gray-500 mb-3 truncate">{doc.file_name}</p>
         <select
           value={targetId}
           onChange={(e) => setTargetId(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-indigo-500 bg-white"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:border-indigo-500 bg-surface-container-lowest"
         >
           <option value="">Unclassified</option>
           {visibleFolders.map((f) => (
@@ -220,7 +220,7 @@ function DeleteConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl p-5 w-80 border border-red-200">
+      <div className="bg-surface-container-lowest rounded-xl shadow-xl p-5 w-80 border border-red-200">
         <div className="flex items-center gap-2 mb-2">
           <span className="material-symbols-outlined text-red-600 text-[22px]">delete_forever</span>
           <h3 className="text-sm font-semibold text-gray-900">Permanently delete document?</h3>
@@ -456,7 +456,7 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
       </div>
 
       {/* Main 3-column layout */}
-      <div className="flex gap-0 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm" style={{ minHeight: 520 }}>
+      <div className="flex gap-0 border border-gray-200 rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm" style={{ minHeight: 520 }}>
 
         {/* Left: Folder tree */}
         <aside
@@ -479,7 +479,7 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
         {/* Centre: Document list */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Toolbar */}
-          <div className="border-b border-gray-200 px-4 py-2.5 flex flex-wrap items-center gap-2 bg-white shrink-0">
+          <div className="border-b border-gray-200 px-4 py-2.5 flex flex-wrap items-center gap-2 bg-surface-container-lowest shrink-0">
             {/* Sidebar toggle */}
             <button
               onClick={() => setSidebar((p) => !p)}
@@ -506,13 +506,13 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
               <input
                 type="text" value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search…"
-                className="pl-6 pr-3 py-1 text-xs rounded-lg border border-gray-300 bg-white w-36 focus:w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="pl-6 pr-3 py-1 text-xs rounded-lg border border-gray-300 bg-surface-container-lowest w-36 focus:w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               />
             </div>
 
             {/* Status filter */}
             <select value={status} onChange={(e) => setStatus(e.target.value as FilterKey)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="text-xs rounded-lg border border-gray-300 px-2 py-1 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="all">All status</option>
               <option value="pending_verification">Pending</option>
               <option value="verified">Verified</option>
@@ -527,7 +527,7 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
 
             {/* Source filter */}
             <select value={sourceStage} onChange={(e) => setSource(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden sm:block">
+              className="text-xs rounded-lg border border-gray-300 px-2 py-1 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden sm:block">
               <option value="">All sources</option>
               {Object.entries(SOURCE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
@@ -602,7 +602,7 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
                     key={doc.id}
                     onClick={() => setPreview(doc)}
                     className={`text-left rounded-xl border p-3 hover:shadow-sm transition-all ${
-                      selectedIds.has(doc.id) ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                      selectedIds.has(doc.id) ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-surface-container-lowest hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-start gap-2">

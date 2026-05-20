@@ -65,7 +65,7 @@ export default function AdminAccessButton({ staffProfileId, adminInviteSentAt }:
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false) }}
         >
-          <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-md rounded-lg bg-surface-container-lowest p-6 shadow-xl">
             {done ? (
               <div className="text-center py-4">
                 <p className="text-3xl mb-2">✅</p>
@@ -99,7 +99,7 @@ export default function AdminAccessButton({ staffProfileId, adminInviteSentAt }:
                     type="button"
                     onClick={() => setOpen(false)}
                     disabled={loading}
-                    className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50"
+                    className="rounded-md bg-surface-container-lowest px-3 py-2 text-sm font-semibold text-primary shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50"
                   >
                     Cancel
                   </button>

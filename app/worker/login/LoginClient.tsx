@@ -87,7 +87,7 @@ export default function LoginClient({ token }: { token: string }) {
     const displayName = [worker.first_name, worker.last_name].filter(Boolean).join(' ') || 'Worker'
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
-        <div className="w-full max-w-sm rounded-2xl bg-white border border-gray-200 p-8 text-center shadow-sm space-y-5 animate-in fade-in zoom-in duration-300">
+        <div className="w-full max-w-sm rounded-2xl bg-surface-container-lowest border border-gray-200 p-8 text-center shadow-sm space-y-5 animate-in fade-in zoom-in duration-300">
           <div className="text-4xl">👋</div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Welcome, {displayName}</h1>
@@ -107,7 +107,7 @@ export default function LoginClient({ token }: { token: string }) {
   // Verification Error / Request Link Form
   return (
     <div className="flex items-center justify-center min-h-[60vh] px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white border border-gray-200 p-8 shadow-sm space-y-6">
+      <div className="w-full max-w-md rounded-2xl bg-surface-container-lowest border border-gray-200 p-8 shadow-sm space-y-6">
         <div className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center text-2xl mb-4">
             {state === 'error' ? '🔒' : '🔑'}
@@ -147,7 +147,7 @@ export default function LoginClient({ token }: { token: string }) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 disabled={state === 'loading'}
-                className="block w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:border-indigo-500 focus:bg-white focus:ring-indigo-500 disabled:opacity-50 transition-all"
+                className="block w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:border-indigo-500 focus:bg-surface-container-lowest focus:ring-indigo-500 disabled:opacity-50 transition-all"
               />
             </div>
 

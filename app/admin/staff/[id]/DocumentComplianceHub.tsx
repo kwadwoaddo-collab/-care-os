@@ -262,7 +262,7 @@ function DocumentRow({
     || doc.reviewed_status === 'rejected' || doc.reviewed_status === null
 
   return (
-    <li className={`flex flex-col gap-2.5 p-3.5 rounded-lg border bg-white hover:shadow-sm transition-all ${needsAttention ? 'border-amber-200' : 'border-gray-100 hover:border-gray-200'}`}>
+    <li className={`flex flex-col gap-2.5 p-3.5 rounded-lg border bg-surface-container-lowest hover:shadow-sm transition-all ${needsAttention ? 'border-amber-200' : 'border-gray-100 hover:border-gray-200'}`}>
       {/* Top row: file name + action buttons */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 min-w-0">
@@ -495,7 +495,7 @@ export default function DocumentComplianceHub({
               </button>
               <button
                 onClick={() => openDrawer('review_notes')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-gray-600 bg-white hover:bg-gray-50 border border-gray-200 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-gray-600 bg-surface-container-lowest hover:bg-gray-50 border border-gray-200 transition-colors"
                 aria-label="Add compliance review notes"
               >
                 <span className="material-symbols-outlined text-[14px]" aria-hidden="true">rate_review</span>

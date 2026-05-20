@@ -52,7 +52,7 @@ function DayCard({
   disabled:     boolean
 }) {
   return (
-    <div className={`rounded-xl border p-4 transition-colors ${availability.available ? 'bg-white border-gray-200' : 'bg-gray-50 border-gray-200'}`}>
+    <div className={`rounded-xl border p-4 transition-colors ${availability.available ? 'bg-surface-container-lowest border-gray-200' : 'bg-gray-50 border-gray-200'}`}>
       {/* Day toggle row */}
       <label className="flex items-center justify-between cursor-pointer gap-3">
         <span className="text-sm font-semibold text-gray-900">{DAY_LABELS[day]}</span>
@@ -69,7 +69,7 @@ function DayCard({
             onClick={() => onChange('available', !availability.available)}
             className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${availability.available ? 'bg-indigo-600' : 'bg-gray-300'}`}
           >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${availability.available ? 'translate-x-5' : 'translate-x-0'}`} />
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface-container-lowest shadow transition-transform ${availability.available ? 'translate-x-5' : 'translate-x-0'}`} />
           </div>
         </div>
       </label>
@@ -252,7 +252,7 @@ export default function WorkerAvailabilityPage() {
       </section>
 
       {/* Preferences */}
-      <section className="bg-white rounded-2xl border border-gray-200 p-4 space-y-4">
+      <section className="bg-surface-container-lowest rounded-2xl border border-gray-200 p-4 space-y-4">
         <p className="text-sm font-semibold text-gray-700">Preferences</p>
 
         <div className="grid grid-cols-2 gap-3">

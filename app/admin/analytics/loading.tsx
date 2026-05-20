@@ -15,7 +15,7 @@ export default function AnalyticsLoading() {
       </div>
       {/* Health + Signals */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-6 space-y-4">
           <div className="h-24 w-24 bg-slate-100 rounded-full animate-pulse" />
           <div className="space-y-2">
             <div className="h-4 w-3/4 bg-slate-100 rounded animate-pulse" />
@@ -29,7 +29,7 @@ export default function AnalyticsLoading() {
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1,2,3,4,5,6].map(i => (
-          <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+          <div key={i} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4 space-y-3">
             <div className="h-4 w-32 bg-slate-100 rounded animate-pulse" />
             <div className="h-24 bg-slate-100 rounded animate-pulse" />
           </div>

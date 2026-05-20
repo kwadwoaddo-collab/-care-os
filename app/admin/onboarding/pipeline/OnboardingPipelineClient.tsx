@@ -82,7 +82,7 @@ function SummaryStrip({ summary, forecast }: { summary: PipelineSummary; forecas
         { label: 'Critical expiry',   value: summary.criticalExpiry,       icon: 'event_busy',     cls: 'text-orange-700' },
         { label: 'Avg score',         value: `${summary.avgScore}%`,       icon: 'trending_up',    cls: 'text-indigo-700' },
       ].map(({ label, value, icon, cls }) => (
-        <div key={label} className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 flex items-start gap-2 shadow-sm">
+        <div key={label} className="rounded-xl border border-gray-200 bg-surface-container-lowest px-3 py-2.5 flex items-start gap-2 shadow-sm">
           <span className={`material-symbols-outlined text-[18px] mt-0.5 ${cls}`}>{icon}</span>
           <div>
             <p className={`text-xl font-bold tabular-nums ${cls}`}>{value}</p>
@@ -116,7 +116,7 @@ function StageKanban({ byStage, selected, onSelect }: {
       <button
         onClick={() => onSelect('all')}
         className={`shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg border transition-colors ${
-          selected === 'all' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+          selected === 'all' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-surface-container-lowest border-gray-200 text-gray-600 hover:bg-gray-50'
         }`}
       >
         <span className="text-xs font-semibold">All</span>
@@ -135,8 +135,8 @@ function StageKanban({ byStage, selected, onSelect }: {
               isSelected
                 ? 'bg-gray-800 border-gray-700 text-white'
                 : count === 0
-                  ? 'bg-white border-gray-100 text-gray-300 cursor-default'
-                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-surface-container-lowest border-gray-100 text-gray-300 cursor-default'
+                  : 'bg-surface-container-lowest border-gray-200 text-gray-700 hover:bg-gray-50'
             }`}
             disabled={count === 0}
           >
@@ -296,7 +296,7 @@ function RiskForecastCard({ forecast }: { forecast: Props['riskForecast'] }) {
         )}
       </div>
       <a href="/admin/documents/verification"
-        className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-orange-700 bg-white hover:bg-orange-50 border border-orange-200 transition-colors">
+        className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-orange-700 bg-surface-container-lowest hover:bg-orange-50 border border-orange-200 transition-colors">
         Review →
       </a>
     </div>
@@ -325,7 +325,7 @@ export default function OnboardingPipelineClient({ rows, summary, riskForecast }
       <StageKanban byStage={summary.byStage} selected={stageFilter} onSelect={setStage} />
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="border-b border-gray-100 px-4 py-3 flex items-center gap-3">
           <span className="material-symbols-outlined text-gray-500 text-[18px]">list</span>
           <h2 className="text-sm font-semibold text-gray-700">

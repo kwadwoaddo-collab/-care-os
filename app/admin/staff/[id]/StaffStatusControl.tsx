@@ -67,7 +67,7 @@ function ActivationPreflightModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-md rounded-xl bg-white shadow-xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-md rounded-xl bg-surface-container-lowest shadow-xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center gap-2">
           {allClear ? (
             <span className="text-2xl">✅</span>
@@ -349,7 +349,7 @@ export default function StaffStatusControl({
       {/* Future shift confirmation modal */}
       {shiftWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white shadow-xl p-5 space-y-4">
+          <div className="w-full max-w-sm rounded-xl bg-surface-container-lowest shadow-xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-primary">Future shifts assigned</h3>
             <p className="text-sm text-gray-600">
               This staff member has{' '}

@@ -222,7 +222,7 @@ export default function StaffAvailabilitySection({ staffProfileId, initial }: Pr
             <select
               value={shiftType}
               onChange={(e) => setShiftType(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+              className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface-container-lowest"
             >
               {SHIFT_TYPES.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>

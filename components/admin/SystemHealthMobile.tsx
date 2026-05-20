@@ -45,7 +45,7 @@ function StatusPill({ ok, label }: { ok: boolean; label?: string }) {
 
 function InfraCard({ title, ok, metric, detail }: { title: string; ok: boolean; metric?: string; detail?: string }) {
   return (
-    <div className="bg-white rounded-lg border border-surface-container-highest p-4 shadow-sm flex items-start gap-3">
+    <div className="bg-surface-container-lowest rounded-lg border border-surface-container-highest p-4 shadow-sm flex items-start gap-3">
       <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${ok ? 'bg-green-500' : 'bg-red-500'}`} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-1">
@@ -75,7 +75,7 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
     <div className="flex flex-col h-full bg-background pb-8 px-4 py-6 space-y-8" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
       
       {/* ── Global Status Hero ───────────────────────────────────────────── */}
-      <div className={`relative bg-white rounded-xl border p-6 shadow-sm overflow-hidden ${
+      <div className={`relative bg-surface-container-lowest rounded-xl border p-6 shadow-sm overflow-hidden ${
         allOk ? 'border-green-200' : 'border-red-200'
       }`}>
         <div className={`absolute left-0 top-0 bottom-0 w-1 ${allOk ? 'bg-green-500' : 'bg-red-500'}`} />
@@ -141,7 +141,7 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
         {/* Migration Status */}
         <div className="space-y-3">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Database Migrations</h2>
-          <div className="bg-white rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
+          <div className="bg-surface-container-lowest rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
             <div className="flex justify-between p-4">
               <span className="text-sm font-medium text-slate-500">Expected</span>
               <span className="text-sm font-bold text-[#1e293b]">{health?.expectedMigrations ?? '—'}</span>
@@ -161,7 +161,7 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
         {/* Operational Signals */}
         <div className="space-y-3">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Operational Signals</h2>
-          <div className="bg-white rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
+          <div className="bg-surface-container-lowest rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
             <div className="flex justify-between p-4">
               <span className="text-sm font-medium text-slate-500">Active staff</span>
               <span className="text-sm font-bold text-[#1e293b]">{health?.activeStaffCount ?? '—'}</span>
@@ -196,7 +196,7 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
         {/* Build Info */}
         <div className="space-y-3">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Build Info</h2>
-          <div className="bg-white rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
+          <div className="bg-surface-container-lowest rounded-lg border border-surface-container-highest divide-y divide-slate-100 shadow-sm">
             <div className="flex justify-between p-4">
               <span className="text-sm font-medium text-slate-500">Environment</span>
               <span className="text-sm font-bold text-[#1e293b]">{nodeEnv.toUpperCase()}</span>
@@ -222,11 +222,11 @@ export default function SystemHealthMobile({ data }: { data: SystemHealthData })
             <span className="material-symbols-outlined text-white text-[24px]">route</span>
             <span className="text-sm font-bold text-white">API Traces</span>
           </a>
-          <a href="#" className="flex flex-col gap-2 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
+          <a href="#" className="flex flex-col gap-2 p-4 bg-surface-container-lowest border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
             <span className="material-symbols-outlined text-indigo-600 text-[24px]">analytics</span>
             <span className="text-sm font-bold text-slate-700">Analytics</span>
           </a>
-          <a href="/api/admin/system/health" target="_blank" className="flex flex-col gap-2 p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
+          <a href="/api/admin/system/health" target="_blank" className="flex flex-col gap-2 p-4 bg-surface-container-lowest border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
             <span className="material-symbols-outlined text-indigo-600 text-[24px]">api</span>
             <span className="text-sm font-bold text-slate-700">Health JSON</span>
           </a>

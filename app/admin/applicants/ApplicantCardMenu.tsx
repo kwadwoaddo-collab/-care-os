@@ -114,7 +114,7 @@ export default function ApplicantCardMenu({ applicantId, applicantName, status }
       {open && (
         <div
           role="menu"
-          className="absolute right-0 bottom-8 z-50 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 overflow-hidden"
+          className="absolute right-0 bottom-8 z-50 w-52 bg-surface-container-lowest rounded-xl shadow-lg border border-gray-200 py-1 overflow-hidden"
         >
           {actions.map((item) => {
             const isLoading = loading !== null

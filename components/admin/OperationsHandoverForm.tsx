@@ -170,7 +170,7 @@ function CreateHandoverForm({ onCreated }: { onCreated: (note: HandoverNote) => 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-outline-variant rounded-xl p-5 space-y-4 shadow-sm">
+    <form onSubmit={handleSubmit} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 space-y-4 shadow-sm">
       <h4 className="text-sm font-semibold text-gray-800">New Handover Note</h4>
       {error && <p className="text-xs text-red-600">{error}</p>}
 

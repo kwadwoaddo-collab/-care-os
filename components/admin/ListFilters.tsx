@@ -21,7 +21,7 @@ interface Props {
 }
 
 const INPUT_CLS =
-  'rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white'
+  'rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-surface-container-lowest'
 
 export default function ListFilters({ fields }: Props) {
   const router                       = useRouter()

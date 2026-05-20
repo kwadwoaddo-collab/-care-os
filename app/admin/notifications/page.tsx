@@ -123,7 +123,7 @@ export default function NotificationsPage() {
               onClick={() => setStatusFilter(key)}
               className={[
                 'rounded-lg border px-4 py-3 text-left transition-shadow hover:shadow-sm',
-                statusFilter === key ? 'ring-2 ring-indigo-500 border-indigo-200 bg-indigo-50' : 'bg-white border-gray-200',
+                statusFilter === key ? 'ring-2 ring-indigo-500 border-indigo-200 bg-indigo-50' : 'bg-surface-container-lowest border-gray-200',
                 key === 'failed' && counts.failed > 0 ? 'border-red-200 bg-red-50' : '',
               ].join(' ')}
             >
@@ -173,7 +173,7 @@ export default function NotificationsPage() {
             {filtered.map((log) => (
               <div
                 key={log.id}
-                className={`bg-white rounded-xl border overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)] ${
+                className={`bg-surface-container-lowest rounded-xl border overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.04)] ${
                   log.status === 'failed' ? 'border-red-200' : 'border-gray-100'
                 }`}
               >

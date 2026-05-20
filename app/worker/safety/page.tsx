@@ -115,7 +115,7 @@ export default function WorkerSafetyPage() {
                 'w-full flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all',
                 alertType === a.value
                   ? 'border-indigo-400 bg-indigo-50 ring-2 ring-indigo-200'
-                  : 'border-gray-200 bg-white hover:border-gray-300',
+                  : 'border-gray-200 bg-surface-container-lowest hover:border-gray-300',
               ].join(' ')}
             >
               <span className="text-2xl shrink-0">{a.icon}</span>

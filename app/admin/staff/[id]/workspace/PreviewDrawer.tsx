@@ -251,7 +251,7 @@ export default function PreviewDrawer({ doc, onClose, onAction, onStatusChange }
 
       {/* Panel */}
       <aside
-        className="flex flex-col bg-white border-l border-gray-200 h-full overflow-hidden"
+        className="flex flex-col bg-surface-container-lowest border-l border-gray-200 h-full overflow-hidden"
         style={{ minWidth: 0 }}
         aria-label={`Document details: ${doc.file_name}`}
       >

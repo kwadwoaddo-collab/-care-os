@@ -215,7 +215,7 @@ function UploadForm({ applicantId, onUploaded, onCancel }: UploadFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-white text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium bg-surface-container-lowest text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
         >
           Cancel
         </button>
@@ -343,7 +343,7 @@ export default function DocumentsSection({ applicantId, initialDocuments }: Prop
           <button
             id="btn-upload-document"
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium bg-surface-container-lowest text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors"
           >
             + Upload Document
           </button>

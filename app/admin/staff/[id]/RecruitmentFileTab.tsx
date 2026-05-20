@@ -219,7 +219,7 @@ export default async function RecruitmentFileTab({ staffProfileId, applicantId, 
             View original record
           </Link>
         </div>
-        <div className="p-4 bg-white grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
+        <div className="p-4 bg-surface-container-lowest grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-700">
           <div>
             <p className="text-xs font-medium text-gray-500 mb-0.5">Converted</p>
             <p className="font-semibold text-gray-900">{formatDate(convertedAt ?? applicant?.created_at ?? null)}</p>

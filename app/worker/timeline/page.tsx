@@ -114,7 +114,7 @@ export default function WorkerTimelinePage() {
             onClick={() => setPeriod(p)}
             className={[
               'flex-1 py-2.5 rounded-xl text-xs font-semibold capitalize transition-colors',
-              period === p ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200 text-gray-600',
+              period === p ? 'bg-indigo-600 text-white' : 'bg-surface-container-lowest border border-gray-200 text-gray-600',
             ].join(' ')}
           >
             {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'Today'}
@@ -123,7 +123,7 @@ export default function WorkerTimelinePage() {
       </div>
 
       {dates.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-400">
+        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-400">
           No shifts for this period.
         </div>
       ) : dates.map(date => {
@@ -170,7 +170,7 @@ export default function WorkerTimelinePage() {
 
                         <Link
                           href={`/worker/visits/${s.id}`}
-                          className={`block bg-white rounded-xl border border-gray-200 p-3.5 active:scale-[0.98] transition-all ${border}`}
+                          className={`block bg-surface-container-lowest rounded-xl border border-gray-200 p-3.5 active:scale-[0.98] transition-all ${border}`}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">

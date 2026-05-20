@@ -426,7 +426,7 @@ export default function VisitNoteForm({ note }: { note: VisitNote }) {
             <button
               onClick={handleSave}
               disabled={saving || submitting}
-              className="px-4 py-2 text-sm rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm rounded-md border border-gray-300 bg-surface-container-lowest text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? 'Saving…' : 'Save draft'}
             </button>

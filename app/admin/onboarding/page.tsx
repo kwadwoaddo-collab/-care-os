@@ -101,7 +101,7 @@ function SendReminderButton({ staffId }: { staffId: string }) {
         state === 'done'    ? 'bg-green-50 text-green-700 ring-green-600/20'  : '',
         state === 'error'   ? 'bg-red-50   text-red-700   ring-red-600/20'    : '',
         state === 'sending' ? 'opacity-60 cursor-not-allowed bg-gray-50 text-on-surface-variant ring-gray-400/20' : '',
-        state === 'idle'    ? 'bg-white text-gray-600 ring-gray-300/60 hover:bg-gray-50' : '',
+        state === 'idle'    ? 'bg-surface-container-lowest text-gray-600 ring-gray-300/60 hover:bg-gray-50' : '',
       ].join(' ')}
     >
       {state === 'done' ? '✓ Sent' : state === 'error' ? '✕ Failed' : state === 'sending' ? '…' : '📧 Remind'}
@@ -124,7 +124,7 @@ function OnboardingCard({
   const isStalled = row.stalled_days !== null
 
   return (
-    <div className={`flex items-start gap-3 rounded-xl border bg-white px-3 py-3.5 transition-colors group ${
+    <div className={`flex items-start gap-3 rounded-xl border bg-surface-container-lowest px-3 py-3.5 transition-colors group ${
       row.is_urgent  ? 'border-red-200 ring-1 ring-red-200'   :
       isStalled      ? 'border-amber-200 ring-1 ring-amber-200' :
                        'border-gray-200'
@@ -424,7 +424,7 @@ export default function OnboardingQueuePage() {
                 'rounded-full px-3 py-1 text-xs font-medium border transition-colors whitespace-nowrap cursor-pointer',
                 stage === s
                   ? 'bg-primary border-primary text-on-primary'
-                  : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
+                  : 'bg-surface-container-lowest border-outline-variant text-on-surface hover:bg-surface-container-low',
               ].join(' ')}
             >
               {STAGE_LABEL[s]} {summary ? `(${s === 'all' ? summary.total : summary[s as keyof OnboardingSummary]})` : ''}
@@ -436,7 +436,7 @@ export default function OnboardingQueuePage() {
               'rounded-full px-3 py-1 text-xs font-medium border transition-colors cursor-pointer',
               urgentOnly
                 ? 'bg-error border-error text-on-error'
-                : 'bg-white border-outline-variant text-on-surface hover:bg-surface-container-low',
+                : 'bg-surface-container-lowest border-outline-variant text-on-surface hover:bg-surface-container-low',
             ].join(' ')}
           >
             🚨 Urgent / Stalled

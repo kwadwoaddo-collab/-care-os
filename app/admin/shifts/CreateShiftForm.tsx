@@ -131,7 +131,7 @@ export default function CreateShiftForm({ companyId, readyStaff, activeClients }
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-lg bg-white rounded-xl shadow-xl overflow-hidden">
+          <div className="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden">
 
             {/* Header */}
             <div className="bg-gray-50 border-b border-gray-200 px-5 py-3.5 flex items-center justify-between">

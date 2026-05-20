@@ -1,7 +1,7 @@
 /**
  * Card — standardised container for all admin panel content blocks.
  *
- * Replaces the repeated `bg-white border border-slate-200 rounded-xl` pattern
+ * Replaces the repeated `bg-surface-container-lowest border border-slate-200 rounded-xl` pattern
  * found across 54+ locations in the codebase.
  *
  * Usage:
@@ -27,7 +27,7 @@ const PADDING: Record<NonNullable<CardProps['padding']>, string> = {
 
 export default function Card({ children, className = '', padding = 'default', as: Tag = 'div' }: CardProps) {
   return (
-    <Tag className={`bg-white border border-slate-200 rounded-xl ${PADDING[padding]} ${className}`}>
+    <Tag className={`bg-surface-container-lowest border border-slate-200 rounded-xl ${PADDING[padding]} ${className}`}>
       {children}
     </Tag>
   )

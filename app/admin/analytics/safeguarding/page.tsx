@@ -103,7 +103,7 @@ export default function SafeguardingAnalyticsPage() {
           { label: 'Avg Resolution Days', value: s.avg_resolution_days ?? '—' },
           { label: 'Beyond SLA (5d)',     value: s.unresolved_beyond_sla,    colour: s.unresolved_beyond_sla > 0 ? 'text-red-600' : 'text-emerald-600' },
         ].map(({ label, value, colour }) => (
-          <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
+          <div key={label} className="bg-surface-container-lowest border border-slate-200 rounded-xl p-4">
             <p className={`text-2xl font-bold ${colour ?? 'text-slate-900'}`}>{value}</p>
             <p className="text-xs text-slate-500 mt-0.5">{label}</p>
           </div>
@@ -112,7 +112,7 @@ export default function SafeguardingAnalyticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Incident type breakdown */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-700">Incident Types</h2>
             <Sparkline data={data.trend.map(t => t.value)} />
@@ -137,7 +137,7 @@ export default function SafeguardingAnalyticsPage() {
         </div>
 
         {/* Severity breakdown */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
+        <div className="bg-surface-container-lowest border border-slate-200 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-700">Severity Distribution</h2>
             <Sparkline data={data.escalation_trend.map(t => t.value)} colour="#f97316" />
@@ -163,7 +163,7 @@ export default function SafeguardingAnalyticsPage() {
       {/* Risk clusters */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {data.high_risk_clients.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
               <span>👤</span>
               <h2 className="text-sm font-semibold text-slate-700">High-Risk Clients (≥2 incidents)</h2>
@@ -187,7 +187,7 @@ export default function SafeguardingAnalyticsPage() {
         )}
 
         {data.high_risk_workers.length > 0 && (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-surface-container-lowest border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
               <span>🧑‍⚕️</span>
               <h2 className="text-sm font-semibold text-slate-700">High-Risk Workers (≥2 incidents)</h2>

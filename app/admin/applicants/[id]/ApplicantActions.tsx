@@ -208,7 +208,7 @@ export default function ApplicantActions({
 
   return (
     <>
-      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
+      <div className="bg-surface-container-lowest border border-gray-200 rounded-lg px-4 py-3 mb-6">
         <div className="flex flex-wrap items-center gap-3">
           {/* Current status */}
           <div className="flex items-center gap-1.5 mr-2">
@@ -396,7 +396,7 @@ export default function ApplicantActions({
       {/* ── Rejection modal ──────────────────────────────────────────────────── */}
       {showRejectModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Reject Applicant</h2>
             <p className="text-sm text-on-surface-variant">
               This applicant will be moved to the archived view. You can restore them later if needed.
@@ -446,7 +446,7 @@ export default function ApplicantActions({
       {/* ── Restore modal ────────────────────────────────────────────────────── */}
       {showRestoreModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <h2 className="text-base font-semibold text-gray-900">Restore Applicant</h2>
             <p className="text-sm text-on-surface-variant">
               Choose which stage to restore this applicant to in the pipeline.

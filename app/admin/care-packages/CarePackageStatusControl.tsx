@@ -138,7 +138,7 @@ export default function CarePackageStatusControl({ packageId, currentStatus }: P
       {/* Confirmation modal */}
       {shiftWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-xl bg-white shadow-xl p-5 space-y-4">
+          <div className="w-full max-w-sm rounded-xl bg-surface-container-lowest shadow-xl p-5 space-y-4">
             <h3 className="text-sm font-semibold text-primary">Unassigned future shifts exist</h3>
             <p className="text-sm text-gray-600">
               This package has{' '}

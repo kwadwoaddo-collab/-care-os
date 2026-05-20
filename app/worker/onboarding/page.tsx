@@ -184,7 +184,7 @@ function StepRow({
 }) {
   const icon    = done ? '✓' : adminOnly ? '⏳' : '○'
   const iconCls = done ? 'bg-green-100 text-green-700' : adminOnly ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-400'
-  const rowCls  = done ? 'border-green-100 bg-green-50/40' : adminOnly ? 'border-amber-100 bg-amber-50/30' : 'border-gray-200 bg-white'
+  const rowCls  = done ? 'border-green-100 bg-green-50/40' : adminOnly ? 'border-amber-100 bg-amber-50/30' : 'border-gray-200 bg-surface-container-lowest'
 
   return (
     <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${rowCls}`}>
@@ -474,7 +474,7 @@ export default function WorkerOnboardingPage() {
               workerAction = (
                 <Link
                   href="/worker/profile"
-                  className="inline-flex items-center rounded-lg border border-indigo-200 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 active:scale-95 transition-all"
+                  className="inline-flex items-center rounded-lg border border-indigo-200 bg-surface-container-lowest px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 active:scale-95 transition-all"
                 >
                   Update profile →
                 </Link>
@@ -520,14 +520,14 @@ export default function WorkerOnboardingPage() {
       <div className="grid grid-cols-2 gap-3">
         <Link
           href="/worker/documents"
-          className="rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-center hover:border-indigo-200 hover:bg-indigo-50/30 transition-colors"
+          className="rounded-xl border border-gray-200 bg-surface-container-lowest px-4 py-3.5 text-center hover:border-indigo-200 hover:bg-indigo-50/30 transition-colors"
         >
           <p className="text-xl mb-1">📎</p>
           <p className="text-xs font-semibold text-gray-700">My Documents</p>
         </Link>
         <Link
           href="/worker/dashboard"
-          className="rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-center hover:border-indigo-200 hover:bg-indigo-50/30 transition-colors"
+          className="rounded-xl border border-gray-200 bg-surface-container-lowest px-4 py-3.5 text-center hover:border-indigo-200 hover:bg-indigo-50/30 transition-colors"
         >
           <p className="text-xl mb-1">🏠</p>
           <p className="text-xs font-semibold text-gray-700">Dashboard</p>

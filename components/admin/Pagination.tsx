@@ -53,7 +53,7 @@ export default function Pagination({ meta, searchParams }: Props) {
             href={pageUrl(p, searchParams)}
             className={[
               LINK_CLS,
-              p === page ? 'bg-gray-900 text-white ring-gray-900 hover:bg-gray-800' : 'bg-white text-gray-700',
+              p === page ? 'bg-gray-900 text-white ring-gray-900 hover:bg-gray-800' : 'bg-surface-container-lowest text-gray-700',
             ].join(' ')}
           >
             {p}
