@@ -122,16 +122,32 @@ function UploadButton({ folderId, folderSlug, staffProfileId }: {
         <option value="appraisal">Appraisal</option>
         <option value="other">Other</option>
       </select>
-      <button onClick={() => inputRef.current?.click()} disabled={!docType || uploading}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors disabled:opacity-40">
+
+      <label
+        htmlFor="doc-upload-input"
+        aria-disabled={!docType || uploading}
+        className={[
+          'flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors',
+          !docType || uploading
+            ? 'bg-indigo-300 cursor-not-allowed pointer-events-none'
+            : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer',
+        ].join(' ')}
+      >
         {uploading
           ? <span className="material-symbols-outlined text-[13px] animate-spin">progress_activity</span>
           : <span className="material-symbols-outlined text-[13px]">upload</span>}
         {uploading ? 'Uploading…' : 'Choose file'}
-      </button>
+      </label>
+
+      <input
+        ref={inputRef}
+        id="doc-upload-input"
+        type="file"
+        disabled={!docType || uploading}
+        className="sr-only"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = '' }}
+      />
       <button onClick={() => setShowForm(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
-      <input ref={inputRef} type="file" className="hidden"
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
     </div>
   )
 }
