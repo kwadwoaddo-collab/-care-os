@@ -261,6 +261,13 @@ export default function StaffProfileDesktop({
             )}
             <EditStaffProfileForm staff={{ ...sp, start_date: sp.start_date ?? null }} />
             <Link
+              href={`/admin/staff/${sp.id}/pre-employment`}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">fact_check</span>
+              Pre-Employment
+            </Link>
+            <Link
               href={`/admin/shifts?assign_to=${sp.id}`}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container text-sm font-bold hover:opacity-90 transition-opacity"
             >

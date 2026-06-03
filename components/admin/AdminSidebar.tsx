@@ -61,6 +61,9 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     { label: 'Documents',     href: '/admin/documents/verification', icon: 'fact_check', show: navCan(canViewCompliance),
       activeMatch: (p: string) => p.startsWith('/admin/documents'),
     },
+    { label: 'Training Matrix', href: '/admin/compliance/training-matrix', icon: 'grid_view', show: navCan(canViewCompliance),
+      activeMatch: (p: string) => p.startsWith('/admin/compliance/training-matrix'),
+    },
     { label: 'Audit Log',     href: '/admin/audit-log',      icon: 'history',       show: navCan(canViewAuditLogs) },
     { label: 'Notifications', href: '/admin/notifications',  icon: 'notifications', show: navCan(canViewNotifications) },
   ]

@@ -41,6 +41,20 @@ interface WorkerDocument {
   expiry_date:   string | null
 }
 
+interface ComplianceRequirements {
+  requiredDocs:        string[]
+  missingDocs:         string[]
+  approvedCategories:  string[]
+  pendingCategories:   string[]
+  missingCategories:   string[]
+  requiredTraining:    string[]
+  complianceState:     string
+  compliancePercentage: number
+  primaryBlocker:      string | null
+  stateExplanation:    string
+  nextActions:         { label: string; action: string; status: string; impact: string }[]
+}
+
 interface WellbeingData {
   hours_this_week:  number
   consecutive_days: number
@@ -74,6 +88,188 @@ function formatTime(t: string) { return t.slice(0, 5) }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+// ── Action required banner ───────────────────────────────────────────────────
+
+function ActionRequiredBanner({ count, href }: { count: number; href: string }) {
+  return (
+    <a
+      href={href}
+      className="block rounded-2xl bg-gradient-to-r from-red-600 to-red-500 p-4 text-white shadow-md hover:shadow-lg active:scale-[0.98] transition-all"
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-2xl flex-shrink-0">⚠️</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold">Action Required</p>
+          <p className="text-xs text-red-100 mt-0.5">
+            You have {count} item{count !== 1 ? 's' : ''} that need your attention before your next shift.
+          </p>
+        </div>
+        <span className="text-white/80 text-lg flex-shrink-0 font-semibold">Review Now →</span>
+      </div>
+    </a>
+  )
+}
+
+// ── Compliance status widget ──────────────────────────────────────────────────
+
+function ComplianceStatusWidget({
+  compliance,
+  expiringDocs,
+  expiredDocs,
+}: {
+  compliance:   ComplianceRequirements
+  expiringDocs: WorkerDocument[]
+  expiredDocs:  WorkerDocument[]
+}) {
+  const missingCount  = compliance.missingDocs.length + compliance.missingCategories.length
+  const expiringCount = expiringDocs.length
+  const expiredCount  = expiredDocs.length
+  const pendingAcks   = compliance.pendingCategories.length
+
+  // Determine overall status colour
+  let statusColor: 'green' | 'amber' | 'red' = 'green'
+  if (expiredCount > 0 || missingCount > 0) statusColor = 'red'
+  else if (expiringCount > 0 || pendingAcks > 0) statusColor = 'amber'
+
+  const pct = compliance.compliancePercentage ?? 0
+
+  const headerCls = {
+    green: 'bg-green-50 border-green-200',
+    amber: 'bg-amber-50 border-amber-200',
+    red:   'bg-red-50   border-red-200',
+  }[statusColor]
+
+  const titleCls = {
+    green: 'text-green-800',
+    amber: 'text-amber-800',
+    red:   'text-red-800',
+  }[statusColor]
+
+  const barCls = {
+    green: 'bg-green-500',
+    amber: 'bg-amber-500',
+    red:   'bg-red-500',
+  }[statusColor]
+
+  const statusIcon = {
+    green: '✅',
+    amber: '🟡',
+    red:   '🔴',
+  }[statusColor]
+
+  // Build compliance items total
+  const totalItems     = (compliance.requiredDocs.length) + (compliance.requiredTraining.length) + 1 /* policy */
+  const completeItems  = Math.round((pct / 100) * totalItems)
+
+  return (
+    <section>
+      <div className={`rounded-2xl border p-4 space-y-3 ${headerCls}`}>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{statusIcon}</span>
+            <p className={`text-sm font-bold ${titleCls}`}>My Compliance Status</p>
+          </div>
+          <span className={`text-xs font-semibold ${titleCls}`}>{pct}%</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-2 w-full rounded-full bg-gray-200/60 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-700 ${barCls}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <p className={`text-xs ${titleCls} opacity-80`}>
+          {completeItems} of {totalItems} compliance items complete
+        </p>
+
+        {/* Missing documents */}
+        {compliance.missingDocs.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-red-700 mb-1.5">Missing documents:</p>
+            <div className="space-y-1">
+              {compliance.missingDocs.map((doc) => (
+                <a
+                  key={doc}
+                  href="/worker/documents"
+                  className="flex items-center justify-between rounded-lg bg-white/80 border border-red-200 px-3 py-2 min-h-[44px] hover:bg-red-50 transition-colors"
+                >
+                  <span className="text-xs text-red-700 font-medium">{doc.replace(/_/g, ' ')}</span>
+                  <span className="text-xs text-red-500 font-semibold ml-2">Upload →</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Expiring docs */}
+        {expiringDocs.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-amber-700 mb-1.5">Expiring soon:</p>
+            <div className="space-y-1">
+              {expiringDocs.map((d) => (
+                <a
+                  key={d.id}
+                  href="/worker/documents"
+                  className="flex items-center justify-between rounded-lg bg-white/80 border border-amber-200 px-3 py-2 min-h-[44px] hover:bg-amber-50 transition-colors"
+                >
+                  <span className="text-xs text-amber-700 font-medium">{d.document_type.replace(/_/g, ' ')}</span>
+                  <span className="text-xs text-amber-500">
+                    {d.expiry_date ? `Expires ${new Date(d.expiry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'Expiring'}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Expired docs */}
+        {expiredDocs.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-red-700 mb-1.5">Expired:</p>
+            <div className="space-y-1">
+              {expiredDocs.map((d) => (
+                <a
+                  key={d.id}
+                  href="/worker/documents"
+                  className="flex items-center justify-between rounded-lg bg-white/80 border border-red-200 px-3 py-2 min-h-[44px] hover:bg-red-50 transition-colors"
+                >
+                  <span className="text-xs text-red-700 font-medium">{d.document_type.replace(/_/g, ' ')}</span>
+                  <span className="text-xs text-red-600 font-semibold">Renew →</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pending acknowledgements */}
+        {compliance.pendingCategories.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-amber-700 mb-1.5">Pending acknowledgements:</p>
+            <a
+              href="/worker/onboarding"
+              className="flex items-center justify-between rounded-lg bg-white/80 border border-amber-200 px-3 py-2 min-h-[44px] hover:bg-amber-50 transition-colors"
+            >
+              <span className="text-xs text-amber-700 font-medium">
+                {compliance.pendingCategories.length} training item{compliance.pendingCategories.length !== 1 ? 's' : ''} awaiting review
+              </span>
+              <span className="text-xs text-amber-500 font-semibold">View →</span>
+            </a>
+          </div>
+        )}
+
+        {/* All good state */}
+        {statusColor === 'green' && (
+          <p className="text-xs text-green-700 font-medium text-center py-1">
+            🎉 You&apos;re fully compliant — great work!
+          </p>
+        )}
+      </div>
+    </section>
+  )
 }
 
 // ── Alert banner ──────────────────────────────────────────────────────────────
@@ -155,8 +351,9 @@ export default function WorkerDashboard() {
   const [taskCount,  setTaskCount]  = useState(0)
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState<string | null>(null)
-  const [queued,     setQueued]     = useState(0)
-  const [syncing,    setSyncing]    = useState(false)
+  const [queued,       setQueued]       = useState(0)
+  const [syncing,      setSyncing]      = useState(false)
+  const [compliance,   setCompliance]   = useState<ComplianceRequirements | null>(null)
 
   const online = useOnlineStatus()
 
@@ -196,8 +393,9 @@ export default function WorkerDashboard() {
       fetch(`/api/worker/wellbeing?token=${enc}`).then((r) => r.json()).catch(() => null),
       fetch(`/api/worker/messages?token=${enc}`).then((r) => r.json()).catch(() => null),
       fetch(`/api/worker/tasks?token=${enc}`).then((r) => r.json()).catch(() => null),
+      fetch(`/api/worker/onboarding/requirements?token=${enc}`).then((r) => r.json()).catch(() => null),
     ])
-      .then(([workerData, shiftsData, docsData, timesheetData, wellbeingData, msgData, taskData]) => {
+      .then(([workerData, shiftsData, docsData, timesheetData, wellbeingData, msgData, taskData, complianceData]) => {
         const w = workerData as WorkerInfo & { error?: string }
         if (w.error) { setError(w.error); return }
         setWorker(w)
@@ -208,6 +406,7 @@ export default function WorkerDashboard() {
         if (wellbeingData && !wellbeingData.error) setWellbeing(wellbeingData as WellbeingData)
         if (msgData?.unread_count) setUnread(msgData.unread_count as number)
         if (taskData?.total_pending) setTaskCount(taskData.total_pending as number)
+        if (complianceData && !complianceData.error) setCompliance(complianceData as ComplianceRequirements)
       })
       .catch(() => setError('Failed to load — please try again.'))
       .finally(() => setLoading(false))
@@ -282,8 +481,32 @@ export default function WorkerDashboard() {
     })
   }
 
+  // ── Compliance action count (for Action Required banner) ──────────────────
+  const complianceActionCount = compliance
+    ? compliance.missingDocs.length +
+      compliance.missingCategories.length +
+      expiredDocs.length
+    : 0
+
   return (
     <div className="space-y-5 pb-4">
+
+      {/* Action Required banner — shown at very top when there are compliance issues */}
+      {complianceActionCount > 0 && (
+        <ActionRequiredBanner
+          count={complianceActionCount}
+          href="/worker/documents"
+        />
+      )}
+
+      {/* Compliance Status Widget — first content section */}
+      {compliance && (
+        <ComplianceStatusWidget
+          compliance={compliance}
+          expiringDocs={expiringDocs}
+          expiredDocs={expiredDocs}
+        />
+      )}
 
       {/* Offline banner */}
       {!online && (

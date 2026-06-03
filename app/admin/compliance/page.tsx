@@ -1,4 +1,5 @@
 import { Suspense }  from 'react'
+import Link from 'next/link'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import ComplianceDashboardClient from './ComplianceDashboardClient'
 import { createClient } from '@/lib/supabase/server'
@@ -35,6 +36,21 @@ export default async function CompliancePage() {
         subtitle="Active monitoring of credentials, onboarding, and training health."
       />
 
+      {/* Mobile: Training Matrix quick link */}
+      <div className="lg:hidden">
+        <Link
+          href="/admin/compliance/training-matrix"
+          className="flex items-center gap-3 bg-secondary-container/10 border border-secondary-container/20 text-secondary rounded-xl px-4 py-3 text-sm font-medium hover:bg-secondary-container/20 transition-colors"
+        >
+          <span className="material-symbols-outlined text-[20px]">grid_view</span>
+          <div>
+            <p className="font-semibold">Training Matrix</p>
+            <p className="text-xs font-normal text-secondary/70">View mandatory training compliance across all staff</p>
+          </div>
+          <span className="material-symbols-outlined text-[18px] ml-auto">chevron_right</span>
+        </Link>
+      </div>
+
       {/* Desktop header */}
       <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
@@ -44,19 +60,26 @@ export default async function CompliancePage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            href="/admin/compliance/training-matrix"
+            id="training-matrix-link"
+            className="bg-secondary-container/10 text-secondary font-medium py-2 px-4 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center gap-2 text-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            Training Matrix
+          </Link>
           <a
-            href="/api/admin/compliance/reminders/send"
-            data-method="post"
-            id="send-digest-btn"
+            href="/api/admin/compliance/export"
+            download
+            id="export-report-btn"
             className="bg-secondary-container/10 text-secondary font-medium py-2 px-4 rounded-lg hover:bg-secondary-container/20 transition-colors flex items-center gap-2 text-sm"
           >
             <span className="material-symbols-outlined text-[18px]">cloud_download</span>
             Export Report
           </a>
           <a
-            href="/api/admin/compliance/reminders/send"
-            data-method="post"
-            id="send-digest-btn"
+            href="/admin/documents"
+            id="upload-documents-btn"
             className="bg-primary text-on-primary font-medium py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 text-sm"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>

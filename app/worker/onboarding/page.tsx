@@ -106,6 +106,80 @@ const SECTION_DESCS: Record<string, string> = {
 const WORKER_SECTIONS = new Set(['personal', 'address', 'emergency', 'documents', 'policy', 'training'])
 const ADMIN_SECTIONS  = new Set(['hmrc', 'banking', 'employment', 'compliance'])
 
+// ── Progress Stepper ─────────────────────────────────────────────────────────
+
+type StepStatus = 'complete' | 'current' | 'upcoming'
+
+const STEPPER_STAGES = [
+  { id: 'personal', label: 'Personal\nDetails' },
+  { id: 'documents', label: 'Documents' },
+  { id: 'policies', label: 'Policies' },
+  { id: 'complete', label: 'Complete' },
+] as const
+
+function ProgressStepper({ stage }: { stage: string }) {
+  // Map onboarding stage to stepper index
+  const stageToIndex: Record<string, number> = {
+    not_started:     0,
+    in_progress:     1,
+    awaiting_review: 2,
+    complete:        3,
+  }
+  const currentIdx = stageToIndex[stage] ?? 1
+
+  return (
+    <div className="flex items-center w-full px-1" role="list" aria-label="Onboarding steps">
+      {STEPPER_STAGES.map((step, i) => {
+        const status: StepStatus =
+          i < currentIdx  ? 'complete'
+          : i === currentIdx ? 'current'
+          : 'upcoming'
+        const isLast = i === STEPPER_STAGES.length - 1
+
+        const circleCls = {
+          complete: 'bg-green-500  border-green-500  text-white',
+          current:  'bg-indigo-600 border-indigo-600 text-white',
+          upcoming: 'bg-white      border-gray-300    text-gray-400',
+        }[status]
+
+        const labelCls = {
+          complete: 'text-green-700 font-semibold',
+          current:  'text-indigo-700 font-bold',
+          upcoming: 'text-gray-400',
+        }[status]
+
+        const lineCls = i < currentIdx
+          ? 'bg-green-400'
+          : 'bg-gray-200'
+
+        return (
+          <div key={step.id} className="flex items-center flex-1 min-w-0" role="listitem">
+            {/* Step circle + label */}
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div
+                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all ${circleCls}`}
+                aria-label={`Step ${i + 1}: ${step.label.replace('\n', ' ')} — ${status}`}
+              >
+                {status === 'complete' ? '✓' : i + 1}
+              </div>
+              <span
+                className={`mt-1 text-center leading-tight whitespace-pre-line text-[10px] ${labelCls}`}
+                style={{ maxWidth: '52px' }}
+              >
+                {step.label}
+              </span>
+            </div>
+            {/* Connector line (not after last step) */}
+            {!isLast && (
+              <div className={`h-0.5 flex-1 mx-1 mb-4 rounded-full transition-all ${lineCls}`} />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Progress ring ─────────────────────────────────────────────────────────────
 
 function ProgressRing({ pct }: { pct: number }) {
@@ -304,6 +378,12 @@ export default function WorkerOnboardingPage() {
   return (
     <div className="space-y-5 pb-8">
 
+      {/* ── Progress stepper ────────────────────────────────────────────────── */}
+      <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 px-4 py-4">
+        <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-widest">Your progress</p>
+        <ProgressStepper stage={stage} />
+      </div>
+
       {/* ── Hero progress card ──────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-700 text-white p-6 shadow-lg">
         <div className="flex items-center gap-4">
@@ -339,12 +419,18 @@ export default function WorkerOnboardingPage() {
 
       {/* ── Completion celebration ──────────────────────────────────────────── */}
       {stage === 'complete' && (
-        <div className="rounded-2xl bg-green-50 border border-green-200 p-5 text-center">
-          <p className="text-3xl mb-2">🎉</p>
-          <p className="text-lg font-bold text-green-800">You&apos;re all done!</p>
-          <p className="text-sm text-green-700 mt-1">
-            Your profile is complete. Your manager will be in touch with your start details.
+        <div className="rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-6 text-center text-white shadow-lg">
+          <div className="text-5xl mb-3" aria-hidden="true">🎉</div>
+          <p className="text-xl font-bold mb-1">You&apos;re all set!</p>
+          <p className="text-green-100 text-sm leading-relaxed">
+            Brilliant work — your onboarding is complete.<br />
+            Your manager will be in touch with your start details.
           </p>
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-1.5 text-sm font-semibold">
+              ✓ Fully verified
+            </span>
+          </div>
         </div>
       )}
 

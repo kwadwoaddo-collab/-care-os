@@ -256,6 +256,7 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
     canManageStaff(userRole)         && { href: '/admin/staff',               label: 'Active Staff',          icon: <IconStaff /> },
     canManageStaff(userRole)         && { href: '/admin/staff/archived',      label: 'Archived Staff',        icon: <IconSystem /> },
     canViewCompliance(userRole)      && { href: '/admin/compliance',           label: 'Compliance',            icon: <IconCompliance /> },
+    canViewCompliance(userRole)      && { href: '/admin/compliance/training-matrix', label: 'Training Matrix',   icon: <IconCompliance /> },
     canManageStaff(userRole)         && { href: '/admin/onboarding',           label: 'Onboarding',            icon: <IconSystem /> },
     canViewIncidents(userRole)       && { href: '/admin/incidents',            label: 'Incidents',             icon: <IconIncidents /> },
     canViewShifts(userRole)          && { href: '/admin/visits',               label: 'Visit Ops',             icon: <IconSystem /> },
@@ -315,11 +316,12 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
               'flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-transform duration-150 active:scale-90 cursor-pointer',
               open ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:text-primary transition-colors',
             ].join(' ')}
+            aria-label={open ? 'Close more navigation options' : 'Open more navigation options'}
             aria-expanded={open}
             aria-haspopup="true"
           >
             <IconMore />
-            <span className="font-label-md text-label-md mt-0.5">More</span>
+            <span className="font-label-md text-label-md mt-0.5" aria-hidden="true">More</span>
           </button>
         </div>
       </nav>

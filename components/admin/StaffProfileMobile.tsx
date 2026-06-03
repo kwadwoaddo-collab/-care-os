@@ -229,7 +229,7 @@ export default function StaffProfileMobile({
         </div>
 
         {/* ── Quick Actions ────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {/* Assign — primary operational action */}
           <Link
             href={`/admin/shifts?assign_to=${sp.id}`}
@@ -237,6 +237,15 @@ export default function StaffProfileMobile({
           >
             <span className="material-symbols-outlined text-[22px]">calendar_add_on</span>
             <span className="text-xs font-bold" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>Assign</span>
+          </Link>
+
+          {/* Pre-Employment Checks */}
+          <Link
+            href={`/admin/staff/${sp.id}/pre-employment`}
+            className="flex flex-col items-center gap-2 bg-surface-container-high text-on-surface rounded-lg py-4 transition-opacity hover:opacity-90"
+          >
+            <span className="material-symbols-outlined text-[22px]">fact_check</span>
+            <span className="text-xs font-semibold" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>Checks</span>
           </Link>
 
           {/* Message */}
