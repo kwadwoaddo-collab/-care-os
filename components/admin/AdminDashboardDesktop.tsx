@@ -3,24 +3,10 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import Icon from '@/components/ui/Icon'
-import { fmt, fmtTime, staffName, fmtDateDisplay } from '@/lib/utils/formatters'
+import { fmt, staffName, fmtDateDisplay } from '@/lib/utils/formatters'
 import { ReportExportModal } from './ReportExportModal'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-
-interface TodayShift {
-  id: string
-  title: string
-  start_time: string
-  end_time: string
-  status: string
-  assigned_staff_id: string | null
-  client_name: string | null
-  staff_profiles: { first_name: string | null; last_name: string | null } | null
-  clients: { id: string; first_name: string; last_name: string } | null
-  care_packages: { title: string } | null
-  visit_notes: { id: string; status: string }[]
-}
 
 interface Incident {
   id: string
@@ -42,53 +28,29 @@ interface AlertItem {
   severity: string
 }
 
-
-
 interface Props {
   // KPI counts
-  openShifts: number
+  openShifts: number       // kept for ops alert banner only
   nonCompliant: number
   activeIncidents: number
   activeStaff: number
-  activeClients: number
-  declinedShifts: number
-  runningLate: number
-  unacknowledged: number
   hrIncomplete: number
   expiring7d: number
-  draftNotes: number
+  pendingApplications: number
   // Data
-  todayShifts: TodayShift[]
   incidents: Incident[]
   topAlerts: AlertItem[]
-
-  // Pilot
+  // Onboarding
   onboardingPct: number
-  inviteSuccessPct: number
-  acceptancePct: number
-  completionPct: number
   pilotOnboarded: number
   pilotTotalStaff: number
-  pilotInviteLogin: number
-  pilotInvited: number
-  pilotAccepted: number
-  pilotCompleted: number
-  pilotTotalAssigned: number
   // Misc
   today: string
-  unassignedToday: number
   companyName: string
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-const SHIFT_STATUS: Record<string, string> = {
-  scheduled: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
-  confirmed:  'bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300',
-  completed:  'bg-surface-container-high text-on-surface-variant',
-  cancelled:  'bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300',
-  no_show:    'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300',
-}
 const SEVERITY_BORDER: Record<string, string> = {
   low:      'border-l-gray-300 dark:border-l-gray-600',
   medium:   'border-l-yellow-400',
@@ -218,15 +180,14 @@ function EmptyState({ icon, title, sub }: { icon: string; title: string; sub: st
 
 export default function AdminDashboardDesktop({
   openShifts, nonCompliant, activeIncidents, activeStaff,
-  declinedShifts, runningLate, unacknowledged, expiring7d,
-  todayShifts, incidents, topAlerts,
-  onboardingPct, inviteSuccessPct, acceptancePct, completionPct,
-  pilotOnboarded, pilotTotalStaff, pilotInviteLogin, pilotInvited,
-  pilotAccepted, pilotCompleted, pilotTotalAssigned,
-  today, unassignedToday, companyName
+  hrIncomplete, expiring7d, pendingApplications,
+  incidents, topAlerts,
+  onboardingPct, pilotOnboarded, pilotTotalStaff,
+  today, companyName,
 }: Props) {
-  const opsAlerts = declinedShifts + runningLate
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+
+  const complianceGaps = nonCompliant + expiring7d
 
   return (
     <div className="space-y-6">
@@ -255,16 +216,15 @@ export default function AdminDashboardDesktop({
         </div>
       </div>
 
-      <ReportExportModal 
-        isOpen={isExportModalOpen} 
-        onClose={() => setIsExportModalOpen(false)} 
+      <ReportExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
       />
 
-      {/* ── Ops alert banner ─────────────────────────────────────────────── */}
-      {(opsAlerts > 0 || unacknowledged > 0) && (
+      {/* ── Ops alert banner (only when rota issues present) ──────────────── */}
+      {openShifts > 0 && (
         <div className="rounded-xl bg-red-500/10 dark:bg-red-500/[0.08] border border-red-300/30 dark:border-red-800/40 px-5 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {/* Pulsing urgency indicator */}
             <span className="relative flex h-3 w-3 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
               <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600" />
@@ -272,10 +232,7 @@ export default function AdminDashboardDesktop({
             <div>
               <p className="text-sm font-semibold text-red-800 dark:text-red-300">Rota action required</p>
               <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
-                {declinedShifts > 0 && `${declinedShifts} declined`}
-                {declinedShifts > 0 && runningLate > 0 && ' · '}
-                {runningLate > 0 && `${runningLate} running late`}
-                {unacknowledged > 0 && ` · ${unacknowledged} unacknowledged`}
+                {openShifts} shift{openShifts !== 1 ? 's' : ''} unassigned
               </p>
             </div>
           </div>
@@ -285,29 +242,29 @@ export default function AdminDashboardDesktop({
         </div>
       )}
 
-      {/* ── Command Center Header: High-level Metrics ─────────────────────── */}
+      {/* ── Phase 1 KPI metrics ───────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <CommandMetric
-          title="Unassigned Shifts"
-          count={openShifts}
-          sub={openShifts > 0 ? 'Need coverage now' : 'All shifts covered'}
-          variant={openShifts > 0 ? 'urgent' : 'success'}
-          href="/admin/shifts?assigned=unassigned"
-          icon="event_busy"
+          title="Pending Applications"
+          count={pendingApplications}
+          sub={pendingApplications > 0 ? 'Awaiting review' : 'No pending applications'}
+          variant={pendingApplications > 0 ? 'warning' : 'success'}
+          href="/admin/applicants"
+          icon="person_search"
         />
         <CommandMetric
-          title="Urgent Incidents"
-          count={activeIncidents}
-          sub={activeIncidents > 0 ? 'Pending review' : 'No open incidents'}
-          variant={activeIncidents > 0 ? 'urgent' : 'success'}
-          href="/admin/incidents"
-          icon="warning"
+          title="Onboarding in Progress"
+          count={hrIncomplete}
+          sub={hrIncomplete > 0 ? 'Not yet complete' : 'All staff onboarded'}
+          variant={hrIncomplete > 0 ? 'warning' : 'success'}
+          href="/admin/onboarding"
+          icon="how_to_reg"
         />
         <CommandMetric
           title="Compliance Gaps"
-          count={nonCompliant + expiring7d}
-          sub={(nonCompliant + expiring7d) > 0 ? 'Docs expiring soon' : 'All staff compliant'}
-          variant={(nonCompliant + expiring7d) > 0 ? 'warning' : 'success'}
+          count={complianceGaps}
+          sub={complianceGaps > 0 ? 'Docs expiring soon' : 'All staff compliant'}
+          variant={complianceGaps > 0 ? 'warning' : 'success'}
           href="/admin/compliance"
           icon="verified_user"
         />
@@ -327,101 +284,73 @@ export default function AdminDashboardDesktop({
         {/* LEFT col (spans 8) */}
         <div className="lg:col-span-8 space-y-6">
 
-          {/* Today's Shifts */}
+          {/* Onboarding Pipeline summary */}
           <Card>
             <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/30">
               <div>
                 <h3 className="text-base font-bold text-on-surface tracking-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
-                  Critical Shifts: Today
+                  Onboarding Pipeline
                 </h3>
-                {unassignedToday > 0 && (
-                  <p className="text-xs text-red-600 dark:text-red-400 font-medium mt-0.5">
-                    {unassignedToday} shift{unassignedToday !== 1 ? 's' : ''} unassigned
-                  </p>
-                )}
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  {pilotOnboarded} of {pilotTotalStaff} staff fully onboarded
+                </p>
               </div>
-              <Link href="/admin/shifts" className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
-                View all shifts <span>→</span>
+              <Link href="/admin/onboarding" className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                Manage onboarding <span>→</span>
               </Link>
             </div>
-            <div className="divide-y divide-outline-variant/20">
-              {todayShifts.length === 0 ? (
-                <EmptyState
-                  icon="event_available"
-                  title="All clear for today"
-                  sub="No shifts are currently scheduled"
-                />
-              ) : (
-                todayShifts.map((shift) => {
-                  const isUnassigned = !shift.assigned_staff_id
-                  const dateObj = new Date(shift.start_time)
-                  const day = dateObj.getDate()
-                  const monthStr = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase()
-
-                  return (
-                    <div key={shift.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-surface-container-low/60 transition-colors">
-                      <div className="flex items-center gap-4 min-w-0">
-                        <div className={`w-12 h-12 shrink-0 rounded-lg flex flex-col items-center justify-center ${isUnassigned ? 'bg-red-500/10 text-red-700 dark:text-red-400' : 'bg-surface-container-high text-on-surface-variant'}`}>
-                          <span className="text-[10px] font-bold leading-none">{monthStr}</span>
-                          <span className="font-bold text-lg leading-tight mt-0.5">{day}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-on-surface truncate">
-                            {shift.care_packages?.title ?? 'General Care'}
-                          </p>
-                          <p className="text-xs text-on-surface-variant mt-0.5">
-                            {fmtTime(shift.start_time)} – {fmtTime(shift.end_time)} · {shift.clients ? `${shift.clients.first_name} ${shift.clients.last_name}` : shift.client_name ?? '—'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0 sm:pl-4">
-                        {isUnassigned ? (
-                          <>
-                            <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 text-[10px] font-bold uppercase tracking-wide">
-                              Unassigned
-                            </span>
-                            <Link
-                              href="/admin/shifts/open"
-                              className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-indigo-500 hover:to-violet-500 transition-all shadow-sm hover:shadow-md"
-                            >
-                              Assign Staff
-                            </Link>
-                          </>
-                        ) : (
-                          <>
-                            <span className={`hidden sm:inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${SHIFT_STATUS[shift.status] ?? 'bg-surface-container-high text-on-surface-variant'}`}>
-                              {shift.status.replace(/_/g, ' ')}
-                            </span>
-                            <Link
-                              href={`/admin/shifts/${shift.id}`}
-                              className="bg-surface-container-high text-on-surface px-4 py-2 rounded-lg text-xs font-semibold hover:bg-surface-container-highest transition-colors border border-outline-variant/40"
-                            >
-                              Review
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-              {unassignedToday > 0 && (
-                <div className="px-5 py-4 bg-red-500/[0.06] dark:bg-red-500/[0.04] flex justify-between items-center border-t border-red-200/30">
-                  <p className="text-xs font-medium text-red-800 dark:text-red-300">
-                    {unassignedToday} shift{unassignedToday !== 1 ? 's' : ''} still unassigned today
-                  </p>
-                  <Link href="/admin/shifts/open" className="text-xs font-semibold text-red-700 dark:text-red-400 hover:underline flex items-center gap-1">
-                    Resolve now <span>→</span>
+            <div className="px-6 py-5">
+              {/* Progress bar */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex-1 h-3 bg-surface-container-low rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      onboardingPct >= 80 ? 'bg-green-500' : onboardingPct > 50 ? 'bg-amber-500' : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(onboardingPct, 100)}%` }}
+                  />
+                </div>
+                <span className={`text-2xl font-bold tabular-nums shrink-0 ${
+                  onboardingPct >= 80 ? 'text-green-600 dark:text-green-400' :
+                  onboardingPct > 50 ? 'text-amber-600 dark:text-amber-400' :
+                  'text-red-600 dark:text-red-400'
+                }`}>
+                  {onboardingPct}%
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-3 rounded-lg bg-surface-container-low/60">
+                  <p className="text-2xl font-bold text-on-surface tabular-nums">{pilotOnboarded}</p>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Completed</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-amber-50/60 dark:bg-amber-950/20">
+                  <p className="text-2xl font-bold text-amber-700 dark:text-amber-400 tabular-nums">{hrIncomplete}</p>
+                  <p className="text-xs text-on-surface-variant mt-0.5">In Progress</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-surface-container-low/60">
+                  <p className="text-2xl font-bold text-on-surface tabular-nums">{pilotTotalStaff}</p>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Total Staff</p>
+                </div>
+              </div>
+              {hrIncomplete > 0 && (
+                <div className="mt-4">
+                  <Link
+                    href="/admin/onboarding"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                    {hrIncomplete} staff still need onboarding action
+                    <span>→</span>
                   </Link>
                 </div>
               )}
             </div>
           </Card>
 
-          {/* Recent Incidents */}
+          {/* Open Incidents */}
           <Card>
             <CardHeader
-              title="Recent Incidents"
+              title="Open Incidents"
               action={
                 <Link href="/admin/incidents" className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
                   View all <span>→</span>
@@ -465,46 +394,6 @@ export default function AdminDashboardDesktop({
             </div>
           </Card>
 
-          {/* Pilot Analytics */}
-          <Card>
-            <CardHeader
-              title="Pilot Analytics · Last 30 days"
-              action={
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center rounded-full bg-indigo-50/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 ring-1 ring-inset ring-indigo-600/20">
-                    PILOT
-                  </span>
-                  <Link href="/admin/analytics" className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
-                    Full analytics <span>→</span>
-                  </Link>
-                </div>
-              }
-            />
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-outline-variant/30 px-0">
-              {([
-                { label: 'Onboarding',    value: `${onboardingPct}%`,    sub: `${pilotOnboarded}/${pilotTotalStaff} staff`,     pct: onboardingPct },
-                { label: 'Portal logins', value: `${inviteSuccessPct}%`, sub: `${pilotInviteLogin} of ${pilotInvited} invited`, pct: inviteSuccessPct },
-                { label: 'Shift accepted',value: `${acceptancePct}%`,    sub: `${pilotAccepted} of ${pilotTotalAssigned}`,      pct: acceptancePct },
-                { label: 'Shift complete',value: `${completionPct}%`,    sub: `${pilotCompleted} of ${pilotTotalAssigned}`,     pct: completionPct },
-              ] as { label: string; value: string; sub: string; pct: number }[]).map(({ label, value, sub, pct }) => (
-                <div key={label} className="px-6 py-5">
-                  <p className="text-xs text-on-surface-variant font-medium tracking-wide">{label}</p>
-                  <p className={`text-2xl font-bold tabular-nums mt-1 ${pct >= 80 ? 'text-green-600 dark:text-green-400' : pct > 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {value}
-                  </p>
-                  <p className="text-[11px] text-on-surface-variant/70 mt-0.5">{sub}</p>
-                  {/* Progress bar */}
-                  <div className="mt-3 h-1.5 bg-surface-container-low rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${pct >= 80 ? 'bg-green-500' : pct > 50 ? 'bg-amber-500' : 'bg-red-500'}`}
-                      style={{ width: `${Math.min(pct, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
         </div>
 
         {/* RIGHT col (4) */}
@@ -518,36 +407,36 @@ export default function AdminDashboardDesktop({
             </div>
             <div className="p-5 grid grid-cols-1 gap-3">
               <QuickAction
-                icon="add_circle"
-                title="Post New Shift"
-                subtitle="Open urgent requirements"
-                href="/admin/shifts"
+                icon="person_add"
+                title="Invite Applicant"
+                subtitle="Start recruiting"
+                href="/admin/applicants"
                 bg="bg-indigo-50/20 dark:bg-indigo-950/40"
                 iconColor="text-indigo-600 dark:text-indigo-400"
               />
               <QuickAction
-                icon="fact_check"
-                title="Compliance Audit"
-                subtitle="Generate report for CQC"
+                icon="verified_user"
+                title="Review Compliance"
+                subtitle="Check staff files"
                 href="/admin/compliance"
                 bg="bg-amber-50/20 dark:bg-amber-950/40"
                 iconColor="text-amber-600 dark:text-amber-400"
               />
               <QuickAction
-                icon="group_add"
+                icon="how_to_reg"
                 title="Onboard Staff"
-                subtitle="Verify new applicant documents"
+                subtitle="Track progress"
                 href="/admin/onboarding"
                 bg="bg-emerald-50/20 dark:bg-emerald-950/40"
                 iconColor="text-emerald-600 dark:text-emerald-400"
               />
               <QuickAction
-                icon="warning"
-                title="Incident Report"
-                subtitle="Log a new clinical incident"
-                href="/admin/incidents"
-                bg="bg-red-50/20 dark:bg-red-950/40"
-                iconColor="text-red-600 dark:text-red-400"
+                icon="upload_file"
+                title="Upload Document"
+                subtitle="Add to staff file"
+                href="/admin/documents"
+                bg="bg-violet-50/20 dark:bg-violet-950/40"
+                iconColor="text-violet-600 dark:text-violet-400"
               />
             </div>
           </Card>

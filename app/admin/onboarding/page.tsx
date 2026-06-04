@@ -351,14 +351,14 @@ export default function OnboardingQueuePage() {
 
       {/* Mobile header */}
       <MobilePageHeader
-        title="Onboarding Command"
+        title="Onboarding"
         subtitle="Staff onboarding pipeline, progress tracking, and stalled alerts."
       />
 
       {/* Desktop header */}
       <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-primary tracking-tight">Onboarding Command</h1>
+          <h1 className="text-xl font-semibold text-primary tracking-tight">Onboarding Queue</h1>
           <p className="text-sm text-on-surface-variant mt-0.5">
             Staff onboarding pipeline, progress tracking, and stalled alerts.
           </p>
@@ -464,12 +464,31 @@ export default function OnboardingQueuePage() {
       {!loading && !error && (
         <>
           {filtered.length === 0 ? (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-8 text-center text-sm text-on-surface-variant">
-              {search
-                ? `No results for "${search}".`
-                : stage === 'all'
-                ? 'No staff profiles found.'
-                : `No staff in "${STAGE_LABEL[stage]}" stage.`}
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center">
+              {search ? (
+                <>
+                  <span className="material-symbols-outlined text-[40px] text-on-surface-variant/40">search_off</span>
+                  <p className="text-sm text-on-surface-variant mt-2">No results for &ldquo;{search}&rdquo;.</p>
+                </>
+              ) : stage === 'all' ? (
+                <>
+                  <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30">people_outline</span>
+                  <p className="text-base font-semibold text-on-surface mt-3">No staff in onboarding yet</p>
+                  <p className="text-sm text-on-surface-variant mt-1">Start by inviting an applicant to begin the hiring process.</p>
+                  <Link
+                    href="/admin/applicants"
+                    className="inline-flex items-center gap-2 mt-4 rounded-lg px-5 py-2.5 text-sm font-semibold bg-primary text-on-primary hover:opacity-90 transition-all shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">person_add</span>
+                    Invite an Applicant
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[40px] text-on-surface-variant/40">inbox</span>
+                  <p className="text-sm text-on-surface-variant mt-2">No staff in &ldquo;{STAGE_LABEL[stage]}&rdquo; stage.</p>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-2">

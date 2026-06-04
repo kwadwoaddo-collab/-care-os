@@ -281,6 +281,66 @@ export default function StaffProfileMobile({
           )}
         </div>
 
+        {/* ── Onboarding Status ─────────────────────────────────────────────── */}
+        {(sp.status === 'pre_employment' || compliancePct < 100) && (
+          <div className={`rounded-xl border p-4 space-y-3 ${
+            sp.status === 'pre_employment'
+              ? 'bg-amber-50 border-amber-200'
+              : compliancePct < 60
+              ? 'bg-red-50 border-red-200'
+              : 'bg-blue-50 border-blue-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className={`material-symbols-outlined text-[18px] ${
+                  sp.status === 'pre_employment' ? 'text-amber-600' : compliancePct < 60 ? 'text-red-600' : 'text-blue-600'
+                }`}>
+                  {sp.status === 'pre_employment' ? 'pending_actions' : 'assignment_late'}
+                </span>
+                <p className="text-sm font-bold text-on-surface">
+                  {sp.status === 'pre_employment' ? 'Onboarding in Progress' : 'Compliance Incomplete'}
+                </p>
+              </div>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                sp.status === 'pre_employment'
+                  ? 'bg-amber-100 text-amber-800'
+                  : 'bg-blue-100 text-blue-800'
+              }`}>
+                {sp.status === 'pre_employment' ? 'Pre-Employment' : 'Gap'}
+              </span>
+            </div>
+            {(compliance.missingDocuments.length > 0 || compliance.missingTraining.length > 0) && (
+              <p className="text-xs text-on-surface-variant">
+                {compliance.missingDocuments.length + compliance.missingTraining.length} item{compliance.missingDocuments.length + compliance.missingTraining.length !== 1 ? 's' : ''} missing
+                {compliance.missingDocuments.length > 0 && ` — ${compliance.missingDocuments.slice(0, 2).map((d: string) => d.replace(/_/g, ' ')).join(', ')}`}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/admin/staff/${sp.id}/pre-employment`}
+                className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-800"
+              >
+                <span className="material-symbols-outlined text-[13px]">fact_check</span>
+                Pre-Employment
+              </Link>
+              <Link
+                href={`/admin/documents?staff_id=${sp.id}`}
+                className="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-white px-2.5 py-1.5 text-xs font-semibold text-on-surface"
+              >
+                <span className="material-symbols-outlined text-[13px]">folder_open</span>
+                Documents
+              </Link>
+              <Link
+                href="/admin/compliance"
+                className="inline-flex items-center gap-1 rounded-lg border border-outline-variant bg-white px-2.5 py-1.5 text-xs font-semibold text-on-surface"
+              >
+                <span className="material-symbols-outlined text-[13px]">verified_user</span>
+                Compliance
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ── Compliance Triage Card ───────────────────────────────────────── */}
         <div className="bg-surface-container-lowest rounded-lg border border-outline-variant p-4 space-y-3">
           {/* Header row */}

@@ -5,14 +5,11 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { can } from '@/lib/rbac/permissions'
 import {
-  canViewShifts,
-  canManageStaff,
   canViewCompliance,
   canViewIncidents,
   canViewAuditLogs,
   canViewSystemHealth,
-  canViewNotifications,
-  canManageTenants,
+  canManageStaff,
 } from '@/lib/rbac/can'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -24,7 +21,7 @@ interface AdminMobileNavProps {
 interface NavItem {
   href:  string
   label: string
-  icon:  string  // SVG path or emoji — we use inline SVG
+  icon:  string  // key for renderIcon
   match: (pathname: string) => boolean
 }
 
@@ -52,17 +49,6 @@ function IconDashboard({ filled }: { filled?: boolean }) {
   )
 }
 
-function IconShifts({ filled }: { filled?: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-      {filled && <path d="M8 14h4m-4 4h8" strokeWidth={2.5} />}
-      {!filled && <path d="M8 14h4m-4 4h8" />}
-    </svg>
-  )
-}
-
 function IconApplicants({ filled }: { filled?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
@@ -83,6 +69,15 @@ function IconStaff({ filled }: { filled?: boolean }) {
   )
 }
 
+function IconCompliance({ filled }: { filled?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l7 4v6c0 4.5-3 8.5-7 10C5 20.5 2 16.5 2 12V6l10-4z" fill={filled ? 'currentColor' : 'none'} />
+      <path d="M9 12l2 2 4-4" stroke={filled ? 'white' : 'currentColor'} />
+    </svg>
+  )
+}
+
 function IconMore() {
   return (
     <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round">
@@ -93,11 +88,33 @@ function IconMore() {
   )
 }
 
-function IconCompliance() {
+// ── More drawer icon set (smaller, 20px) ──────────────────────────────────────
+
+function IconOnboarding() {
   return (
     <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2l7 4v6c0 4.5-3 8.5-7 10C5 20.5 2 16.5 2 12V6l10-4z" />
-      <path d="M9 12l2 2 4-4" />
+      <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M19 8l2 2-5 5" strokeWidth={2} />
+    </svg>
+  )
+}
+
+function IconDocuments() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
+    </svg>
+  )
+}
+
+function IconTraining() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
     </svg>
   )
 }
@@ -125,14 +142,6 @@ function IconSystem() {
     <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41" />
-    </svg>
-  )
-}
-
-function IconNotifications() {
-  return (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
     </svg>
   )
 }
@@ -215,71 +224,64 @@ export default function AdminMobileNav({ userRole }: AdminMobileNavProps) {
   const isAuthPage = pathname === '/admin/login' || pathname === '/admin/set-password'
   if (isAuthPage || !userRole) return null
 
-  // ── Build primary tabs (max 4 + More) ─────────────────────────────────────
-  
+  // ── Build primary tabs (4 tabs + More) ─────────────────────────────────────
+
   const allPrimary: (NavItem & { allowed: boolean })[] = [
     {
       href:    '/admin',
-      label:   'Dashboard',
+      label:   'Home',
       icon:    'dashboard',
       match:   (p) => p === '/admin',
       allowed: true,
     },
     {
-      href:    '/admin/shifts',
-      label:   'Shifts',
-      icon:    'shifts',
-      match:   (p) => p.startsWith('/admin/shifts'),
-      allowed: canViewShifts(userRole),
+      href:    '/admin/applicants',
+      label:   'Recruitment',
+      icon:    'applicants',
+      match:   (p) =>
+        p.startsWith('/admin/applicants') ||
+        p.startsWith('/admin/onboarding/pipeline'),
+      allowed: can(userRole, 'applicants:read'),
     },
     {
-      href:    '/admin/workforce',
-      label:   'Workforce',
+      href:    '/admin/staff',
+      label:   'Staff',
       icon:    'staff',
       match:   (p) =>
-        p === '/admin/workforce' ||
-        p.startsWith('/admin/applicants') ||
         p.startsWith('/admin/staff') ||
-        p.startsWith('/admin/compliance') ||
         p.startsWith('/admin/onboarding'),
-      allowed: canManageStaff(userRole) || can(userRole, 'applicants:read'),
+      allowed: canManageStaff(userRole),
+    },
+    {
+      href:    '/admin/compliance',
+      label:   'Compliance',
+      icon:    'compliance',
+      match:   (p) => p.startsWith('/admin/compliance'),
+      allowed: canViewCompliance(userRole),
     },
   ]
 
   const primaryTabs = allPrimary.filter((t) => t.allowed)
 
-  // ── Build More drawer items ────────────────────────────────────────────────
+  // ── Build More drawer items (Phase 1 only) ─────────────────────────────────
 
   const moreItems: MoreItem[] = [
-    can(userRole, 'applicants:read') && { href: '/admin/applicants',          label: 'Talent Pipeline',       icon: <IconApplicants /> },
-    can(userRole, 'applicants:read') && { href: '/admin/applicants/archived', label: 'Archived Applicants',   icon: <IconSystem /> },
-    canManageStaff(userRole)         && { href: '/admin/staff',               label: 'Active Staff',          icon: <IconStaff /> },
-    canManageStaff(userRole)         && { href: '/admin/staff/archived',      label: 'Archived Staff',        icon: <IconSystem /> },
-    canViewCompliance(userRole)      && { href: '/admin/compliance',           label: 'Compliance',            icon: <IconCompliance /> },
-    canViewCompliance(userRole)      && { href: '/admin/compliance/training-matrix', label: 'Training Matrix',   icon: <IconCompliance /> },
-    canManageStaff(userRole)         && { href: '/admin/onboarding',           label: 'Onboarding',            icon: <IconSystem /> },
-    canViewIncidents(userRole)       && { href: '/admin/incidents',            label: 'Incidents',             icon: <IconIncidents /> },
-    canViewShifts(userRole)          && { href: '/admin/visits',               label: 'Visit Ops',             icon: <IconSystem /> },
-    canViewIncidents(userRole)       && { href: '/admin/operations',           label: 'Operations',            icon: <IconSystem /> },
-    canViewIncidents(userRole)       && { href: '/admin/operations/queue',     label: 'Priority Queue',        icon: <IconSystem /> },
-    canViewIncidents(userRole)       && { href: '/admin/operations/handover',  label: 'Handover Notes',        icon: <IconSystem /> },
-    canViewIncidents(userRole)       && { href: '/admin/operations/briefing',  label: 'Daily Briefing',        icon: <IconSystem /> },
-    canViewNotifications(userRole)   && { href: '/admin/communications',       label: 'Communications',        icon: <IconNotifications /> },
-    canViewAuditLogs(userRole)       && { href: '/admin/audit-log',            label: 'Audit Log',             icon: <IconAudit /> },
-    canViewNotifications(userRole)   && { href: '/admin/notifications',        label: 'Notifications',         icon: <IconNotifications /> },
-    can(userRole, 'clients:read')    && { href: '/admin/clients',              label: 'Clients',               icon: <IconSystem /> },
-    canViewCompliance(userRole)       && { href: '/admin/analytics',            label: 'Analytics',             icon: <IconSystem /> },
-    canViewSystemHealth(userRole)    && { href: '/admin/system',               label: 'System Health',         icon: <IconSystem /> },
-    canManageTenants(userRole)       && { href: '/admin/system/tenants',       label: 'Tenant Admin',          icon: <IconSystem /> },
+    canManageStaff(userRole)        && { href: '/admin/onboarding',                   label: 'Onboarding',      icon: <IconOnboarding /> },
+    canViewCompliance(userRole)     && { href: '/admin/documents/verification',        label: 'Documents',       icon: <IconDocuments /> },
+    canViewCompliance(userRole)     && { href: '/admin/compliance/training-matrix',    label: 'Training Matrix', icon: <IconTraining /> },
+    canViewIncidents(userRole)      && { href: '/admin/incidents',                     label: 'Incidents',       icon: <IconIncidents /> },
+    canViewAuditLogs(userRole)      && { href: '/admin/audit-log',                     label: 'Audit Log',       icon: <IconAudit /> },
+    canViewSystemHealth(userRole)   && { href: '/admin/system',                        label: 'System Health',   icon: <IconSystem /> },
   ].filter(Boolean) as MoreItem[]
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   function renderIcon(icon: string, active: boolean) {
     const props = { filled: active }
-    if (icon === 'dashboard')  return <IconDashboard {...props} />
-    if (icon === 'shifts')     return <IconShifts    {...props} />
-    if (icon === 'staff')      return <IconStaff     {...props} />
+    if (icon === 'dashboard')   return <IconDashboard  {...props} />
+    if (icon === 'applicants')  return <IconApplicants {...props} />
+    if (icon === 'staff')       return <IconStaff      {...props} />
+    if (icon === 'compliance')  return <IconCompliance {...props} />
     return null
   }
 

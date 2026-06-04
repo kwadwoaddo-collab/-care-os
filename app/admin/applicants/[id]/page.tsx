@@ -89,6 +89,148 @@ import {
   ProfessionalRegistrationSection, WorkAvailabilitySection, MedicalHistorySection, 
   ApplicationSourceSection, DeclarationSection 
 } from '@/components/admin/ApplicationFormShared'
+
+// ── Next Step Banner ──────────────────────────────────────────────────────────
+
+interface NextStepConfig {
+  bg: string
+  border: string
+  icon: string
+  iconColor: string
+  heading: string
+  body: string
+  ctaLabel?: string
+  ctaAction?: string // targetStatus for pipeline, or special: 'convert'
+  ctaStyle: string
+}
+
+function getNextStep(
+  status: string,
+  formSubmitted: boolean,
+  linkedStaffProfileId: string | null,
+): NextStepConfig | null {
+  switch (status) {
+    case 'applied':
+      return formSubmitted
+        ? {
+            bg: 'bg-blue-50',
+            border: 'border-blue-200',
+            icon: 'assignment_turned_in',
+            iconColor: 'text-blue-600',
+            heading: 'Application received — ready to review',
+            body: 'The applicant has submitted their application form. Review their details below, then shortlist or reject.',
+            ctaLabel: 'Shortlist Applicant',
+            ctaAction: 'shortlisted',
+            ctaStyle: 'bg-blue-600 text-white hover:bg-blue-700',
+          }
+        : {
+            bg: 'bg-gray-50',
+            border: 'border-gray-200',
+            icon: 'hourglass_empty',
+            iconColor: 'text-gray-500',
+            heading: 'Waiting for application form',
+            body: "The applicant has not yet submitted their form. You can send a reminder or wait for them to complete it.",
+            ctaStyle: '',
+          }
+    case 'shortlisted':
+      return {
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-200',
+        icon: 'event',
+        iconColor: 'text-yellow-700',
+        heading: 'Applicant shortlisted — next: schedule an interview',
+        body: 'Schedule an interview or move them directly to Pre-Employment Checks if suitable.',
+        ctaLabel: 'Schedule Interview',
+        ctaAction: 'interview_scheduled',
+        ctaStyle: 'bg-yellow-600 text-white hover:bg-yellow-700',
+      }
+    case 'interview_scheduled':
+      return {
+        bg: 'bg-purple-50',
+        border: 'border-purple-200',
+        icon: 'record_voice_over',
+        iconColor: 'text-purple-700',
+        heading: 'Interview scheduled — record outcome and decide',
+        body: 'After the interview, use the action bar below to mark this applicant as Hired or Rejected.',
+        ctaLabel: 'Mark as Hired',
+        ctaAction: 'hired',
+        ctaStyle: 'bg-purple-600 text-white hover:bg-purple-700',
+      }
+    case 'hired':
+      return linkedStaffProfileId
+        ? {
+            bg: 'bg-green-50',
+            border: 'border-green-200',
+            icon: 'check_circle',
+            iconColor: 'text-green-600',
+            heading: 'Converted to staff — onboarding has begun',
+            body: 'This applicant is now a staff member. View their staff profile to track onboarding progress.',
+            ctaStyle: '',
+          }
+        : {
+            bg: 'bg-green-50',
+            border: 'border-green-200',
+            icon: 'person_add',
+            iconColor: 'text-green-700',
+            heading: 'Applicant hired — convert to staff member',
+            body: 'Converting will create a staff profile and begin the onboarding process. This cannot be undone.',
+            ctaLabel: 'Convert to Staff',
+            ctaAction: 'convert',
+            ctaStyle: 'bg-green-600 text-white hover:bg-green-700',
+          }
+    default:
+      return null
+  }
+}
+
+function NextStepBanner({
+  status,
+  formSubmitted,
+  linkedStaffProfileId,
+}: {
+  status: string
+  formSubmitted: boolean
+  linkedStaffProfileId: string | null
+}) {
+  const config = getNextStep(status, formSubmitted, linkedStaffProfileId)
+  if (!config) return null
+
+  return (
+    <div className={`mb-4 rounded-xl border ${config.bg} ${config.border} px-4 py-4`}>
+      <div className="flex flex-wrap items-start gap-3">
+        <span className={`material-symbols-outlined text-[22px] ${config.iconColor} mt-0.5 shrink-0`}>
+          {config.icon}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-on-surface">{config.heading}</p>
+          <p className="text-xs text-on-surface-variant mt-0.5">{config.body}</p>
+        </div>
+        {config.ctaLabel && config.ctaAction && config.ctaStyle && (
+          <div className="shrink-0">
+            {config.ctaAction === 'convert' ? (
+              // For convert, scroll to the convert button in ApplicantActions
+              <a
+                href="#btn-convert-to-staff"
+                className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${config.ctaStyle}`}
+              >
+                {config.ctaLabel} →
+              </a>
+            ) : (
+              // For pipeline steps, scroll to the relevant action button
+              <a
+                href={`#action-${config.ctaAction}`}
+                className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${config.ctaStyle}`}
+              >
+                {config.ctaLabel} →
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ApplicantDetailPage({
@@ -168,6 +310,13 @@ export default async function ApplicantDetailPage({
           </div>
         </div>
       )}
+
+      {/* Next Step Banner — guides admin on what action to take next */}
+      <NextStepBanner
+        status={applicant.status}
+        formSubmitted={response?.status === 'submitted'}
+        linkedStaffProfileId={linked_staff_profile?.id ?? null}
+      />
 
       {/* Action bar — status display + pipeline buttons */}
       <ApplicantActions

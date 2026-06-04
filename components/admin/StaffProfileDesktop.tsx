@@ -277,6 +277,70 @@ export default function StaffProfileDesktop({
           </div>
         </div>
 
+        {/* ── Onboarding Status Banner ──────────────────────────────────────── */}
+        {(sp.status === 'pre_employment' || compliancePct < 100) && (
+          <div className={`rounded-xl border px-5 py-4 flex flex-wrap items-center gap-4 ${
+            sp.status === 'pre_employment'
+              ? 'bg-amber-50 border-amber-200'
+              : compliancePct < 60
+              ? 'bg-red-50 border-red-200'
+              : 'bg-blue-50 border-blue-200'
+          }`}>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className={`material-symbols-outlined text-[22px] ${
+                sp.status === 'pre_employment' ? 'text-amber-600' : compliancePct < 60 ? 'text-red-600' : 'text-blue-600'
+              }`}>
+                {sp.status === 'pre_employment' ? 'pending_actions' : 'assignment_late'}
+              </span>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold text-on-surface">
+                    {sp.status === 'pre_employment' ? 'Onboarding in Progress' : 'Compliance Incomplete'}
+                  </p>
+                  {/* Onboarding stage badge */}
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    sp.status === 'pre_employment'
+                      ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
+                      : 'bg-blue-100 text-blue-800 ring-1 ring-blue-300'
+                  }`}>
+                    {sp.status === 'pre_employment' ? 'Pre-Employment' : 'Active · Compliance gap'}
+                  </span>
+                </div>
+                {(compliance.missingDocuments.length > 0 || compliance.missingTraining.length > 0) && (
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    {compliance.missingDocuments.length + compliance.missingTraining.length} item{compliance.missingDocuments.length + compliance.missingTraining.length !== 1 ? 's' : ''} missing
+                    {compliance.missingDocuments.length > 0 && ` — ${compliance.missingDocuments.slice(0, 2).map(d => d.replace(/_/g, ' ')).join(', ')}`}
+                  </p>
+                )}
+              </div>
+            </div>
+            {/* Quick links */}
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <Link
+                href={`/admin/staff/${sp.id}/pre-employment`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-50 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">fact_check</span>
+                Pre-Employment Checks
+              </Link>
+              <Link
+                href={`/admin/documents?staff_id=${sp.id}`}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant bg-white px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">folder_open</span>
+                Documents
+              </Link>
+              <Link
+                href="/admin/compliance"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-outline-variant bg-white px-3 py-1.5 text-xs font-semibold text-on-surface hover:bg-surface-container-low transition-colors"
+              >
+                <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                Compliance
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* ── 3-Column Grid ────────────────────────────────────────────────── */}
         <div className="grid grid-cols-[280px_1fr_280px] gap-5 items-start">
 

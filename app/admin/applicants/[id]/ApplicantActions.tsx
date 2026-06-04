@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   applicantId: string
@@ -69,6 +70,7 @@ export default function ApplicantActions({
   linkedStaffName      = null,
   convertedAt          = null,
 }: Props) {
+  const router = useRouter()
   const [status, setStatus]             = useState(currentStatus)
   const [actionStatus, setActionStatus] = useState<ActionStatus>('idle')
   const [message, setMessage]           = useState<string | null>(null)
@@ -197,6 +199,12 @@ export default function ApplicantActions({
       setConvertedAtDisplay(body.staff_profile?.created_at ?? null)
       setJustConverted(true)
       setConvertStatus('done')
+      // Redirect to the new staff profile after a brief moment
+      if (body.staff_profile?.id) {
+        setTimeout(() => {
+          router.push(`/admin/staff/${body.staff_profile!.id}`)
+        }, 1500)
+      }
     } catch (err) {
       setConvertStatus('error')
       setConvertMessage(err instanceof Error ? err.message : 'Something went wrong')
@@ -362,31 +370,40 @@ export default function ApplicantActions({
               </>
             ) : (
               /* Not yet converted — show action button */
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  id="btn-convert-to-staff"
-                  onClick={handleConvert}
-                  disabled={convertStatus === 'loading'}
-                  className={[
-                    'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-                    convertStatus === 'loading'
-                      ? 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 opacity-60 cursor-not-allowed'
-                      : 'bg-indigo-50 text-indigo-700 ring-indigo-600/20 hover:bg-indigo-100 cursor-pointer',
-                  ].join(' ')}
-                >
-                  {convertStatus === 'loading' ? (
-                    <span className="flex items-center gap-1">
-                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Converting…
-                    </span>
-                  ) : 'Convert to Staff'}
-                </button>
-                {convertMessage && convertStatus === 'error' && (
-                  <p className="text-xs text-red-600">✕ {convertMessage}</p>
-                )}
+              <div className="space-y-3">
+                <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2.5">
+                  <p className="text-xs text-green-800 font-medium">
+                    <span className="material-symbols-outlined text-[14px] align-text-bottom mr-1">info</span>
+                    This will create a staff profile and begin the onboarding process. Once converted, the applicant becomes a staff member.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    id="btn-convert-to-staff"
+                    onClick={handleConvert}
+                    disabled={convertStatus === 'loading'}
+                    className={[
+                      'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold ring-1 ring-inset transition-colors',
+                      convertStatus === 'loading'
+                        ? 'bg-green-50 text-green-700 ring-green-600/20 opacity-60 cursor-not-allowed'
+                        : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer shadow-sm',
+                    ].join(' ')}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">person_add</span>
+                    {convertStatus === 'loading' ? (
+                      <span className="flex items-center gap-1">
+                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        Converting…
+                      </span>
+                    ) : 'Convert to Staff Member'}
+                  </button>
+                  {convertMessage && convertStatus === 'error' && (
+                    <p className="text-xs text-red-600">✕ {convertMessage}</p>
+                  )}
+                </div>
               </div>
             )}
           </div>

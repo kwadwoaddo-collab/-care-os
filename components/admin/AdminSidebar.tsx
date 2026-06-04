@@ -8,8 +8,6 @@ import Icon from '@/components/ui/Icon'
 import {
   canViewCompliance,
   canViewAuditLogs,
-  canViewNotifications,
-  canViewShifts,
   canViewIncidents,
   canManageStaff,
   canViewSystemHealth,
@@ -33,56 +31,123 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     return showAll || check(userRole)
   }
 
-  const showWorkforce =
-    navCan(canManageStaff) ||
-    navCan((r) => can(r, 'applicants:read')) ||
-    navCan(canViewCompliance)
-
-  const navItems = [
-    { label: 'Dashboard',     href: '/admin',               icon: 'dashboard',     show: true },
-    { label: 'Shifts',        href: '/admin/shifts',         icon: 'event_repeat',  show: navCan(canViewShifts) },
-    { label: 'Workforce',     href: '/admin/workforce',      icon: 'groups',        show: showWorkforce,
+  // ── Primary nav items (Phase 1 core) ──────────────────────────────────────
+  const primaryItems = [
+    {
+      label: 'Dashboard',
+      href: '/admin',
+      icon: 'dashboard',
+      show: true,
+    },
+    {
+      label: 'Recruitment',
+      href: '/admin/applicants',
+      icon: 'person_search',
+      show: navCan((r) => can(r, 'applicants:read')),
+      activeMatch: (p: string) => p.startsWith('/admin/applicants'),
+    },
+    {
+      label: 'Onboarding',
+      href: '/admin/onboarding',
+      icon: 'how_to_reg',
+      show: navCan(canManageStaff),
       activeMatch: (p: string) =>
-        p === '/admin/workforce' ||
-        p.startsWith('/admin/applicants') ||
-        p.startsWith('/admin/staff') ||
-        p.startsWith('/admin/compliance') ||
-        p.startsWith('/admin/onboarding'),
+        p.startsWith('/admin/onboarding') && !p.startsWith('/admin/onboarding/pipeline'),
     },
-    { label: 'Clients',       href: '/admin/clients',        icon: 'contact_page',  show: navCan((r) => can(r, 'clients:read')) },
-    { label: 'Packages',      href: '/admin/care-packages',  icon: 'payments',      show: navCan((r) => can(r, 'care_packages:read')) },
-    { label: 'Incidents',     href: '/admin/incidents',      icon: 'warning',       show: navCan(canViewIncidents) },
-    { label: 'Visits',        href: '/admin/visits',         icon: 'home_health',   show: navCan(canViewShifts) },
-    { label: 'Operations',    href: '/admin/operations',     icon: 'hub',           show: navCan(canViewIncidents) },
-    { label: 'Communications', href: '/admin/communications',  icon: 'forum',         show: navCan(canViewNotifications) },
-    { label: 'Pipeline',      href: '/admin/onboarding/pipeline', icon: 'view_kanban', show: navCan(canViewCompliance),
-      activeMatch: (p: string) => p.startsWith('/admin/onboarding/pipeline'),
+    {
+      label: 'Staff',
+      href: '/admin/staff',
+      icon: 'group',
+      show: navCan(canManageStaff),
+      activeMatch: (p: string) => p.startsWith('/admin/staff'),
     },
-    { label: 'Documents',     href: '/admin/documents/verification', icon: 'fact_check', show: navCan(canViewCompliance),
+    {
+      label: 'Compliance',
+      href: '/admin/compliance',
+      icon: 'verified_user',
+      show: navCan(canViewCompliance),
+      activeMatch: (p: string) =>
+        p.startsWith('/admin/compliance'),
+    },
+    {
+      label: 'Documents',
+      href: '/admin/documents/verification',
+      icon: 'folder_open',
+      show: navCan(canViewCompliance),
       activeMatch: (p: string) => p.startsWith('/admin/documents'),
     },
-    { label: 'Training Matrix', href: '/admin/compliance/training-matrix', icon: 'grid_view', show: navCan(canViewCompliance),
+  ]
+
+  // ── Secondary nav items (below divider, muted) ────────────────────────────
+  const secondaryItems = [
+    {
+      label: 'Training Matrix',
+      href: '/admin/compliance/training-matrix',
+      icon: 'grid_view',
+      show: navCan(canViewCompliance),
       activeMatch: (p: string) => p.startsWith('/admin/compliance/training-matrix'),
     },
-    { label: 'Audit Log',     href: '/admin/audit-log',      icon: 'history',       show: navCan(canViewAuditLogs) },
-    { label: 'Notifications', href: '/admin/notifications',  icon: 'notifications', show: navCan(canViewNotifications) },
+    {
+      label: 'Incidents',
+      href: '/admin/incidents',
+      icon: 'warning',
+      show: navCan(canViewIncidents),
+    },
+    {
+      label: 'Audit Log',
+      href: '/admin/audit-log',
+      icon: 'history',
+      show: navCan(canViewAuditLogs),
+    },
   ]
 
-  if (ENABLE_TIMESHEETS) {
-    navItems.splice(2, 0, {
-      label: 'Timesheets',
-      href: '/admin/timesheets',
-      icon: 'schedule',
-      show: navCan((r) => can(r, 'timesheets:read')),
-    })
+  // ── Footer items ───────────────────────────────────────────────────────────
+  const footerItems = [
+    { label: 'Analytics', href: '/admin/analytics',       icon: 'analytics',      show: navCan(canViewCompliance) },
+    { label: 'Tenants',   href: '/admin/system/tenants',  icon: 'corporate_fare', show: navCan(canManageTenants) },
+    { label: 'Jobs',      href: '/admin/system/jobs',     icon: 'manufacturing',  show: navCan(canViewSystemHealth) },
+    { label: 'System',    href: '/admin/system',           icon: 'settings',       show: navCan(canViewSystemHealth) },
+  ]
+
+  // Helper: is a given nav item currently active?
+  function isActive(item: { href: string; activeMatch?: (p: string) => boolean }): boolean {
+    if (item.activeMatch) return item.activeMatch(pathname)
+    return pathname === item.href ||
+      (item.href !== '/admin' && pathname.startsWith(item.href))
   }
 
-  const footerItems = [
-    { label: 'Analytics', href: '/admin/analytics',        icon: 'analytics',      show: navCan(canViewCompliance) },
-    { label: 'Tenants',   href: '/admin/system/tenants',   icon: 'corporate_fare', show: navCan(canManageTenants) },
-    { label: 'Jobs',      href: '/admin/system/jobs',      icon: 'manufacturing',  show: navCan(canViewSystemHealth) },
-    { label: 'System',    href: '/admin/system',            icon: 'settings',       show: navCan(canViewSystemHealth) },
-  ]
+  function NavLink({ item, muted = false }: {
+    item: { label: string; href: string; icon: string; show: boolean; activeMatch?: (p: string) => boolean }
+    muted?: boolean
+  }) {
+    const active = isActive(item)
+    return (
+      <Link
+        href={item.href}
+        className={`relative flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-200 overflow-hidden ${
+          active
+            ? 'bg-secondary text-white shadow-sm'
+            : muted
+              ? 'text-on-surface-variant/70 hover:bg-surface-container-high hover:text-on-surface'
+              : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+        }`}
+        style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
+      >
+        {active && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
+        )}
+        <Icon
+          name={item.icon}
+          size={muted ? 'sm' : 'md'}
+          fill={active}
+          className="shrink-0"
+        />
+        <span className={`truncate normal-case ${muted ? 'text-xs font-medium' : 'text-sm font-medium'}`}>
+          {item.label}
+        </span>
+      </Link>
+    )
+  }
 
   return (
     <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-surface-container border-r border-outline-variant z-50">
@@ -106,64 +171,55 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
           </div>
         </div>
 
-        {/* ── Main Navigation ───────────────────────────────────────────────── */}
-        <nav className="flex-1 flex flex-col space-y-1.5">
-          {navItems.filter((i) => i.show).map((item) => {
-            const isActive = 'activeMatch' in item && item.activeMatch
-              ? item.activeMatch(pathname)
-              : pathname === item.href ||
-                (item.href !== '/admin' && pathname.startsWith(item.href))
+        {/* ── Primary Navigation ─────────────────────────────────────────────── */}
+        <nav className="flex-1 flex flex-col" aria-label="Primary navigation">
+          <div className="space-y-1.5">
+            {primaryItems.filter((i) => i.show).map((item) => (
+              <NavLink key={item.href} item={item} />
+            ))}
+          </div>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 overflow-hidden ${
-                  isActive
-                    ? 'bg-secondary text-white shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-                }`}
-                style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
-              >
-                {isActive && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
-                )}
-                <Icon
-                  name={item.icon}
-                  size="md"
-                  fill={isActive}
-                  className="shrink-0"
-                />
-                <span className="text-sm font-medium normal-case truncate">
-                  {item.label}
+          {/* ── Divider + Secondary Navigation ─────────────────────────────── */}
+          {secondaryItems.some((i) => i.show) && (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 px-2 mb-2">
+                <div className="flex-1 h-px bg-outline-variant/40" />
+                <span className="text-[10px] font-semibold text-on-surface-variant/50 uppercase tracking-widest">
+                  More
                 </span>
-              </Link>
-            )
-          })}
+                <div className="flex-1 h-px bg-outline-variant/40" />
+              </div>
+              <div className="space-y-1">
+                {secondaryItems.filter((i) => i.show).map((item) => (
+                  <NavLink key={item.href} item={item} muted />
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* ── Footer ────────────────────────────────────────────────────────── */}
         <div className="mt-auto shrink-0 flex flex-col pt-6 gap-2">
           {footerItems.filter((i) => i.show).map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href)
+            const active = pathname === item.href || pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 overflow-hidden ${
-                  isActive
+                  active
                     ? 'bg-secondary text-white shadow-sm'
                     : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
                 }`}
                 style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
-                {isActive && (
+                {active && (
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
                 )}
                 <Icon
                   name={item.icon}
                   size="md"
-                  fill={isActive}
+                  fill={active}
                   className="shrink-0"
                 />
                 <span className="text-sm font-medium normal-case truncate">
