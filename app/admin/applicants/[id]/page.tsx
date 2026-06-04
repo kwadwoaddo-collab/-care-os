@@ -271,21 +271,44 @@ export default async function ApplicantDetailPage({
       </Link>
 
       {/* Header */}
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-primary">
-            {applicant.first_name ?? ''} {applicant.last_name ?? ''}
-            {!applicant.first_name && !applicant.last_name && applicant.email}
-          </h1>
+      <div className="mb-6">
+        <div className="flex items-start gap-4">
+          {/* Large avatar */}
           {(() => {
-            const role = (answers.applying_for || answers.job_role) as string | undefined
-            if (!role) return null
-            const cat = getRoleCategory(role)
-            const m = CATEGORY_META[cat]
-            return <span className={`text-xs font-semibold rounded px-2 py-0.5 ${m.colour} ${m.bg} border ${m.border}`}>{role}</span>
+            const colours = [
+              'bg-indigo-100 text-indigo-700',
+              'bg-violet-100 text-violet-700',
+              'bg-blue-100 text-blue-700',
+              'bg-sky-100 text-sky-700',
+            ]
+            const cls = colours[applicant.id.charCodeAt(0) % colours.length]
+            const inits = [(applicant.first_name ?? '').charAt(0), (applicant.last_name ?? '').charAt(0)].filter(Boolean).join('').toUpperCase() || '?'
+            return (
+              <div className={`w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl font-bold ${cls}`}>
+                {inits}
+              </div>
+            )
           })()}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-on-surface" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+                {applicant.first_name ?? ''} {applicant.last_name ?? ''}
+                {!applicant.first_name && !applicant.last_name && applicant.email}
+              </h1>
+              {(() => {
+                const role = (answers.applying_for || answers.job_role) as string | undefined
+                if (!role) return null
+                const cat = getRoleCategory(role)
+                const m = CATEGORY_META[cat]
+                return <span className={`text-xs font-semibold rounded-full px-2.5 py-0.5 ${m.colour} ${m.bg} border ${m.border}`}>{role}</span>
+              })()}
+            </div>
+            <p className="text-sm text-on-surface-variant mt-0.5">{applicant.email}</p>
+            {applicant.phone && (
+              <p className="text-sm text-on-surface-variant">{applicant.phone}</p>
+            )}
+          </div>
         </div>
-        <p className="text-sm text-on-surface-variant mt-0.5">{applicant.email}</p>
       </div>
 
       {/* Rejection banner */}
@@ -317,6 +340,19 @@ export default async function ApplicantDetailPage({
         formSubmitted={response?.status === 'submitted'}
         linkedStaffProfileId={linked_staff_profile?.id ?? null}
       />
+
+      {/* Application not yet submitted notice */}
+      {(!response || response.status !== 'submitted') && applicant.status !== 'rejected' && applicant.status !== 'hired' && (
+        <div className="mb-4 rounded-xl border border-outline-variant bg-surface-container-low px-5 py-4 flex items-start gap-3">
+          <span className="material-symbols-outlined text-on-surface-variant text-[20px] mt-0.5">hourglass_empty</span>
+          <div>
+            <p className="text-sm font-semibold text-on-surface">Application form not yet submitted</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              The candidate has not yet completed their application form. You can still move them through the pipeline or send a reminder.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Action bar — status display + pipeline buttons */}
       <ApplicantActions

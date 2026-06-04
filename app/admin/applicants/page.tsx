@@ -45,7 +45,7 @@ async function getApplicants(
 
 const STATUS_PILL: Record<string, string> = {
   applied:              'bg-blue-100 text-blue-700',
-  shortlisted:          'bg-tertiary-fixed text-on-tertiary-fixed-variant',
+  shortlisted:          'bg-indigo-100 text-indigo-700',
   rejected:             'bg-red-100 text-red-700',
   interview_scheduled:  'bg-purple-100 text-purple-700',
   hired:                'bg-green-100 text-green-700',
@@ -114,7 +114,7 @@ export default async function ApplicantsPage({
     <div className="space-y-6">
       {/* Mobile page header */}
       <MobilePageHeader
-        title="Talent Pipeline"
+        title="Recruitment"
         subtitle="Applicant tracking, screening, and hiring decisions."
         action={
           <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export default async function ApplicantsPage({
       {/* Desktop header */}
       <div className="hidden lg:flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-primary tracking-tight">Talent Pipeline</h1>
+          <h1 className="text-xl font-semibold text-primary tracking-tight">Recruitment</h1>
           <p className="text-sm text-on-surface-variant mt-0.5">
             Applicant tracking, screening, and hiring decisions.
           </p>
@@ -211,22 +211,31 @@ export default async function ApplicantsPage({
       </div>
 
       {applicants.length === 0 ? (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-10 text-center space-y-3">
-          <span className="material-symbols-outlined text-[40px] text-on-surface-variant block">person_search</span>
-          <p className="text-sm font-medium text-primary">
-            {hasFilters ? 'No results found' : 'No applicants in the pipeline'}
-          </p>
-          <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
-            {hasFilters ? 'Try changing or clearing your filters.' : 'Invite your first applicant to start recruiting.'}
-          </p>
-          {!hasFilters && (
-            <p className="text-xs text-on-surface-variant">
-              Rejected or archived applicants are in{' '}
-              <Link href="/admin/applicants/archived" className="underline hover:text-primary transition-colors">
-                Archived Applicants
-              </Link>
-              .
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-12 text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-fixed mx-auto">
+            <span className="material-symbols-outlined text-[32px] text-primary">person_search</span>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-base font-bold text-on-surface">
+              {hasFilters ? 'No results found' : 'No applicants yet'}
             </p>
+            <p className="text-sm text-on-surface-variant max-w-sm mx-auto">
+              {hasFilters
+                ? 'Try changing or clearing your filters to see more results.'
+                : 'No applicants in the pipeline yet. Invite your first candidate to get started.'}
+            </p>
+          </div>
+          {!hasFilters && (
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <InviteApplicantForm />
+              <p className="text-xs text-on-surface-variant">
+                Rejected or archived applicants are in{' '}
+                <Link href="/admin/applicants/archived" className="underline hover:text-primary transition-colors">
+                  Archived Applicants
+                </Link>
+                .
+              </p>
+            </div>
           )}
         </div>
       ) : (

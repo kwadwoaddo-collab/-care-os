@@ -11,29 +11,29 @@ export default async function DocumentVerificationPage() {
   const { queue, diagnostics } = await getVerificationQueue(auth.ctx.companyId)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Document Verification</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold text-primary tracking-tight">Document Verification</h1>
+          <p className="text-sm text-on-surface-variant mt-0.5">
             Review, verify, and approve workforce documents before they satisfy compliance requirements.
           </p>
         </div>
         <div className="flex items-center gap-2">
           <a
             href="/admin/documents/routing"
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700 bg-surface-container-lowest border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">route</span>
-            Routing review
+            <span className="material-symbols-outlined text-[16px]">route</span>
+            Routing Rules
           </a>
           <a
             href="/admin/staff"
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 transition-colors"
           >
-            <span className="material-symbols-outlined text-[14px]">arrow_back</span>
-            Back to staff
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back to Staff
           </a>
         </div>
       </div>

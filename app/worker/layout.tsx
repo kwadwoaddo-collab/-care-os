@@ -42,18 +42,25 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
     <WorkerAuthGuard>
       <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header bar */}
-      <header className="bg-gray-900 text-white sticky top-0 z-30 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <span className="text-sm font-semibold tracking-tight">Care OS</span>
-          <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-30 shadow-md" style={{ background: 'linear-gradient(to right, #4338ca, #6d28d9)' }}>
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl" aria-hidden="true">🛡️</span>
+            <div>
+              <p className="text-sm font-bold text-white leading-none tracking-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+                Care Supreme
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
             <NotificationBellWrapper />
             {pathname !== '/worker/login' && (
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="text-xs text-gray-400 hover:text-white transition-colors"
+                className="text-xs text-indigo-200 hover:text-white transition-colors font-medium"
               >
-                {loggingOut ? '...' : 'Logout'}
+                {loggingOut ? '…' : 'Logout'}
               </button>
             )}
           </div>

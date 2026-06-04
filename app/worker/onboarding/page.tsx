@@ -156,14 +156,23 @@ function ProgressStepper({ stage }: { stage: string }) {
           <div key={step.id} className="flex items-center flex-1 min-w-0" role="listitem">
             {/* Step circle + label */}
             <div className="flex flex-col items-center flex-shrink-0">
-              <div
-                className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all ${circleCls}`}
-                aria-label={`Step ${i + 1}: ${step.label.replace('\n', ' ')} — ${status}`}
-              >
-                {status === 'complete' ? '✓' : i + 1}
+              <div className="relative">
+                {status === 'current' && (
+                  <span className="absolute inset-0 rounded-full bg-indigo-400 opacity-30 animate-ping" aria-hidden="true" />
+                )}
+                <div
+                  className={`relative w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm font-bold transition-all ${circleCls}`}
+                  aria-label={`Step ${i + 1}: ${step.label.replace('\n', ' ')} — ${status}`}
+                >
+                  {status === 'complete' ? (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : i + 1}
+                </div>
               </div>
               <span
-                className={`mt-1 text-center leading-tight whitespace-pre-line text-[10px] ${labelCls}`}
+                className={`mt-1.5 text-center leading-tight whitespace-pre-line text-[10px] ${labelCls}`}
                 style={{ maxWidth: '52px' }}
               >
                 {step.label}
@@ -171,7 +180,7 @@ function ProgressStepper({ stage }: { stage: string }) {
             </div>
             {/* Connector line (not after last step) */}
             {!isLast && (
-              <div className={`h-0.5 flex-1 mx-1 mb-4 rounded-full transition-all ${lineCls}`} />
+              <div className={`h-1 flex-1 mx-1 mb-5 rounded-full transition-all ${lineCls}`} />
             )}
           </div>
         )
@@ -258,10 +267,10 @@ function StepRow({
 }) {
   const icon    = done ? '✓' : adminOnly ? '⏳' : '○'
   const iconCls = done ? 'bg-green-100 text-green-700' : adminOnly ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-400'
-  const rowCls  = done ? 'border-green-100 bg-green-50/40' : adminOnly ? 'border-amber-100 bg-amber-50/30' : 'border-gray-200 bg-surface-container-lowest'
+  const rowCls  = done ? 'border-green-100 bg-green-50/40' : adminOnly ? 'border-amber-100 bg-amber-50/30' : 'border-gray-200 bg-white hover:border-indigo-200 hover:shadow-sm'
 
   return (
-    <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${rowCls}`}>
+    <div className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 shadow-sm transition-all ${rowCls}`}>
       <div className={`mt-0.5 h-7 w-7 flex-shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${iconCls}`}>
         {icon}
       </div>
@@ -376,10 +385,10 @@ export default function WorkerOnboardingPage() {
   }
 
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-5 pb-8" style={{ background: 'linear-gradient(to bottom, rgba(238,242,255,0.5), white)', minHeight: '100vh' }}>
 
       {/* ── Progress stepper ────────────────────────────────────────────────── */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 px-4 py-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-4">
         <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-widest">Your progress</p>
         <ProgressStepper stage={stage} />
       </div>

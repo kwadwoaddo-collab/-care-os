@@ -296,16 +296,30 @@ function ShiftCard({ s, isToday }: { s: Shift; isToday: boolean }) {
     ? s.worker_ack_status.replace(/_/g, ' ')
     : 'Not responded'
 
+  // Left border colour based on ack status
+  const borderAccent = s.worker_ack_status === 'accepted'
+    ? 'border-l-green-500'
+    : s.worker_ack_status === 'declined'
+    ? 'border-l-red-400'
+    : s.worker_ack_status === 'running_late'
+    ? 'border-l-amber-400'
+    : isToday
+    ? 'border-l-indigo-500'
+    : 'border-l-gray-300'
+
   return (
     <Link
       href={`/worker/shifts/${s.id}`}
-      className="block bg-surface-container-lowest rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/20 active:scale-[0.98] transition-all"
+      className={`block bg-surface-container-lowest rounded-xl border border-gray-200 border-l-4 ${borderAccent} p-4 shadow-sm hover:border-indigo-300 hover:bg-indigo-50/20 hover:shadow-md active:scale-[0.98] transition-all`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">{s.title}</p>
+          <p className="text-sm font-bold text-indigo-700 tabular-nums mt-0.5">
+            {formatTime(s.start_time)}–{formatTime(s.end_time)}
+          </p>
           <p className="text-xs text-gray-500 mt-0.5">
-            {isToday ? 'Today' : formatDate(s.shift_date)} · {formatTime(s.start_time)}–{formatTime(s.end_time)}
+            {isToday ? 'Today' : formatDate(s.shift_date)}
           </p>
           {s.client_name && <p className="text-xs text-gray-400 mt-0.5">Client: {s.client_name}</p>}
           {s.location && <p className="text-xs text-gray-400 truncate">{s.location}</p>}
@@ -327,14 +341,14 @@ function ShiftCard({ s, isToday }: { s: Shift; isToday: boolean }) {
 
 // ── Quick action button ───────────────────────────────────────────────────────
 
-function QuickAction({ href, icon, label }: { href: string; icon: string; label: string }) {
+function QuickAction({ href, icon, label, iconBg }: { href: string; icon: string; label: string; iconBg: string }) {
   return (
     <Link
       href={href}
-      className="flex flex-col items-center gap-2 rounded-xl bg-surface-container-lowest border border-gray-200 px-3 py-4 hover:border-indigo-300 hover:bg-indigo-50/30 active:scale-95 transition-all"
+      className="flex flex-col items-center gap-2.5 rounded-xl bg-surface-container-lowest border border-gray-200 px-3 py-5 hover:border-indigo-300 hover:bg-indigo-50/30 hover:shadow-md active:scale-95 transition-all"
     >
-      <span className="text-2xl">{icon}</span>
-      <span className="text-xs font-medium text-gray-700 text-center leading-tight">{label}</span>
+      <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${iconBg}`}>{icon}</span>
+      <span className="text-xs font-semibold text-gray-700 text-center leading-tight">{label}</span>
     </Link>
   )
 }
@@ -525,13 +539,14 @@ export default function WorkerDashboard() {
       )}
 
       {/* Profile header */}
-      <div className="bg-surface-container-lowest rounded-2xl border border-gray-200 px-4 py-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg flex-shrink-0">
+      <div className="bg-gradient-to-b from-white to-indigo-50/30 rounded-2xl border border-gray-200 px-4 py-4 flex items-center gap-3 shadow-sm">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-md">
           {(worker.first_name?.[0] ?? '?').toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-base font-bold text-gray-900 truncate">{displayName}</p>
-          <p className="text-xs text-gray-500 truncate">{worker.job_role ?? '—'}</p>
+          <p className="text-base font-bold text-gray-900 truncate" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>{displayName}</p>
+          <p className="text-xs text-gray-600 truncate">{worker.job_role ?? '—'}</p>
+          <p className="text-[10px] text-indigo-500 font-semibold uppercase tracking-wide mt-0.5">Care Supreme</p>
         </div>
         <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusCls}`}>
           {worker.status.replace(/_/g, ' ')}
@@ -567,20 +582,41 @@ export default function WorkerDashboard() {
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3">
-          <p className="text-xs font-medium text-gray-500 mb-0.5">Hours this week</p>
+          <p className="text-xs font-medium text-gray-500 mb-1">Hours this week</p>
           <p className="text-2xl font-bold text-gray-900 tabular-nums">
             {hoursWeek !== null ? `${hoursWeek}h` : '—'}
           </p>
+          {hoursWeek !== null && (
+            <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-indigo-500 transition-all duration-700"
+                style={{ width: `${Math.min((hoursWeek / 40) * 100, 100)}%` }}
+              />
+            </div>
+          )}
         </div>
         <div className={`rounded-xl border px-4 py-3 ${
           worker.onboarding_completed
             ? 'bg-green-50 border-green-200'
             : 'bg-amber-50 border-amber-200'
         }`}>
-          <p className="text-xs font-medium text-gray-500 mb-0.5">Onboarding</p>
-          <p className={`text-sm font-semibold ${worker.onboarding_completed ? 'text-green-700' : 'text-amber-700'}`}>
-            {worker.onboarding_completed ? '✓ Complete' : `${worker.onboarding_progress ?? 0}% done`}
-          </p>
+          <p className="text-xs font-medium text-gray-500 mb-1">Onboarding</p>
+          {worker.onboarding_completed ? (
+            <>
+              <p className="text-sm font-bold text-green-700">✨ Complete</p>
+              <p className="text-[10px] text-green-600 mt-0.5">All steps done!</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-amber-700">{worker.onboarding_progress ?? 0}% done</p>
+              <div className="mt-2 h-1.5 w-full rounded-full bg-amber-100 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-amber-500 transition-all duration-700"
+                  style={{ width: `${worker.onboarding_progress ?? 0}%` }}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -639,7 +675,7 @@ export default function WorkerDashboard() {
 
       {/* Today's shifts */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-700 mb-2">Today&apos;s Shifts</h2>
+        <h2 className="text-sm font-bold text-gray-900 mb-2 border-l-4 border-indigo-500 pl-3">Today&apos;s Shifts</h2>
         {todayShifts.length === 0 ? (
           <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-5 text-sm text-gray-400 text-center">
             No shifts today.
@@ -654,7 +690,7 @@ export default function WorkerDashboard() {
       {/* Upcoming shifts */}
       {upcomingShifts.length > 0 && (
         <section>
-          <h2 className="text-sm font-semibold text-gray-700 mb-2">Upcoming Shifts</h2>
+          <h2 className="text-sm font-bold text-gray-900 mb-2 border-l-4 border-indigo-500 pl-3">Upcoming Shifts</h2>
           <div className="space-y-2">
             {upcomingShifts.map((s) => <ShiftCard key={s.id} s={s} isToday={false} />)}
           </div>
@@ -666,12 +702,13 @@ export default function WorkerDashboard() {
 
       {/* Quick actions */}
       <section>
-        <h2 className="text-sm font-semibold text-gray-700 mb-2">Quick Actions</h2>
-        <div className="grid grid-cols-4 gap-2">
-          <QuickAction href="/worker/timeline"     icon="🗺️" label="Timeline" />
-          <QuickAction href="/worker/availability" icon="🗓" label="Availability" />
-          <QuickAction href="/worker/documents"    icon="📤" label="Upload Doc" />
-          <QuickAction href="/worker/performance"  icon="📊" label="My Progress" />
+        <h2 className="text-sm font-bold text-gray-900 mb-2 border-l-4 border-indigo-500 pl-3">Quick Actions</h2>
+        <div className="grid grid-cols-3 gap-2">
+          <QuickAction href="/worker/timeline"     icon="🗺️" label="Timeline"     iconBg="bg-indigo-100" />
+          <QuickAction href="/worker/availability" icon="🗓" label="Availability" iconBg="bg-emerald-100" />
+          <QuickAction href="/worker/documents"    icon="📤" label="Upload Doc"   iconBg="bg-amber-100" />
+          <QuickAction href="/worker/performance"  icon="📊" label="My Progress"  iconBg="bg-purple-100" />
+          <QuickAction href="/worker/onboarding"   icon="✅" label="Onboarding"   iconBg="bg-green-100" />
         </div>
       </section>
 
@@ -682,9 +719,9 @@ export default function WorkerDashboard() {
           <div className="flex gap-2">
             <Link
               href="/worker/safety"
-              className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 active:scale-95 transition-all"
+              className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold rounded-xl hover:from-red-700 hover:to-red-600 active:scale-95 transition-all shadow-md"
             >
-              🚨 Emergency Alert
+              <span className="animate-pulse">🚨</span> Emergency Alert
             </Link>
             <Link
               href="/worker/messages"

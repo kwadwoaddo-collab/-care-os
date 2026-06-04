@@ -103,7 +103,7 @@ const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-surface-container-lowest rounded-lg border border-outline-variant ${className}`}>
+    <div className={`bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] ${className}`}>
       {children}
     </div>
   )
@@ -233,47 +233,48 @@ export default function StaffProfileDesktop({
     <>
       <div className="space-y-5">
         {/* ── Breadcrumb + Actions ──────────────────────────────────────────── */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs text-on-surface-variant mb-1">
-              <Link href="/admin/staff" className="hover:text-primary transition-colors">Staff Directory</Link>
-              <span className="mx-2 text-outline-variant">›</span>
-              <span>Profile View</span>
-            </p>
-            <h1 className="text-3xl font-bold text-on-surface leading-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
-              {displayName}
-            </h1>
-            <p className="text-sm text-on-surface-variant mt-1">
-              {sp.job_title ?? sp.job_role?.replace(/_/g, ' ') ?? 'Care Worker'}
-              {sp.address_line_1 && <span className="text-outline-variant mx-2">•</span>}
-              {sp.city}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 shrink-0 pt-1">
-            {sp.email && (
-              <a
-                href={`mailto:${sp.email}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
+        <div className="rounded-xl overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 px-6 py-5 mb-1">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs text-indigo-200 mb-1">
+                <Link href="/admin/staff" className="hover:text-white transition-colors">Staff Directory</Link>
+                <span className="mx-2 text-indigo-400">›</span>
+                <span>Profile View</span>
+              </p>
+              <h1 className="text-3xl font-bold text-white leading-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+                {displayName}
+              </h1>
+              <p className="text-sm text-indigo-200 mt-1">
+                {sp.job_title ?? sp.job_role?.replace(/_/g, ' ') ?? 'Care Worker'}
+                {sp.city && <><span className="text-indigo-400 mx-2">•</span>{sp.city}</>}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0 pt-1">
+              {sp.email && (
+                <a
+                  href={`mailto:${sp.email}`}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-sm font-semibold text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">mail</span>
+                  Send Message
+                </a>
+              )}
+              <EditStaffProfileForm staff={{ ...sp, start_date: sp.start_date ?? null }} />
+              <Link
+                href={`/admin/staff/${sp.id}/pre-employment`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-sm font-semibold text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
               >
-                <span className="material-symbols-outlined text-[18px]">mail</span>
-                Send Message
-              </a>
-            )}
-            <EditStaffProfileForm staff={{ ...sp, start_date: sp.start_date ?? null }} />
-            <Link
-              href={`/admin/staff/${sp.id}/pre-employment`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-semibold text-on-surface hover:bg-surface-container transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">fact_check</span>
-              Pre-Employment
-            </Link>
-            <Link
-              href={`/admin/shifts?assign_to=${sp.id}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary-container text-on-secondary-container text-sm font-bold hover:opacity-90 transition-opacity"
-            >
-              <span className="material-symbols-outlined text-[18px]">calendar_add_on</span>
-              Assign Shift
-            </Link>
+                <span className="material-symbols-outlined text-[18px]">fact_check</span>
+                Pre-Employment
+              </Link>
+              <Link
+                href={`/admin/shifts?assign_to=${sp.id}`}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50 transition-colors shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">calendar_add_on</span>
+                Assign Shift
+              </Link>
+            </div>
           </div>
         </div>
 

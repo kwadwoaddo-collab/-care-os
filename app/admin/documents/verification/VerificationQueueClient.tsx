@@ -53,11 +53,11 @@ function StatCard({ label, value, icon, urgent }: {
   urgent?: boolean
 }) {
   return (
-    <div className={`rounded-xl border bg-surface-container-lowest px-4 py-3 flex items-start gap-3 shadow-sm ${urgent && value > 0 ? 'border-red-200' : 'border-gray-200'}`}>
-      <span className={`material-symbols-outlined text-[20px] mt-0.5 ${urgent && value > 0 ? 'text-red-600' : 'text-gray-400'}`}>{icon}</span>
+    <div className={`rounded-xl border bg-surface-container-lowest px-4 py-3 flex items-start gap-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] ${urgent && value > 0 ? 'border-red-200' : 'border-outline-variant'}`}>
+      <span className={`material-symbols-outlined text-[20px] mt-0.5 ${urgent && value > 0 ? 'text-red-600' : 'text-on-surface-variant'}`}>{icon}</span>
       <div>
-        <p className={`text-xl font-bold tabular-nums ${urgent && value > 0 ? 'text-red-700' : 'text-gray-900'}`}>{value}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+        <p className={`text-xl font-bold tabular-nums ${urgent && value > 0 ? 'text-red-700' : 'text-on-surface'}`}>{value}</p>
+        <p className="text-xs text-on-surface-variant mt-0.5">{label}</p>
       </div>
     </div>
   )
@@ -75,13 +75,13 @@ function QueueRow({ item, onAction }: {
   const staffName     = [item.staff_first_name, item.staff_last_name].filter(Boolean).join(' ') || '—'
 
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors group">
+    <tr className="border-b border-outline-variant hover:bg-surface-container-low/60 transition-colors group">
       {/* Document */}
       <td className="px-4 py-3 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={item.file_name}>
+        <p className="text-sm font-medium text-on-surface truncate max-w-[200px]" title={item.file_name}>
           {item.file_name}
         </p>
-        <p className="text-[11px] text-gray-400 mt-0.5">
+        <p className="text-[11px] text-on-surface-variant mt-0.5">
           {item.document_type.replace(/_/g, ' ')}
           {item.compliance_linked && (
             <span className="ml-1.5 text-violet-500">· compliance</span>
@@ -91,16 +91,16 @@ function QueueRow({ item, onAction }: {
 
       {/* Staff */}
       <td className="px-4 py-3 whitespace-nowrap">
-        <p className="text-xs font-medium text-gray-700">{staffName}</p>
+        <p className="text-xs font-medium text-on-surface">{staffName}</p>
         {item.staff_job_role && (
-          <p className="text-[11px] text-gray-400 mt-0.5">{item.staff_job_role}</p>
+          <p className="text-[11px] text-on-surface-variant mt-0.5">{item.staff_job_role}</p>
         )}
       </td>
 
       {/* Source */}
       <td className="px-4 py-3 whitespace-nowrap">
         {item.source_stage && (
-          <span className="text-[11px] text-gray-600 bg-gray-100 rounded-full px-2 py-0.5">
+          <span className="text-[11px] text-on-surface-variant bg-surface-container rounded-full px-2 py-0.5">
             {SOURCE_LABELS[item.source_stage] ?? item.source_stage}
           </span>
         )}
@@ -126,52 +126,52 @@ function QueueRow({ item, onAction }: {
       {/* Expiry */}
       <td className="px-4 py-3 whitespace-nowrap">
         {item.expiry_date ? (
-          <span className={`text-xs font-medium ${expExpired ? 'text-red-700' : expSoon ? 'text-yellow-700' : 'text-gray-600'}`}>
+          <span className={`text-xs font-medium ${expExpired ? 'text-red-700' : expSoon ? 'text-yellow-700' : 'text-on-surface-variant'}`}>
             {expExpired ? '⚠ ' : ''}{fmt(item.expiry_date)}
           </span>
         ) : (
-          <span className="text-xs text-gray-400">No expiry</span>
+          <span className="text-xs text-on-surface-variant/60">No expiry</span>
         )}
       </td>
 
       {/* Uploaded */}
-      <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">
+      <td className="px-4 py-3 whitespace-nowrap text-xs text-on-surface-variant">
         {fmt(item.created_at)}
       </td>
 
       {/* Actions */}
       <td className="px-4 py-3">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2 flex-wrap">
           {item.verification_status === 'pending_verification' && (
             <>
               <button onClick={() => onAction(item, 'verify')}
-                className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors">
-                <span className="material-symbols-outlined text-[11px]">verified_user</span>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-on-primary bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">verified_user</span>
                 Verify
               </button>
               <button onClick={() => onAction(item, 'approve')}
-                className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 transition-colors">
-                <span className="material-symbols-outlined text-[11px]">check_circle</span>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
                 Approve
               </button>
             </>
           )}
           {item.verification_status === 'verified' && (
             <button onClick={() => onAction(item, 'approve')}
-              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 transition-colors">
-              <span className="material-symbols-outlined text-[11px]">check_circle</span>
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm">
+              <span className="material-symbols-outlined text-[14px]">check_circle</span>
               Approve
             </button>
           )}
-          <button onClick={() => onAction(item, 'reject')}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors">
-            <span className="material-symbols-outlined text-[11px]">cancel</span>
-            Reject
-          </button>
           <button onClick={() => onAction(item, 'resubmission')}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors">
-            <span className="material-symbols-outlined text-[11px]">refresh</span>
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 transition-colors shadow-sm">
+            <span className="material-symbols-outlined text-[14px]">refresh</span>
             Resubmit
+          </button>
+          <button onClick={() => onAction(item, 'reject')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm">
+            <span className="material-symbols-outlined text-[14px]">cancel</span>
+            Reject
           </button>
         </div>
       </td>
@@ -260,7 +260,7 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
         </div>
 
         {/* Filter bar */}
-        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 px-4 py-3 shadow-sm space-y-3">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant px-4 py-3 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] space-y-3">
           {/* Status tabs */}
           <div className="flex flex-wrap gap-1.5">
             {([
@@ -276,12 +276,12 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
                 onClick={() => setFilter(f)}
                 className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                   filter === f
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-primary text-on-primary'
+                    : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
                 {label}
-                <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${filter === f ? 'bg-white/20' : 'bg-gray-200 text-gray-700'}`}>
+                <span className={`text-[10px] rounded-full px-1.5 py-0.5 ${filter === f ? 'bg-white/20' : 'bg-surface-container-high text-on-surface-variant'}`}>
                   {count}
                 </span>
               </button>
@@ -291,22 +291,22 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
           {/* Search + folder/type filters */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-[160px]">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[13px] text-gray-400">search</span>
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[13px] text-on-surface-variant">search</span>
               <input
                 type="text" value={searchTerm} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search staff or document…"
-                className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-outline-variant bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
             <select value={folderFilter} onChange={(e) => setFolder(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="text-xs rounded-lg border border-outline-variant px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/30">
               <option value="">All folders</option>
               {uniqueFolders.map((f) => (
                 <option key={f.slug} value={f.slug}>{f.name}</option>
               ))}
             </select>
             <select value={typeFilter} onChange={(e) => setType(e.target.value)}
-              className="text-xs rounded-lg border border-gray-300 px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="text-xs rounded-lg border border-outline-variant px-2 py-1.5 bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/30">
               <option value="">All types</option>
               {uniqueTypes.map((t) => (
                 <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
@@ -316,27 +316,27 @@ export default function VerificationQueueClient({ queue: initialQueue, diagnosti
         </div>
 
         {/* Queue table */}
-        <div className="bg-surface-container-lowest rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="border-b border-gray-100 px-4 py-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-gray-500 text-[18px]">fact_check</span>
-            <h2 className="text-sm font-semibold text-gray-700">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] overflow-hidden">
+          <div className="border-b border-outline-variant px-4 py-3 flex items-center gap-2">
+            <span className="material-symbols-outlined text-on-surface-variant text-[18px]">fact_check</span>
+            <h2 className="text-sm font-semibold text-on-surface">
               Verification queue
-              <span className="ml-2 text-xs font-normal text-gray-400">({filtered.length} documents)</span>
+              <span className="ml-2 text-xs font-normal text-on-surface-variant">({filtered.length} documents)</span>
             </h2>
           </div>
 
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <span className="material-symbols-outlined text-[36px] text-gray-300">done_all</span>
-              <p className="text-sm font-medium text-gray-500">No documents match your filter</p>
+              <span className="material-symbols-outlined text-[36px] text-on-surface-variant/50">done_all</span>
+              <p className="text-sm font-medium text-on-surface-variant">No documents match your filter</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b border-gray-100">
+                <thead className="bg-surface-container border-b border-outline-variant">
                   <tr>
                     {['Document','Staff','Source','Status','Expiry','Uploaded','Actions'].map((h) => (
-                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-on-surface-variant uppercase tracking-wide whitespace-nowrap">
                         {h}
                       </th>
                     ))}

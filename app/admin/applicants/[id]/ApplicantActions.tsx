@@ -42,21 +42,24 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const PIPELINE_ACTIONS: { label: string; targetStatus: string; btnCls: string }[] = [
+const PIPELINE_ACTIONS: { label: string; targetStatus: string; btnCls: string; icon: string }[] = [
   {
     label:        'Shortlist',
     targetStatus: 'shortlisted',
-    btnCls:       'bg-yellow-50 text-yellow-700 ring-yellow-600/20 hover:bg-yellow-100',
+    btnCls:       'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm',
+    icon:         'star',
   },
   {
     label:        'Schedule Interview',
     targetStatus: 'interview_scheduled',
-    btnCls:       'bg-purple-50 text-purple-700 ring-purple-600/20 hover:bg-purple-100',
+    btnCls:       'bg-purple-600 text-white hover:bg-purple-700 shadow-sm',
+    icon:         'event',
   },
   {
     label:        'Hire',
     targetStatus: 'hired',
-    btnCls:       'bg-green-50 text-green-700 ring-green-600/20 hover:bg-green-100',
+    btnCls:       'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 shadow-sm',
+    icon:         'check_circle',
   },
 ]
 
@@ -216,7 +219,7 @@ export default function ApplicantActions({
 
   return (
     <>
-      <div className="bg-surface-container-lowest border border-gray-200 rounded-lg px-4 py-3 mb-6">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-4 mb-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
         <div className="flex flex-wrap items-center gap-3">
           {/* Current status */}
           <div className="flex items-center gap-1.5 mr-2">
@@ -227,7 +230,7 @@ export default function ApplicantActions({
           {/* Pipeline buttons */}
           {!isTerminal && (
             <>
-              <div className="h-4 w-px bg-gray-200" />
+              <div className="h-4 w-px bg-outline-variant" />
               {PIPELINE_ACTIONS.map((action) => {
                 const isActive = status === action.targetStatus
                 return (
@@ -237,11 +240,12 @@ export default function ApplicantActions({
                     onClick={() => handleAction(action.targetStatus)}
                     disabled={isSaving || isActive}
                     className={[
-                      'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
+                      'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-all',
                       action.btnCls,
-                      isActive ? 'opacity-40 cursor-not-allowed' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                      isActive ? 'opacity-40 cursor-not-allowed saturate-50' : isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
                     ].join(' ')}
                   >
+                    <span className="material-symbols-outlined text-[16px]">{action.icon}</span>
                     {isSaving ? (
                       <span className="flex items-center gap-1">
                         <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
@@ -260,11 +264,12 @@ export default function ApplicantActions({
                 onClick={() => handleAction('rejected')}
                 disabled={isSaving}
                 className={[
-                  'inline-flex items-center rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset transition-colors',
-                  'bg-red-50 text-red-700 ring-red-600/20 hover:bg-red-100',
+                  'inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold transition-colors',
+                  'bg-red-600 text-white hover:bg-red-700 shadow-sm',
                   isSaving ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
                 ].join(' ')}
               >
+                <span className="material-symbols-outlined text-[16px]">cancel</span>
                 Reject
               </button>
             </>
@@ -329,7 +334,7 @@ export default function ApplicantActions({
 
         {/* Conversion section — only shown for hired applicants */}
         {status === 'hired' && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-outline-variant">
             {convertStatus === 'done' ? (
               <>
                 {/* Success banner shown immediately after clicking Convert */}
@@ -370,12 +375,15 @@ export default function ApplicantActions({
               </>
             ) : (
               /* Not yet converted — show action button */
-              <div className="space-y-3">
-                <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2.5">
-                  <p className="text-xs text-green-800 font-medium">
-                    <span className="material-symbols-outlined text-[14px] align-text-bottom mr-1">info</span>
-                    This will create a staff profile and begin the onboarding process. Once converted, the applicant becomes a staff member.
-                  </p>
+              <div className="rounded-xl bg-green-50 border border-green-200 p-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-green-600 text-[22px] mt-0.5">person_add</span>
+                  <div>
+                    <p className="text-sm font-bold text-green-900">Ready to onboard this hire?</p>
+                    <p className="text-xs text-green-700 mt-0.5">
+                      Converting will create a staff profile and begin the pre-employment checks. This cannot be undone.
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <button
