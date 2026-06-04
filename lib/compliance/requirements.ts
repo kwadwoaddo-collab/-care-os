@@ -14,18 +14,26 @@ export const REQUIRED_DOCUMENTS = [
 
 export type RequiredDocument = (typeof REQUIRED_DOCUMENTS)[number]
 
-// ── Required training certificates (care worker base) ─────────────────────────
+// ── Required training certificates (all care staff — 13 UK mandatory categories) ─
 //
-// Sourced from lib/training/matrix.ts (DEFAULT_CARE_TRAINING).
-// Kept here as a typed const so calculateCompliance can import it without
-// pulling in the full matrix module.
+// All 13 are now mandatory for domiciliary care under CQC Regulation 18.
+// The compliance engine enforces every one of these.
+// Source: Skills for Care, CQC fundamental standards, Care Certificate.
 
 export const REQUIRED_TRAINING = [
+  'fire_safety',
   'manual_handling',
-  'safeguarding',
   'basic_life_support',
+  'safeguarding',
+  'safeguarding_children',
   'infection_control',
+  'medication',
+  'mental_capacity',
+  'food_hygiene',
   'health_safety',
+  'lone_working',
+  'dementia_awareness',
+  'communication',
 ] as const
 
 export type RequiredTraining = (typeof REQUIRED_TRAINING)[number]

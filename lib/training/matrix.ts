@@ -16,74 +16,49 @@ import type { TrainingCategory } from '@/lib/documents/constants'
 // Keys should match job_role values used in staff_profiles.job_role.
 // Keys are normalised to lowercase + underscores before lookup.
 
+// ── All 13 UK mandatory categories (base for every care role) ─────────────────
+//
+// CQC Regulation 18 / Skills for Care / Care Certificate standard.
+// Every domiciliary care worker must have all 13 regardless of role.
+
+export const ALL_MANDATORY_TRAINING: TrainingCategory[] = [
+  'fire_safety',
+  'manual_handling',
+  'basic_life_support',
+  'safeguarding',
+  'safeguarding_children',
+  'infection_control',
+  'medication',
+  'mental_capacity',
+  'food_hygiene',
+  'health_safety',
+  'lone_working',
+  'dementia_awareness',
+  'communication',
+]
+
+// ── Role training matrix ───────────────────────────────────────────────────────
+//
+// All care roles require all 13 mandatory categories.
+// Specialised roles may add extras but cannot remove any mandatory categories.
+// Keys should match job_role values in staff_profiles.job_role (normalised).
+
 export const ROLE_TRAINING_MATRIX: Record<string, TrainingCategory[]> = {
-  care_worker: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-  ],
-  senior_care_worker: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-    'medication',
-  ],
-  support_worker: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-  ],
-  community_care_worker: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-  ],
-  nurse: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-    'medication',
-  ],
-  medication_care_worker: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-    'medication',
-  ],
-  team_leader: [
-    'manual_handling',
-    'safeguarding',
-    'basic_life_support',
-    'infection_control',
-    'health_safety',
-    'medication',
-    'fire_safety',
-  ],
+  care_worker:             ALL_MANDATORY_TRAINING,
+  senior_care_worker:      ALL_MANDATORY_TRAINING,
+  support_worker:          ALL_MANDATORY_TRAINING,
+  community_care_worker:   ALL_MANDATORY_TRAINING,
+  nurse:                   ALL_MANDATORY_TRAINING,
+  medication_care_worker:  ALL_MANDATORY_TRAINING,
+  team_leader:             ALL_MANDATORY_TRAINING,
 }
 
 // ── Default training for unrecognised roles ────────────────────────────────────
 //
-// All care-related staff need at minimum these categories.
-// Used as a fallback when the exact job_role isn't in the matrix.
-export const DEFAULT_CARE_TRAINING: TrainingCategory[] = [
-  'manual_handling',
-  'safeguarding',
-  'basic_life_support',
-  'infection_control',
-  'health_safety',
-]
+// Any care staff member with an unrecognised job role gets all 13 mandatory
+// categories. No one falls through to a shorter list.
+export const DEFAULT_CARE_TRAINING: TrainingCategory[] = ALL_MANDATORY_TRAINING
+
 
 // ── Role normalisation ────────────────────────────────────────────────────────
 

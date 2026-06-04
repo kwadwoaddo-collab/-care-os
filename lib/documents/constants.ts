@@ -38,28 +38,41 @@ export const DOCUMENT_TYPE_SET = new Set<string>(DOCUMENT_TYPE_VALUES)
 // ── Training category constants ───────────────────────────────────────────────
 //
 // Structured training classification for training_certificate documents.
-// Must stay in sync with the CHECK constraint in 029_training_category.sql.
+// Must stay in sync with the CHECK constraint in 059_widen_training_categories.sql.
+// All 13 UK mandatory domiciliary care training categories.
 
 export const TRAINING_CATEGORY_VALUES = [
   'manual_handling',
   'safeguarding',
+  'safeguarding_children',
   'basic_life_support',
   'infection_control',
   'health_safety',
   'medication',
   'fire_safety',
+  'mental_capacity',
+  'food_hygiene',
+  'lone_working',
+  'dementia_awareness',
+  'communication',
 ] as const
 
 export type TrainingCategory = (typeof TRAINING_CATEGORY_VALUES)[number]
 
 export const TRAINING_CATEGORY_LABELS: Record<TrainingCategory, string> = {
-  manual_handling:    'Manual Handling',
-  safeguarding:       'Safeguarding',
-  basic_life_support: 'Basic Life Support',
+  manual_handling:    'Moving & Handling',
+  safeguarding:       'Safeguarding Adults',
+  safeguarding_children: 'Safeguarding Children',
+  basic_life_support: 'Basic Life Support / First Aid',
   infection_control:  'Infection Control',
   health_safety:      'Health & Safety',
   medication:         'Medication Administration',
   fire_safety:        'Fire Safety',
+  mental_capacity:    'Mental Capacity Act (MCA)',
+  food_hygiene:       'Food Hygiene',
+  lone_working:       'Lone Working',
+  dementia_awareness: 'Dementia Awareness',
+  communication:      'Communication',
 }
 
 export const TRAINING_CATEGORIES = TRAINING_CATEGORY_VALUES.map((value) => ({
