@@ -295,10 +295,10 @@ function RiskForecastCard({ forecast }: { forecast: Props['riskForecast'] }) {
           </div>
         )}
       </div>
-      <a href="/admin/documents/verification"
+      <Link href="/admin/documents/verification"
         className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-orange-700 bg-surface-container-lowest hover:bg-orange-50 border border-orange-200 transition-colors">
         Review →
-      </a>
+      </Link>
     </div>
   )
 }

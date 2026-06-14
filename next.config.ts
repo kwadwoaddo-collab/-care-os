@@ -55,6 +55,10 @@ const nextConfig: NextConfig = {
   // Strict mode surfaces React double-invocation bugs early
   reactStrictMode: true,
 
+  experimental: {
+    viewTransition: true,
+  },
+
   async headers() {
     return [
       {

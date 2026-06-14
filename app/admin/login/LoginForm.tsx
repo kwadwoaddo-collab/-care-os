@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/browser'
 
 export default function LoginForm() {
@@ -89,12 +90,13 @@ export default function LoginForm() {
         </label>
         <input
           id="email"
+          name="email"
           type="email"
-          autoComplete="email"
+          autoComplete="username"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="block w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-primary placeholder-on-surface-variant/40 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+          className="block w-full rounded-lg border border-outline-variant px-3 py-2.5 text-sm text-primary placeholder-on-surface-variant/40 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50 [&:user-valid]:border-green-500"
           placeholder="admin@yourcompany.com"
           disabled={loading}
         />
@@ -103,26 +105,27 @@ export default function LoginForm() {
       {/* Password */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="password" className="block text-xs font-semibold text-on-surface">
+          <label htmlFor="current-password" className="block text-xs font-semibold text-on-surface">
             Password
           </label>
-          <a
+          <Link
             href="/admin/reset-password"
             className="text-[11px] text-secondary hover:underline font-medium"
             tabIndex={-1}
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
         <div className="relative">
           <input
-            id="password"
+            id="current-password"
+            name="password"
             type={showPw ? 'text' : 'password'}
             autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="block w-full rounded-lg border border-outline-variant px-3 py-2.5 pr-10 text-sm text-primary placeholder-on-surface-variant/40 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all"
+            className="block w-full rounded-lg border border-outline-variant px-3 py-2.5 pr-10 text-sm text-primary placeholder-on-surface-variant/40 focus:border-secondary focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50 [&:user-valid]:border-green-500"
             placeholder="••••••••"
             disabled={loading}
           />

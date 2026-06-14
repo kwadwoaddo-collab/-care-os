@@ -164,6 +164,7 @@ export default function StaffGrid({ staff }: { staff: StaffProfileWithCompliance
               <div
                 key={s.id}
                 className="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-transparent hover:border-secondary/20 transition-all group relative overflow-hidden flex flex-col"
+                style={{ viewTransitionName: `staff-${s.id}` }}
               >
                 {/* Header: Avatar + Name */}
                 <div className="flex items-center gap-4 mb-6">

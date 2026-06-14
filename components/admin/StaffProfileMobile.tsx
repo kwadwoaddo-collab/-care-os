@@ -197,7 +197,10 @@ export default function StaffProfileMobile({
       <div className="flex flex-col gap-4 px-4 pt-6">
 
         {/* ── Identity Section ─────────────────────────────────────────────── */}
-        <div className="flex flex-col items-center text-center gap-3 pb-2">
+        <div 
+          className="flex flex-col items-center text-center gap-3 pb-2"
+          style={{ viewTransitionName: `staff-${sp.id}` }}
+        >
           {/* Avatar */}
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center">

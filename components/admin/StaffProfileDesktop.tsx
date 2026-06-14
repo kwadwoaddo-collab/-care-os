@@ -233,7 +233,10 @@ export default function StaffProfileDesktop({
     <>
       <div className="space-y-5">
         {/* ── Breadcrumb + Actions ──────────────────────────────────────────── */}
-        <div className="rounded-xl overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 px-6 py-5 mb-1">
+        <div 
+          className="rounded-xl overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 px-6 py-5 mb-1"
+          style={{ viewTransitionName: `staff-${sp.id}` }}
+        >
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs text-indigo-200 mb-1">

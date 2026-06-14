@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import EditClientForm from './EditClientForm'
 import { adminFetch } from '@/lib/admin/serverFetch'
 
@@ -234,7 +235,7 @@ export default async function ClientDetailPage({
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <a href="/admin/clients" className="text-sm text-gray-400 hover:text-gray-600">← Clients</a>
+          <Link href="/admin/clients" className="text-sm text-gray-400 hover:text-gray-600">← Clients</Link>
           </div>
           <h1 className="text-xl font-semibold text-primary mt-1">{fullName}</h1>
           {client.preferred_name && (
@@ -307,9 +308,9 @@ export default async function ClientDetailPage({
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Care packages</h2>
-          <a href="/admin/care-packages" className="text-xs text-indigo-600 hover:underline">
+          <Link href="/admin/care-packages" className="text-xs text-indigo-600 hover:underline">
             Manage →
-          </a>
+          </Link>
         </div>
 
         {carePackages.length === 0 ? (

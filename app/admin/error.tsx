@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useId } from 'react'
+import Link from 'next/link'
 
 interface Props {
   error: Error & { digest?: string }
@@ -53,13 +54,13 @@ export default function AdminError({ error, reset }: Props) {
         >
           Try again
         </button>
-        <a
+        <Link
           href="/admin"
           id="admin-error-dashboard-link"
           className="px-4 py-2 rounded-md border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
         >
           Back to dashboard
-        </a>
+        </Link>
       </div>
 
       {/* Dev-only detail */}

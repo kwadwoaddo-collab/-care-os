@@ -135,63 +135,73 @@ export default function EditStaffProfileForm({ staff }: { staff: StaffProfile })
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="first_name" className="block text-xs font-medium text-gray-700 mb-1">
                     First name <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="first_name"
                     name="first_name"
+                    autoComplete="given-name"
                     value={form.first_name}
                     onChange={handleChange}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label htmlFor="last_name" className="block text-xs font-medium text-gray-700 mb-1">
                     Last name <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="last_name"
                     name="last_name"
+                    autoComplete="family-name"
                     value={form.last_name}
                     onChange={handleChange}
                     required
-                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="email"
                   name="email"
                   type="email"
+                  autoComplete="email"
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                <label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
                 <input
+                  id="phone"
                   name="phone"
                   type="tel"
+                  autoComplete="tel"
                   value={form.phone}
                   onChange={handleChange}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all [&:user-invalid]:border-red-500 [&:user-invalid]:bg-red-50/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Job role</label>
+                <label htmlFor="job_role" className="block text-xs font-medium text-gray-700 mb-1">Job role</label>
                 <input
+                  id="job_role"
                   name="job_role"
+                  autoComplete="organization-title"
                   value={form.job_role}
                   onChange={handleChange}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-primary focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
                 />
               </div>
 

@@ -15,6 +15,7 @@ import { can, type Permission } from '@/lib/rbac/permissions'
 import AdminHeader    from '@/components/admin/AdminHeader'
 import AdminMobileNav from '@/components/admin/AdminMobileNav'
 import AdminSidebar   from '@/components/admin/AdminSidebar'
+import Link from 'next/link'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Fetch user profile once for: QA banner + nav permission filtering.
@@ -81,9 +82,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <span>🔑</span>
             <span>
               Your account was provisioned with a temporary password.{' '}
-              <a href="/admin/set-password" className="underline font-bold hover:text-yellow-900">
+              <Link href="/admin/set-password" className="underline font-bold hover:text-yellow-900">
                 Change it now →
-              </a>
+              </Link>
             </span>
           </div>
         )}
