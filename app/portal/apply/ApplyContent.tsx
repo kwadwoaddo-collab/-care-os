@@ -24,7 +24,6 @@ const HISTORY_TYPES = [
   'Education',
   'Volunteering',
   'Unemployed',
-  'Career Break',
   'Other',
 ] as const
 
