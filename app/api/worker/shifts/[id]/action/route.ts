@@ -80,7 +80,7 @@ export async function POST(
   const hasPendingOffer = offer && offer.status === 'pending'
   const now = new Date().toISOString()
 
-  let updatePayload: Record<string, any> = { updated_at: now }
+  const updatePayload: Record<string, any> = { updated_at: now }
   let offerUpdatePayload: Record<string, any> | null = null
 
   if (action === 'accept') {

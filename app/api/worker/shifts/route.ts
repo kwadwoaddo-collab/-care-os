@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   const allRows = [...assignedRows, ...offeredRows]
 
   // Attach visit note id if one exists for each shift
-  let visitNoteByShift: Record<string, string> = {}
+  const visitNoteByShift: Record<string, string> = {}
   if (allRows.length > 0) {
     const shiftIds = allRows.map((s) => s.id)
     const { data: notes } = await adminClient

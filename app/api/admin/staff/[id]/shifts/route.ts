@@ -32,7 +32,7 @@ export async function GET(
   const shifts = data ?? []
 
   // ── Attach timesheet status for each shift (if one exists) ────────────────
-  let timesheetStatusByShift: Record<string, string> = {}
+  const timesheetStatusByShift: Record<string, string> = {}
   if (shifts.length > 0) {
     const shiftIds = shifts.map((s) => s.id)
     const { data: ts } = await adminClient

@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   const shifts = data ?? []
 
   // Attach timesheet status for the current page only
-  let timesheetStatusByShift: Record<string, string> = {}
+  const timesheetStatusByShift: Record<string, string> = {}
   if (shifts.length > 0) {
     const shiftIds = shifts.map((s) => s.id)
     const { data: ts } = await adminClient
