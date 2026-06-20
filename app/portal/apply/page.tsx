@@ -2,8 +2,8 @@ import { Suspense } from 'react'
 import ApplyContent from './ApplyContent'
 
 export const metadata = {
-  title: 'Join Care Supreme — Secure Application Portal',
-  description: 'Apply to join the Care Supreme team. Your application is secure, encrypted, and auto-saved.',
+  title: 'Join Care OS — Secure Application Portal',
+  description: 'Apply for a role via Care OS. Your application is secure, encrypted, and auto-saved.',
 }
 
 function LoadingFallback() {
@@ -24,7 +24,7 @@ export default function ApplyPage() {
           <span className="text-2xl" aria-hidden="true">🛡️</span>
           <div>
             <p className="text-base font-bold tracking-tight leading-none" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
-              Care Supreme
+              Care OS
             </p>
             <p className="text-xs text-indigo-200 mt-0.5">Secure Application Portal</p>
           </div>
@@ -41,7 +41,7 @@ export default function ApplyPage() {
               className="text-xl font-bold text-gray-900 mb-1"
               style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
             >
-              Welcome to Care Supreme
+              Welcome to Care OS
             </h1>
             <p className="text-sm text-gray-600 mb-4">
               You&apos;ve been invited to apply for a role with us. Complete the form below — your progress is saved automatically as you go.
@@ -71,7 +71,7 @@ export default function ApplyPage() {
 
       {/* Footer */}
       <footer className="text-center text-xs text-gray-400 py-5 border-t border-gray-100">
-        Care Supreme &copy; 2025 &middot; Confidential Application
+        Care OS &copy; 2026 &middot; Confidential Application
       </footer>
     </div>
   )

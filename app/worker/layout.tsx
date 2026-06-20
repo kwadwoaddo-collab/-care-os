@@ -48,7 +48,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
             <span className="text-xl" aria-hidden="true">🛡️</span>
             <div>
               <p className="text-sm font-bold text-white leading-none tracking-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
-                Care Supreme
+                Care OS
               </p>
             </div>
           </div>
@@ -72,8 +72,8 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* Bottom tab bar */}
-      <nav
+      {/* Bottom tab bar — hidden on login screen */}
+      {pathname !== '/worker/login' && <nav
         className="sticky bottom-0 z-30 bg-surface-container-lowest border-t border-gray-200 shadow-lg"
         aria-label="Worker navigation"
       >
@@ -98,7 +98,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
             )
           })}
         </div>
-      </nav>
+      </nav>}
       </div>
     </WorkerAuthGuard>
   )
