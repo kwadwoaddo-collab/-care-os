@@ -59,6 +59,14 @@ const fullInput: OnboardingInput = {
     'basic_life_support',
     'infection_control',
     'health_safety',
+    'fire_safety',
+    'safeguarding_children',
+    'medication',
+    'mental_capacity',
+    'food_hygiene',
+    'lone_working',
+    'dementia_awareness',
+    'communication'
   ],
 }
 
@@ -73,7 +81,7 @@ test('empty input → progress 0', () => {
 
 test('full input → progress 100', () => {
   const obs = calculateOnboardingStatus(fullInput)
-  assert.strictEqual(obs.progress, 100)
+  console.log(obs.missing); assert.strictEqual(obs.progress, 100)
 })
 
 test('partial input → progress between 0 and 100', () => {

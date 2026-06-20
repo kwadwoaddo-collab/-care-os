@@ -56,9 +56,9 @@ function makeDoc(overrides: Partial<ComplianceDocument> = {}): ComplianceDocumen
 
 console.log('\n  getRequiredTraining\n')
 
-test('care_worker has 5 required categories', () => {
+test('care_worker has 13 required categories', () => {
   const r = getRequiredTraining('care_worker')
-  assert.strictEqual(r.length, 5)
+  assert.strictEqual(r.length, 13)
 })
 
 test('care_worker includes manual_handling', () => {
@@ -78,17 +78,17 @@ test('care_worker includes basic_life_support', () => {
 
 test('null job_role falls back to DEFAULT_CARE_TRAINING', () => {
   const r = getRequiredTraining(null)
-  assert.strictEqual(r.length, 5)
+  assert.strictEqual(r.length, 13)
 })
 
 test('unrecognised role falls back to DEFAULT_CARE_TRAINING', () => {
-  const r = getRequiredTraining('receptionist')
-  assert.strictEqual(r.length, 5)
+  const r = getRequiredTraining('space_commander')
+  assert.strictEqual(r.length, 13)
 })
 
-test('senior_care_worker has 6 categories (includes medication)', () => {
+test('senior_care_worker has 13 categories (includes medication)', () => {
   const r = getRequiredTraining('senior_care_worker')
-  assert.strictEqual(r.length, 6)
+  assert.strictEqual(r.length, 13)
   assert.ok(r.includes('medication'))
 })
 
@@ -96,9 +96,9 @@ test('senior_care_worker has 6 categories (includes medication)', () => {
 
 console.log('\n  calculateCompliance — training resolution\n')
 
-test('no documents → all 5 training categories missing', () => {
+test('no documents → all 13 training categories missing', () => {
   const summary = calculateCompliance([])
-  assert.strictEqual(summary.missingTraining.length, 5)
+  assert.strictEqual(summary.missingTraining.length, 13)
   assert.strictEqual(summary.satisfiedTraining.length, 0)
 })
 
@@ -145,7 +145,7 @@ test('approved cert without training_category does NOT satisfy any training', ()
   })
   const summary = calculateCompliance([doc])
   assert.strictEqual(summary.satisfiedTraining.length, 0)
-  assert.strictEqual(summary.missingTraining.length, 5)
+  assert.strictEqual(summary.missingTraining.length, 13)
 })
 
 test('approved cert with expired expiry_date → moves to expiredTraining', () => {
@@ -204,10 +204,12 @@ test('two approved certs for same category — one expired, one valid → satisf
     'Should be satisfied because there is a valid cert')
 })
 
-test('all 5 mandatory certs approved → compliant=true', () => {
+test('all 13 mandatory certs approved → compliant=true', () => {
   const mandatoryDocs = [
     'manual_handling', 'safeguarding', 'basic_life_support',
-    'infection_control', 'health_safety',
+    'infection_control', 'health_safety', 'fire_safety',
+    'safeguarding_children', 'medication', 'mental_capacity',
+    'food_hygiene', 'lone_working', 'dementia_awareness', 'communication'
   ].map((cat) => makeDoc({ training_category: cat, reviewed_status: 'approved' }))
 
   const mandatoryDocDocs = [
@@ -218,7 +220,7 @@ test('all 5 mandatory certs approved → compliant=true', () => {
 
   const all = [...mandatoryDocs, ...mandatoryDocDocs]
   const summary = calculateCompliance(all)
-  assert.strictEqual(summary.satisfiedTraining.length, 5)
+  assert.strictEqual(summary.satisfiedTraining.length, 13)
   assert.strictEqual(summary.missingTraining.length, 0)
   assert.strictEqual(summary.compliant, true)
 })
@@ -271,7 +273,9 @@ const BASE_STAFF = {
 
 const ALL_TRAINING = [
   'manual_handling', 'safeguarding', 'basic_life_support',
-  'infection_control', 'health_safety',
+  'infection_control', 'health_safety', 'fire_safety',
+  'safeguarding_children', 'medication', 'mental_capacity',
+  'food_hygiene', 'lone_working', 'dementia_awareness', 'communication'
 ]
 
 test('care_worker with no training → training section false', () => {
@@ -289,7 +293,7 @@ test('care_worker with no training → missing includes training items', () => {
   assert.ok(obs.missing.some((m) => m.startsWith('Training:')))
 })
 
-test('care_worker with partial training (3 of 5) → still not ready', () => {
+test('care_worker with partial training (3 of 13) → still not ready', () => {
   const obs = calculateOnboardingStatus({
     ...BASE_STAFF,
     approvedTrainingCategories: ['manual_handling', 'safeguarding', 'basic_life_support'],
@@ -298,7 +302,7 @@ test('care_worker with partial training (3 of 5) → still not ready', () => {
   assert.strictEqual(obs.sections.training, false)
 })
 
-test('care_worker with ALL 5 training categories → training section true', () => {
+test('care_worker with ALL 13 training categories → training section true', () => {
   const obs = calculateOnboardingStatus({ ...BASE_STAFF, approvedTrainingCategories: ALL_TRAINING })
   assert.strictEqual(obs.sections.training, true)
 })

@@ -71,6 +71,14 @@ const ALL_DOCS: ComplianceDocument[] = [
   makeDoc({ training_category: 'basic_life_support' }),
   makeDoc({ training_category: 'infection_control' }),
   makeDoc({ training_category: 'health_safety' }),
+  makeDoc({ training_category: 'fire_safety' }),
+  makeDoc({ training_category: 'safeguarding_children' }),
+  makeDoc({ training_category: 'medication' }),
+  makeDoc({ training_category: 'mental_capacity' }),
+  makeDoc({ training_category: 'food_hygiene' }),
+  makeDoc({ training_category: 'lone_working' }),
+  makeDoc({ training_category: 'dementia_awareness' }),
+  makeDoc({ training_category: 'communication' }),
 ]
 
 // ── getExpiryBand ─────────────────────────────────────────────────────────────
