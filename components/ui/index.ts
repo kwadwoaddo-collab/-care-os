@@ -17,6 +17,8 @@ export { default as SectionHeader }     from './SectionHeader'
 export { default as OperationalBanner } from './OperationalBanner'
 export { default as TrendIndicator, Sparkline } from './TrendIndicator'
 export { default as Button }            from './Button'
+export { AlertDialog } from './AlertDialog'
+export { ConfirmDialog } from './ConfirmDialog'
 export { default as Icon }              from './Icon'
 export { default as StatusBadge }       from './StatusBadge'
 
