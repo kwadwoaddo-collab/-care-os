@@ -546,7 +546,7 @@ export default function WorkerDashboard() {
         <div className="flex-1 min-w-0">
           <p className="text-base font-bold text-gray-900 truncate" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>{displayName}</p>
           <p className="text-xs text-gray-600 truncate">{worker.job_role ?? '—'}</p>
-          <p className="text-[10px] text-indigo-500 font-semibold uppercase tracking-wide mt-0.5">Care Supreme</p>
+          <p className="text-[10px] text-indigo-500 font-semibold uppercase tracking-wide mt-0.5">Care OS</p>
         </div>
         <span className={`flex-shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusCls}`}>
           {worker.status.replace(/_/g, ' ')}

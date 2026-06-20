@@ -65,6 +65,7 @@ export default function AdminNotificationBell({ pollMs = 30_000 }: Props) {
 
   // Initial fetch + polling
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchNotifications()
     const id = setInterval(() => { void fetchNotifications() }, pollMs)
     return () => clearInterval(id)

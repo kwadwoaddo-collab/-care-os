@@ -215,7 +215,7 @@ const SOURCE_OPTIONS = [
   'Facebook',
   'LinkedIn',
   'Google',
-  'Care Supreme website',
+  'Care OS website',
   'Friend / referral',
   'Job centre',
   'Other',
@@ -548,7 +548,7 @@ export default function ApplyContent() {
 
   useEffect(() => {
     if (!token) {
-      setPage({ phase: 'error', message: 'No invitation token found. Please use the link from your invitation email.' })
+      setPage({ phase: 'error', message: 'This link doesn\'t include an invitation code. Please use the link sent to you by your employer — check your email including your spam folder.' })
       return
     }
     let cancelled = false
@@ -608,9 +608,13 @@ export default function ApplyContent() {
   )
 
   if (page.phase === 'error') return (
-    <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-      <p className="text-base font-medium text-red-700">Unable to continue</p>
-      <p className="mt-1 text-sm text-red-600">{page.message}</p>
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
+      <p className="text-2xl mb-3" aria-hidden="true">🔗</p>
+      <p className="text-base font-semibold text-amber-900">Link not recognised</p>
+      <p className="mt-2 text-sm text-amber-800 max-w-sm mx-auto">{page.message}</p>
+      <p className="mt-4 text-xs text-amber-700">
+        Need help? Contact your employer or HR team directly.
+      </p>
     </div>
   )
 
@@ -629,7 +633,7 @@ export default function ApplyContent() {
         {isSubmitted && (
           <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-4">
             <p className="text-sm font-semibold text-green-800">Application submitted ✓</p>
-            <p className="mt-1 text-sm text-green-700">Thank you. Your application has been received by Care Supreme. You will be contacted if further information is required.</p>
+            <p className="mt-1 text-sm text-green-700">Thank you. Your application has been received. You will be contacted if further information is required.</p>
           </div>
         )}
 

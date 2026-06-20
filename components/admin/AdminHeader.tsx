@@ -174,7 +174,7 @@ export default function AdminHeader() {
             }}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            placeholder="Search system components, staff, clients..." 
+            placeholder="Search staff, clients, documents…"
             className="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-md w-72 focus:ring-2 focus:ring-secondary transition-all placeholder:text-on-surface-variant text-on-surface"
           />
 
