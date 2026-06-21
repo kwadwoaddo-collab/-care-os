@@ -254,7 +254,7 @@ export default async function ShiftsPage({
             <>
               <p className="text-sm font-medium text-primary">No shifts match your filters</p>
               <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
-              <a href="/admin/shifts" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+              <Link href="/admin/shifts" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</Link>
             </>
           ) : (
             <>
@@ -266,7 +266,7 @@ export default async function ShiftsPage({
               <p className="text-sm font-medium text-primary">No shifts yet</p>
               <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
                 Create a shift manually above, or generate shifts automatically from a{' '}
-                <a href="/admin/care-packages" className="text-indigo-600 hover:underline">care package</a>.
+                <Link href="/admin/care-packages" className="text-indigo-600 hover:underline">care package</Link>.
               </p>
             </>
           )}

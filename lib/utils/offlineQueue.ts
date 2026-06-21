@@ -48,6 +48,7 @@ export async function flushQueue(): Promise<{ flushed: number; failed: number }>
   const queue = readQueue()
   let flushed = 0
   let failed  = 0
+  const flushedIds = new Set<string>()
 
   for (const action of queue) {
     try {
@@ -57,7 +58,7 @@ export async function flushQueue(): Promise<{ flushed: number; failed: number }>
         body:    action.body,
       })
       if (res.ok) {
-        dequeue(action.id)
+        flushedIds.add(action.id)
         flushed++
       } else {
         failed++
@@ -65,6 +66,10 @@ export async function flushQueue(): Promise<{ flushed: number; failed: number }>
     } catch {
       failed++
     }
+  }
+
+  if (flushed > 0) {
+    writeQueue(readQueue().filter(a => !flushedIds.has(a.id)))
   }
 
   return { flushed, failed }

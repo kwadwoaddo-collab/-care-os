@@ -153,7 +153,7 @@ export default async function IncidentsPage({
               <>
                 <p className="text-sm font-medium text-primary">No incidents match your filters</p>
                 <p className="text-xs text-gray-400 mt-1">Try adjusting or clearing your search filters.</p>
-                <a href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</a>
+                <Link href="/admin/incidents" className="mt-4 inline-flex items-center text-xs text-indigo-600 hover:underline">← Clear filters</Link>
               </>
             ) : (
               <>

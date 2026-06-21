@@ -422,9 +422,9 @@ export default async function ClientDetailPage({
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Recent visit notes</h2>
-          <a href="/admin/visit-notes" className="text-xs text-indigo-600 hover:underline">
+          <Link href="/admin/visit-notes" className="text-xs text-indigo-600 hover:underline">
             All notes →
-          </a>
+          </Link>
         </div>
 
         {visitNotes.length === 0 ? (
@@ -475,9 +475,9 @@ export default async function ClientDetailPage({
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <a href={`/admin/visit-notes/${vn.id}`} className="text-xs text-indigo-600 hover:underline">
+                        <Link href={`/admin/visit-notes/${vn.id}`} className="text-xs text-indigo-600 hover:underline">
                           View →
-                        </a>
+                        </Link>
                       </td>
                     </tr>
                   )
@@ -492,9 +492,9 @@ export default async function ClientDetailPage({
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">Recent Incidents</h2>
-          <a href={`/admin/incidents?client_id=${id}`} className="text-xs text-indigo-600 hover:underline">
+          <Link href={`/admin/incidents?client_id=${id}`} className="text-xs text-indigo-600 hover:underline">
             All incidents →
-          </a>
+          </Link>
         </div>
 
         {incidents.length === 0 ? (
@@ -529,9 +529,9 @@ export default async function ClientDetailPage({
                       <Badge value={inc.status} map={INCIDENT_STATUS_CLS} />
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <a href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
+                      <Link href={`/admin/incidents/${inc.id}`} className="text-xs text-indigo-600 hover:underline">
                         View →
-                      </a>
+                      </Link>
                     </td>
                   </tr>
                 ))}

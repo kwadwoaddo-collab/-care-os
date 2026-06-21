@@ -198,7 +198,7 @@ export default async function ClientsPage({
             <>
               <p className="text-sm font-medium text-primary">No clients match your filters</p>
               <p className="text-xs text-on-surface-variant mt-1">Try adjusting or clearing your search filters.</p>
-              <a href="/admin/clients" className="mt-4 inline-flex items-center text-xs text-secondary hover:underline">← Clear filters</a>
+              <Link href="/admin/clients" className="mt-4 inline-flex items-center text-xs text-secondary hover:underline">← Clear filters</Link>
             </>
           ) : (
             <>

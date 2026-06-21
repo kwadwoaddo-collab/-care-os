@@ -1,16 +1,17 @@
+const DATE_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+const TIME_FORMATTER = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' })
+const DATE_SHORT_FORMATTER = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short' })
+const DATE_DISPLAY_FORMATTER = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
+
 export function fmt(iso: string) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  return DATE_FORMATTER.format(new Date(iso))
 }
 
 export function fmtTs(iso: string) {
   if (!iso) return '—'
   const d = new Date(iso)
-  return (
-    d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) +
-    ' ' +
-    d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-  )
+  return DATE_SHORT_FORMATTER.format(d) + ' ' + TIME_FORMATTER.format(d)
 }
 
 export function fmtTime(t: string) {
@@ -20,7 +21,7 @@ export function fmtTime(t: string) {
 
 export function fmtDateDisplay(iso: string) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })
+  return DATE_DISPLAY_FORMATTER.format(new Date(iso))
 }
 
 export function staffName(p: { first_name: string | null; last_name: string | null } | null): string {
