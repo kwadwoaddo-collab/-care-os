@@ -46,6 +46,7 @@ const mockSupabase = {
 }
 
 // We'll override maybeSingle in tests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockData: any = null
 mockSupabase.maybeSingle = async () => ({ data: mockData, error: null })
 

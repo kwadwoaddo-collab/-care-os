@@ -429,7 +429,9 @@ export default function OperationsPriorityQueue({
 
   useEffect(() => {
     const saved = getQueuePrefs()
-    setPrefsState(saved)
+    setTimeout(() => {
+      setPrefsState(saved)
+    }, 0)
   }, [])
 
   function updatePref<K extends keyof typeof prefs>(key: K, value: typeof prefs[K]) {

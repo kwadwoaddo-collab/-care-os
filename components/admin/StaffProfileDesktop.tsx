@@ -212,11 +212,11 @@ export default function StaffProfileDesktop({
   const [drawerAction, setDrawerAction] = useState<DrawerAction>('upload')
   const [drawerDoc,    setDrawerDoc]    = useState<DrawerDoc | null>(null)
 
-  const openDrawer = useCallback((action: DrawerAction, doc?: DrawerDoc) => {
+  const openDrawer = (action: DrawerAction, doc?: DrawerDoc) => {
     setDrawerAction(action)
     setDrawerDoc(doc ?? null)
     setDrawerOpen(true)
-  }, [])
+  }
 
   const dbsDrawerDoc: DrawerDoc | undefined = dbsDoc
     ? {

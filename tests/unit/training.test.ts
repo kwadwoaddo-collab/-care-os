@@ -13,7 +13,7 @@
 import assert from 'node:assert/strict'
 import { calculateCompliance, type ComplianceDocument } from '../../lib/compliance/calculateCompliance'
 import { getRequiredTraining }                          from '../../lib/training/matrix'
-import { calculateOnboardingStatus }                    from '../../lib/staff/calculateOnboardingStatus'
+import { calculateOnboardingStatus, getNextActions }    from '../../lib/staff/calculateOnboardingStatus'
 
 let passed = 0
 let failed = 0
@@ -313,7 +313,7 @@ test('care_worker with ALL training + all other fields → ready true', () => {
 })
 
 test('getNextActions: complete_training present when training missing', () => {
-  const { getNextActions: ga } = require('../../lib/staff/calculateOnboardingStatus')
+  const ga = getNextActions
   const obs = calculateOnboardingStatus({ ...BASE_STAFF, approvedTrainingCategories: [] })
   const actions = ga(obs) as Array<{ id: string; urgent: boolean; section: string }>
   const ta = actions.find((a) => a.id === 'complete_training')
@@ -322,7 +322,7 @@ test('getNextActions: complete_training present when training missing', () => {
 })
 
 test('getNextActions: NO complete_training action when all training satisfied', () => {
-  const { getNextActions: ga } = require('../../lib/staff/calculateOnboardingStatus')
+  const ga = getNextActions
   const obs = calculateOnboardingStatus({ ...BASE_STAFF, approvedTrainingCategories: ALL_TRAINING })
   const actions = ga(obs) as Array<{ id: string }>
   const ta = actions.find((a) => a.id === 'complete_training')

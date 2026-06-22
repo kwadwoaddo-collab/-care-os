@@ -7,15 +7,17 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     // Check local storage or system preference
-    const stored = localStorage.getItem('care-os-theme')
-    if (stored === 'dark' || stored === 'light') {
-      setTheme(stored)
-      document.documentElement.classList.toggle('dark', stored === 'dark')
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setTheme(prefersDark ? 'dark' : 'light')
-      document.documentElement.classList.toggle('dark', prefersDark)
-    }
+    setTimeout(() => {
+      const stored = localStorage.getItem('care-os-theme')
+      if (stored === 'dark' || stored === 'light') {
+        setTheme(stored)
+        document.documentElement.classList.toggle('dark', stored === 'dark')
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setTheme(prefersDark ? 'dark' : 'light')
+        document.documentElement.classList.toggle('dark', prefersDark)
+      }
+    }, 0)
   }, [])
 
   const toggleTheme = () => {

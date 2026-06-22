@@ -111,11 +111,11 @@ export default function StaffProfileMobile({
   const [drawerAction, setDrawerAction] = useState<DrawerAction>('upload')
   const [drawerDoc,    setDrawerDoc]    = useState<DrawerDoc | null>(null)
 
-  const openDrawer = useCallback((action: DrawerAction, doc?: DrawerDoc) => {
+  const openDrawer = (action: DrawerAction, doc?: DrawerDoc) => {
     setDrawerAction(action)
     setDrawerDoc(doc ?? null)
     setDrawerOpen(true)
-  }, [])
+  }
   const displayName = [sp.first_name, sp.last_name].filter(Boolean).join(' ') || sp.email || 'Unknown'
   const initials = [sp.first_name?.[0], sp.last_name?.[0]].filter(Boolean).join('').toUpperCase() || 'U'
   const status = statusConfig(sp.status)
@@ -379,6 +379,7 @@ export default function StaffProfileMobile({
               {urgentDocs.slice(0, 2).map((doc) => {
                 const expired = isExpired(doc.expiry_date)
                 const daysLeft = doc.expiry_date
+                  // eslint-disable-next-line react-hooks/purity
                   ? Math.ceil((new Date(doc.expiry_date).getTime() - Date.now()) / 86400000)
                   : null
                 const drawerDocPayload: DrawerDoc = {
