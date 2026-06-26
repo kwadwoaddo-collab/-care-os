@@ -1,0 +1,750 @@
+
+> care-os@0.1.0 test:unit
+> tsx tests/unit/permissions.test.ts && tsx tests/unit/compliance.test.ts && tsx tests/unit/scheduling.test.ts && tsx tests/unit/onboarding.test.ts && tsx tests/unit/training.test.ts && tsx tests/unit/compliance-state.test.ts && tsx tests/unit/notifications.test.ts && tsx tests/unit/rbac.test.ts && tsx tests/unit/access.test.ts
+
+  ✓  super_admin has every permission
+  ✓  company_admin has roles:write
+  ✓  company_admin has settings:write
+  ✓  company_admin has audit_log:read
+  ✓  company_admin has system:read
+  ✓  legacy admin role maps to company_admin permissions
+  ✓  registered_manager has audit_log:read
+  ✓  registered_manager has staff:write
+  ✓  registered_manager has safeguarding:read
+  ✓  registered_manager has shifts:write
+  ✓  registered_manager has incidents:read
+  ✓  registered_manager lacks roles:write
+  ✓  registered_manager lacks system:read
+  ✓  registered_manager lacks settings:write
+  ✓  compliance_manager has compliance:read
+  ✓  compliance_manager has audit_log:read
+  ✓  compliance_manager has documents:upload
+  ✓  compliance_manager lacks shifts:write
+  ✓  compliance_manager lacks roles:write
+  ✓  compliance_manager lacks staff:write
+  ✓  compliance_manager lacks system:read
+  ✓  compliance_manager lacks safeguarding:read
+  ✓  coordinator can read applicants, staff, documents, compliance
+  ✓  coordinator can access operational features
+  ✓  coordinator cannot access audit log
+  ✓  coordinator cannot access system health
+  ✓  coordinator cannot write staff profiles
+  ✓  coordinator cannot manage roles
+  ✓  coordinator lacks safeguarding:read
+  ✓  coordinator cannot write clients
+  ✓  coordinator cannot write care packages
+  ✓  care_worker has no admin permissions
+  ✓  unknown role returns false for every permission
+  ✓  getRolePermissions: super_admin has all permissions
+  ✓  getRolePermissions: care_worker has zero permissions
+  ✓  getRolePermissions: registered_manager > coordinator, < company_admin
+  ✓  getRolePermissions: compliance_manager has compliance, audit, no shifts:write
+  ✓  getRolePermissions: coordinator has fewer than company_admin, no audit/system/roles
+
+  38 tests: 38 passed, 0 failed
+
+  ✓  isExpired: null returns false
+  ✓  isExpired: yesterday returns true
+  ✓  isExpired: tomorrow returns false
+  ✓  isExpired: in 30 days returns false
+  ✓  isExpiringSoon: null returns false
+  ✓  isExpiringSoon: yesterday returns false (already expired)
+  ✓  isExpiringSoon: within 30 days returns true
+  ✓  isExpiringSoon: exactly 30 days returns true
+  ✓  isExpiringSoon: 31 days returns false
+  ✓  expiryUrgency: null returns null
+  ✓  expiryUrgency: past date returns expired
+  ✓  expiryUrgency: within 7 days returns warning
+  ✓  expiryUrgency: within notice window but past warn returns notice
+  ✓  expiryUrgency: beyond notice window returns null
+  ✓  getItemStatus: rejected → rejected
+  ✓  getItemStatus: not_started → missing
+  ✓  getItemStatus: in_progress → in_review
+  ✓  getItemStatus: expired enum → expired
+  ✓  getItemStatus: complete with past expires_at → expired
+  ✓  getItemStatus: complete with expiry soon → expiring_soon
+  ✓  getItemStatus: complete with future expiry → compliant
+  ✓  getItemStatus: complete with no expiry → compliant
+  ✓  getItemStatus: rejected takes priority over expired date
+  ✓  classifyItems: empty array returns zeroes
+  ✓  classifyItems: total equals items length
+  ✓  classifyItems: correctly counts each status
+  ✓  classifyItems: sum of all statuses equals total
+
+  27 tests: 27 passed, 0 failed
+
+
+hasShiftOverlap:
+  ✓  no existing shifts — no overlap
+  ✓  identical shift — overlaps
+  ✓  adjacent shifts (back-to-back) — no overlap
+  ✓  partially overlapping shifts — overlaps
+  ✓  overnight shift — overlaps into next day
+  ✓  overnight shift on different days — no overlap
+
+detectConflicts:
+  ✓  no issues — no conflicts, no warnings
+  ✓  inactive staff — blocks
+  ✓  shift overlap — blocks
+  ✓  unavailable date — blocks
+  ✓  day not available — blocks
+  ✓  expired compliance — blocks
+  ✓  expiring compliance — warns only (does not block)
+  ✓  weekly hours exceeded — warns only
+  ✓  weekly hours not exceeded — no warning
+  ✓  late ack pattern threshold — warns when >= 2
+  ✓  late ack count below threshold — no warning
+  ✓  all property: contains both blocks and warnings
+
+weeklyHoursRisk:
+  ✓  no max hours — always none risk
+  ✓  well under limit — none risk
+  ✓  over 90% but not over limit — close risk
+  ✓  over limit — over risk
+  ✓  overnight shift duration handled correctly
+  ✓  projected hours is accurate
+
+checkLateAcknowledgement:
+  ✓  empty history — no pattern
+  ✓  all acknowledged on time — no pattern
+  ✓  two past shifts with no response — pattern detected
+  ✓  shifts outside window — not counted
+  ✓  one declined — counted correctly
+
+  29 tests: 29 passed, 0 failed
+
+  ✓  empty input → progress 0
+[]
+  ✓  full input → progress 100
+  ✓  partial input → progress between 0 and 100
+  ✓  empty input → ready false
+  ✓  full input → ready true
+  ✓  full input but policy_acknowledged false → not ready
+  ✓  empty input → stage not_started
+  ✓  full input → stage complete
+  ✓  worker tasks done but no HMRC → stage awaiting_review
+  ✓  partial personal details → stage in_progress
+  ✓  sections.policy true when policy_acknowledged
+  ✓  sections.policy false when policy_acknowledged false
+  ✓  sections.policy false when policy_acknowledged null
+  ✓  sections.documents true when all mandatory types uploaded
+  ✓  sections.documents false when mandatory type missing
+  ✓  full input → payroll_ready true
+  ✓  missing NI → payroll_ready false
+  ✓  missing bank → payroll_ready false
+  ✓  getNextActions: empty input returns non-empty list
+  ✓  getNextActions: full input returns empty list
+  ✓  getNextActions: policy not acknowledged → acknowledge_policy action present
+  ✓  getNextActions: urgent actions appear for missing docs
+  ✓  missing array contains Policy acknowledgement when not acknowledged
+  ✓  missing array is empty when fully complete
+  ✓  expandDocumentTypes: passport expands to id and right_to_work
+  ✓  expandDocumentTypes: id does not expand to passport or right_to_work
+  ✓  expandDocumentTypes: right_to_work does not expand to id or passport
+  ✓  expandDocumentTypes: empty array returns empty set
+  ✓  passport satisfies both id and right_to_work document slots
+  ✓  passport alone does not satisfy dbs or proof_of_address
+  ✓  sections.documents false when only id uploaded (no rtw, dbs, poa)
+  ✓  conversion: national_insurance slug maps to ni_number column
+  ✓  conversion: town_city slug maps to city column
+  ✓  conversion: date_of_birth slug maps to date_of_birth column
+  ✓  conversion: emergency_contact_name slug maps correctly
+  ✓  conversion: all mapped columns are recognised staff_profile fields
+  ✓  conversion: applicant form data populates staff profile - full path
+
+  37 tests: 37 passed, 0 failed
+
+
+  getRequiredTraining
+
+  ✓  care_worker has 13 required categories
+  ✓  care_worker includes manual_handling
+  ✓  care_worker includes safeguarding
+  ✓  care_worker includes basic_life_support
+  ✓  null job_role falls back to DEFAULT_CARE_TRAINING
+  ✓  unrecognised role falls back to DEFAULT_CARE_TRAINING
+  ✓  senior_care_worker has 13 categories (includes medication)
+
+  calculateCompliance — training resolution
+
+  ✓  no documents → all 13 training categories missing
+  ✓  pending training cert does NOT satisfy compliance
+  ✓  rejected training cert does NOT satisfy compliance
+  ✓  approved training cert WITH category satisfies compliance
+  ✓  approved cert without training_category does NOT satisfy any training
+  ✓  approved cert with expired expiry_date → moves to expiredTraining
+  ✓  approved cert with future expiry → satisfied
+  ✓  training_certificate with valid category and future expiry → satisfied
+  ✓  two approved certs for same category — one expired, one valid → satisfied
+  ✓  all 13 mandatory certs approved → compliant=true
+  ✓  compliance percentage accounts for missing training
+  ✓  compliance percentage increases when training approved
+
+  calculateOnboardingStatus — training hard gate
+
+  ✓  care_worker with no training → training section false
+  ✓  care_worker with no training → ready is false (hard gate)
+  ✓  care_worker with no training → missing includes training items
+  ✓  care_worker with partial training (3 of 13) → still not ready
+  ✓  care_worker with ALL 13 training categories → training section true
+  ✓  care_worker with ALL training + all other fields → ready true
+  ✓  getNextActions: complete_training present when training missing
+  ✓  getNextActions: NO complete_training action when all training satisfied
+  ✓  role with no job_role → DEFAULT_CARE_TRAINING still required
+
+  28 tests: 28 passed, 0 failed
+
+
+  getExpiryBand
+
+  ✓  null → ok
+  ✓  past date → expired
+  ✓  within 7 days → critical
+  ✓  within 14 days but beyond critical → warning
+  ✓  within 30 days but beyond warning → notice
+  ✓  beyond notice window → ok
+  ✓  far future → ok
+
+  getDaysUntilExpiry
+
+  ✓  today → ~0 (between -1 and 1)
+  ✓  tomorrow → 1
+  ✓  7 days from now → 7
+  ✓  yesterday → -1
+
+  worstBand
+
+  ✓  empty array → ok
+  ✓  all null → ok
+  ✓  mix of ok and notice → notice
+  ✓  mix includes critical → critical
+  ✓  has expired → expired
+
+  getComplianceState
+
+  ✓  compliant + no expiring → compliant
+  ✓  compliant + expiring soon → warning
+  ✓  non-compliant + no training gap → non_compliant
+  ✓  non-compliant + has training gap → blocked
+  ✓  non-compliant + expiring + training gap → blocked (training gap wins)
+
+  calculateCompliance — complianceState field
+
+  ✓  no docs → state is blocked (missing training + missing docs → training gap)
+  ✓  all docs approved, nothing expiring → state is compliant
+  ✓  all docs approved, one expiring soon → state is warning
+  ✓  missing one required doc (passport) only → state is non_compliant
+  ✓  missing one required training → state is blocked
+
+  Renewal workflow
+
+  ✓  superseded cert does NOT satisfy compliance
+  ✓  new cert approved + old cert superseded → category satisfied
+  ✓  renewal with new cert (no expiry set) → perpetually valid
+
+  29 tests: 29 passed, 0 failed
+
+
+──────────────────────────────────────────
+  Payload type discrimination
+──────────────────────────────────────────
+  ✅  Worker payload has recipient=worker
+  ✅  Worker payload has staffProfileId
+  ✅  Worker payload has correct eventType
+  ✅  Worker payload has non-empty title
+  ✅  Worker payload action_url is string
+  ✅  Admin payload has recipient=admin
+  ✅  Admin payload has no staffProfileId
+  ✅  Admin payload has correct eventType
+  ✅  Admin payload carries actorId (worker who acted)
+
+──────────────────────────────────────────
+  InAppEventType coverage
+──────────────────────────────────────────
+  ✅  Worker event types defined (got 7)
+  ✅  Admin event types defined (got 8)
+  ✅  Worker event type shift_offer is valid
+  ✅  Worker event type shift_assigned is valid
+  ✅  Worker event type shift_cancelled is valid
+  ✅  Worker event type document_rejected is valid
+  ✅  Worker event type onboarding_reminder is valid
+  ✅  Worker event type policy_required is valid
+  ✅  Worker event type compliance_expiring is valid
+  ✅  Admin event type shift_accepted is valid
+  ✅  Admin event type shift_declined is valid
+  ✅  Admin event type running_late is valid
+  ✅  Admin event type shift_completed is valid
+  ✅  Admin event type visit_note is valid
+  ✅  Admin event type incident_created is valid
+  ✅  Admin event type compliance_alert is valid
+  ✅  Admin event type onboarding_completed is valid
+
+──────────────────────────────────────────
+  Dedupe window logic
+──────────────────────────────────────────
+  ✅  Notification just now is within dedupe window
+  ✅  Notification 1h ago is within dedupe window
+  ✅  Notification 23h ago is within dedupe window
+  ✅  Notification 25h ago is outside dedupe window
+  ✅  Notification 48h ago is outside dedupe window
+  ✅  Unread recent duplicate → skip
+  ✅  Unread 23h old → skip
+  ✅  Unread 2-day-old → do NOT skip (window expired)
+  ✅  Already-read → do NOT skip
+  ✅  No existing notification → do NOT skip
+
+──────────────────────────────────────────
+  Shift acceptance notification payload
+──────────────────────────────────────────
+  ✅  Shift accepted → admin recipient
+  ✅  Shift accepted event type correct
+  ✅  Title mentions accepted
+  ✅  Deep-links to shift ops
+  ✅  actorId is the worker who accepted
+  ✅  entityId is the shift ID for dedupe
+
+──────────────────────────────────────────
+  Shift declined notification payload
+──────────────────────────────────────────
+  ✅  Correct event type for decline
+  ✅  Reason included in message
+
+──────────────────────────────────────────
+  Worker onboarding reminder notification payload
+──────────────────────────────────────────
+  ✅  Reminder goes to worker
+  ✅  Correct event type
+  ✅  Deep-links to onboarding
+  ✅  Message mentions required items
+
+──────────────────────────────────────────
+  Compliance expiring worker notification payload
+──────────────────────────────────────────
+  ✅  Correct event type
+  ✅  Deep-links to documents
+  ✅  Message mentions expiring
+
+──────────────────────────────────────────
+  Document rejected worker notification payload
+──────────────────────────────────────────
+  ✅  Correct event type
+  ✅  Title mentions rejection
+  ✅  Deep-links to documents
+
+──────────────────────────────────────────
+  Incident created admin notification payload
+──────────────────────────────────────────
+  ✅  Correct event type
+  ✅  Incident alert goes to admins
+  ✅  Deep-links to specific incident
+  ✅  Message includes severity
+
+──────────────────────────────────────────
+  Visit note submitted admin notification payload
+──────────────────────────────────────────
+  ✅  Correct event type
+  ✅  Visit note alert goes to admins
+  ✅  Deep-links to visit notes
+
+──────────────────────────────────────────
+  Title length enforcement
+──────────────────────────────────────────
+  ✅  Title truncated to 200 chars
+  ✅  Long titles are truncated by helper
+
+──────────────────────────────────────────
+  Deep-link action_url rules
+──────────────────────────────────────────
+  ✅  shift_offer → deep-link starts with /
+  ✅  shift_offer → worker notification links to worker portal
+  ✅  shift_assigned → deep-link starts with /
+  ✅  shift_assigned → worker notification links to worker portal
+  ✅  shift_cancelled → deep-link starts with /
+  ✅  shift_cancelled → worker notification links to worker portal
+  ✅  document_rejected → deep-link starts with /
+  ✅  document_rejected → worker notification links to worker portal
+  ✅  onboarding_reminder → deep-link starts with /
+  ✅  onboarding_reminder → worker notification links to worker portal
+  ✅  compliance_expiring → deep-link starts with /
+  ✅  compliance_expiring → worker notification links to worker portal
+  ✅  shift_accepted → deep-link starts with /
+  ✅  shift_accepted → admin notification links to admin portal
+  ✅  shift_declined → deep-link starts with /
+  ✅  shift_declined → admin notification links to admin portal
+  ✅  running_late → deep-link starts with /
+  ✅  running_late → admin notification links to admin portal
+  ✅  shift_completed → deep-link starts with /
+  ✅  shift_completed → admin notification links to admin portal
+  ✅  visit_note → deep-link starts with /
+  ✅  visit_note → admin notification links to admin portal
+
+══════════════════════════════════════════
+  Results: 85 passed, 0 failed
+══════════════════════════════════════════
+
+
+──────────────────────────────────────────
+  Permission matrix — roles:write
+──────────────────────────────────────────
+  ✅  super_admin has roles:write
+  ✅  company_admin has roles:write
+  ✅  registered_manager lacks roles:write
+  ✅  compliance_manager lacks roles:write
+  ✅  coordinator lacks roles:write
+  ✅  care_worker lacks roles:write
+
+──────────────────────────────────────────
+  Permission matrix — audit_log:read
+──────────────────────────────────────────
+  ✅  super_admin has audit_log:read
+  ✅  company_admin has audit_log:read
+  ✅  registered_manager has audit_log:read
+  ✅  compliance_manager has audit_log:read
+  ✅  coordinator lacks audit_log:read
+  ✅  care_worker lacks audit_log:read
+
+──────────────────────────────────────────
+  Permission matrix — staff:write
+──────────────────────────────────────────
+  ✅  super_admin has staff:write
+  ✅  company_admin has staff:write
+  ✅  registered_manager has staff:write
+  ✅  compliance_manager lacks staff:write
+  ✅  coordinator lacks staff:write
+  ✅  care_worker lacks staff:write
+
+──────────────────────────────────────────
+  Permission matrix — compliance:read
+──────────────────────────────────────────
+  ✅  super_admin has compliance:read
+  ✅  company_admin has compliance:read
+  ✅  registered_manager has compliance:read
+  ✅  compliance_manager has compliance:read
+  ✅  coordinator has compliance:read
+  ✅  care_worker lacks compliance:read
+
+──────────────────────────────────────────
+  Permission matrix — safeguarding:read
+──────────────────────────────────────────
+  ✅  super_admin has safeguarding:read
+  ✅  company_admin has safeguarding:read
+  ✅  registered_manager has safeguarding:read
+  ✅  compliance_manager lacks safeguarding:read
+  ✅  coordinator lacks safeguarding:read
+  ✅  care_worker lacks safeguarding:read
+
+──────────────────────────────────────────
+  Permission matrix — shifts:write
+──────────────────────────────────────────
+  ✅  super_admin has shifts:write
+  ✅  company_admin has shifts:write
+  ✅  registered_manager has shifts:write
+  ✅  compliance_manager lacks shifts:write
+  ✅  coordinator has shifts:write
+  ✅  care_worker lacks shifts:write
+
+──────────────────────────────────────────
+  Permission matrix — system:read
+──────────────────────────────────────────
+  ✅  super_admin has system:read
+  ✅  company_admin has system:read
+  ✅  registered_manager lacks system:read
+  ✅  compliance_manager lacks system:read
+  ✅  coordinator lacks system:read
+  ✅  care_worker lacks system:read
+
+──────────────────────────────────────────
+  Permission matrix — settings:write
+──────────────────────────────────────────
+  ✅  super_admin has settings:write
+  ✅  company_admin has settings:write
+  ✅  registered_manager lacks settings:write
+  ✅  compliance_manager lacks settings:write
+  ✅  coordinator lacks settings:write
+  ✅  care_worker lacks settings:write
+
+──────────────────────────────────────────
+  Permission matrix — care_worker has NO permissions
+──────────────────────────────────────────
+  ✅  care_worker lacks staff:read
+  ✅  care_worker lacks compliance:read
+  ✅  care_worker lacks shifts:read
+  ✅  care_worker lacks audit_log:read
+  ✅  care_worker lacks roles:write
+
+──────────────────────────────────────────
+  Capability helpers — canManageRoles
+──────────────────────────────────────────
+  ✅  company_admin can manage roles
+  ✅  super_admin can manage roles
+  ✅  registered_manager cannot manage roles
+  ✅  compliance_manager cannot manage roles
+  ✅  coordinator cannot manage roles
+  ✅  care_worker cannot manage roles
+
+──────────────────────────────────────────
+  Capability helpers — canApproveCompliance
+──────────────────────────────────────────
+  ✅  company_admin can approve compliance
+  ✅  registered_manager can approve compliance
+  ✅  compliance_manager cannot approve (no staff:write)
+  ✅  coordinator cannot approve compliance
+
+──────────────────────────────────────────
+  Capability helpers — canManageShifts
+──────────────────────────────────────────
+  ✅  company_admin can manage shifts
+  ✅  registered_manager can manage shifts
+  ✅  compliance_manager cannot manage shifts
+  ✅  coordinator can manage shifts
+  ✅  care_worker cannot manage shifts
+
+──────────────────────────────────────────
+  Capability helpers — canViewIncidents
+──────────────────────────────────────────
+  ✅  company_admin can view incidents
+  ✅  registered_manager can view incidents
+  ✅  compliance_manager cannot view incidents
+  ✅  coordinator can view incidents
+  ✅  care_worker cannot view incidents
+
+──────────────────────────────────────────
+  Capability helpers — canViewSafeguarding
+──────────────────────────────────────────
+  ✅  super_admin has safeguarding access
+  ✅  company_admin has safeguarding access
+  ✅  registered_manager has safeguarding access
+  ✅  compliance_manager lacks safeguarding access
+  ✅  coordinator lacks safeguarding access
+
+──────────────────────────────────────────
+  Capability helpers — canViewAuditLogs
+──────────────────────────────────────────
+  ✅  company_admin can view audit logs
+  ✅  registered_manager can view audit logs
+  ✅  compliance_manager can view audit logs
+  ✅  coordinator cannot view audit logs
+
+──────────────────────────────────────────
+  Capability helpers — canManageSettings
+──────────────────────────────────────────
+  ✅  company_admin can manage settings
+  ✅  registered_manager cannot manage settings
+  ✅  coordinator cannot manage settings
+
+──────────────────────────────────────────
+  ASSIGNABLE_ROLES — super_admin exclusion
+──────────────────────────────────────────
+  ✅  super_admin is NOT in ASSIGNABLE_ROLES
+  ✅  company_admin IS assignable
+  ✅  registered_manager IS assignable
+  ✅  compliance_manager IS assignable
+  ✅  coordinator IS assignable
+  ✅  care_worker IS assignable
+  ✅  ASSIGNABLE_ROLES has exactly 5 entries (got 5)
+
+──────────────────────────────────────────
+  getAssignableRoles — per-caller filtering
+──────────────────────────────────────────
+  ✅  company_admin cannot assign super_admin
+  ✅  company_admin cannot assign company_admin (same level)
+  ✅  company_admin can assign registered_manager
+  ✅  company_admin can assign coordinator
+  ✅  company_admin can assign care_worker
+  ✅  registered_manager cannot assign super_admin
+  ✅  registered_manager cannot assign company_admin
+  ✅  registered_manager cannot assign self-level
+  ✅  registered_manager can assign compliance_manager
+  ✅  registered_manager can assign coordinator
+  ✅  registered_manager can assign care_worker
+  ✅  coordinator can assign care_worker
+  ✅  coordinator cannot assign same level
+  ✅  coordinator cannot assign compliance_manager
+  ✅  care_worker has no assignable roles
+
+──────────────────────────────────────────
+  canAssignRole — privilege escalation guards
+──────────────────────────────────────────
+  ✅  company_admin → coordinator allowed
+  ✅  company_admin → care_worker allowed
+  ✅  company_admin → registered_manager allowed
+  ✅  company_admin → compliance_manager allowed
+  ✅  super_admin → coordinator allowed
+  ✅  super_admin → company_admin allowed
+  ✅  registered_manager cannot assign (no roles:write)
+  ✅  registered_manager cannot assign (no roles:write)
+  ✅  registered_manager cannot assign company_admin
+  ✅  coordinator cannot assign company_admin
+  ✅  coordinator cannot assign registered_manager
+  ✅  coordinator cannot assign compliance_manager
+  ✅  compliance_manager cannot assign company_admin
+  ✅  registered_manager cannot assign company_admin
+  ✅  care_worker cannot assign anyone
+  ✅  company_admin cannot assign super_admin
+  ✅  super_admin cannot assign super_admin
+
+──────────────────────────────────────────
+  Last-admin protection logic
+──────────────────────────────────────────
+  ✅  Removing the only company_admin → blocked
+  ✅  Removing when 2 admins exist → allowed
+  ✅  Removing non-admin does not trigger last-admin check
+  ✅  Assigning same company_admin role → no change, no block
+
+──────────────────────────────────────────
+  isOperationallyActive
+──────────────────────────────────────────
+  ✅  active staff is operationally active
+  ✅  pre_employment staff is active (onboarding)
+  ✅  suspended staff is NOT operationally active
+  ✅  terminated staff is NOT operationally active
+
+──────────────────────────────────────────
+  canPerformOperations (role + status combined)
+──────────────────────────────────────────
+  ✅  active coordinator can perform operations
+  ✅  active registered_manager can perform operations
+  ✅  suspended coordinator cannot perform operations
+  ✅  terminated coordinator cannot perform operations
+  ✅  active compliance_manager cannot perform operations (no shifts:write)
+  ✅  active care_worker cannot perform operations
+
+──────────────────────────────────────────
+  hierarchyLevel ordering
+──────────────────────────────────────────
+  ✅  super_admin > company_admin
+  ✅  company_admin > registered_manager
+  ✅  registered_manager > compliance_manager
+  ✅  compliance_manager > coordinator
+  ✅  coordinator > care_worker
+  ✅  care_worker > unknown/empty
+  ✅  unknown role has level 0
+
+──────────────────────────────────────────
+  hasRole — minimum level checks
+──────────────────────────────────────────
+  ✅  super_admin satisfies company_admin requirement
+  ✅  company_admin satisfies registered_manager requirement
+  ✅  company_admin satisfies coordinator requirement
+  ✅  coordinator does NOT satisfy registered_manager
+  ✅  coordinator does NOT satisfy company_admin
+  ✅  care_worker does NOT satisfy coordinator
+  ✅  registered_manager satisfies compliance_manager
+  ✅  compliance_manager does NOT satisfy registered_manager
+
+──────────────────────────────────────────
+  normaliseRole — legacy aliases
+──────────────────────────────────────────
+  ✅  admin → company_admin
+  ✅  staff → care_worker
+  ✅  company_admin unchanged
+  ✅  coordinator unchanged
+  ✅  super_admin unchanged
+  ✅  legacy admin can manage roles
+  ✅  legacy admin can view audit logs
+
+──────────────────────────────────────────
+  isAdminRole
+──────────────────────────────────────────
+  ✅  super_admin is admin role
+  ✅  company_admin is admin role
+  ✅  registered_manager is admin role
+  ✅  compliance_manager is admin role
+  ✅  coordinator is admin role
+  ✅  care_worker is NOT admin role
+  ✅  legacy admin alias is admin role
+
+──────────────────────────────────────────
+  Tenant isolation logic
+──────────────────────────────────────────
+  ✅  Same company → tenant check passes
+  ✅  Different company → tenant check fails
+  ✅  Empty company_id → tenant check fails
+  ✅  company_admin blocked for cross-company change
+  ✅  super_admin blocked for cross-company change (tenant isolation enforced at API level)
+  ✅  company_admin allowed for same-company change
+
+══════════════════════════════════════════
+  Results: 173 passed, 0 failed
+══════════════════════════════════════════
+
+
+──────────────────────────────────────────
+  getAccessState — all 4 combinations
+──────────────────────────────────────────
+  ✅  no token, no profile_id → no_access
+  ✅  token set, no profile_id → worker_only
+  ✅  no token, profile_id set → admin_only
+  ✅  both set → full_access
+
+──────────────────────────────────────────
+  requiresAdminAccount — per role
+──────────────────────────────────────────
+  ✅  care_worker does NOT require admin account
+  ✅  legacy "staff" alias does NOT require admin account
+  ✅  coordinator requires admin account
+  ✅  compliance_manager requires admin account
+  ✅  registered_manager requires admin account
+  ✅  company_admin requires admin account
+  ✅  legacy "admin" alias requires admin account
+  ✅  super_admin requires admin account
+  ✅  unknown role defaults to requiring admin account
+  ✅  empty role defaults to requiring admin account
+
+──────────────────────────────────────────
+  getAccessStateMessage — no_access
+──────────────────────────────────────────
+  ✅  has non-empty status
+  ✅  has description
+  ✅  shows create admin button
+  ✅  description mentions portal/access
+
+──────────────────────────────────────────
+  getAccessStateMessage — worker_only
+──────────────────────────────────────────
+  ✅  has non-empty status
+  ✅  shows create admin button
+  ✅  description mentions worker or operational role
+
+──────────────────────────────────────────
+  getAccessStateMessage — admin_only
+──────────────────────────────────────────
+  ✅  does NOT show create admin button
+  ✅  has non-empty status
+
+──────────────────────────────────────────
+  getAccessStateMessage — full_access
+──────────────────────────────────────────
+  ✅  does NOT show create admin button
+  ✅  has non-empty status
+
+──────────────────────────────────────────
+  Integration: worker portal login does NOT create admin access
+──────────────────────────────────────────
+  ✅  care_worker with token but no profile → worker_only state
+  ✅  worker_only state shows "Create Admin Portal Access" button
+  ✅  coordinator requires admin account before role assignment
+  ✅  coordinator role assignment blocked for worker_only staff
+
+──────────────────────────────────────────
+  Integration: admin account created enables role management
+──────────────────────────────────────────
+  ✅  after admin account creation → full_access state
+  ✅  full_access does NOT show create admin button (already created)
+
+──────────────────────────────────────────
+  requiresAdminAccount — exhaustive role coverage
+──────────────────────────────────────────
+  ✅  care_worker: does NOT require admin account
+  ✅  staff: does NOT require admin account
+  ✅  coordinator: DOES require admin account
+  ✅  compliance_manager: DOES require admin account
+  ✅  registered_manager: DOES require admin account
+  ✅  company_admin: DOES require admin account
+  ✅  super_admin: DOES require admin account
+  ✅  admin: DOES require admin account
+
+══════════════════════════════════════════
+  Results: 39 passed, 0 failed
+══════════════════════════════════════════
+

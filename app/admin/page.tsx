@@ -101,6 +101,7 @@ export default async function AdminDashboard() {
   }
 
   const today = new Date().toISOString().slice(0, 10)
+  // eslint-disable-next-line react-hooks/purity
   const in7days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   // All queries fire in parallel — no waterfalls

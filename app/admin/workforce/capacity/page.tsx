@@ -43,7 +43,9 @@ export default async function WorkforceCapacityPage() {
   if (!canManageStaff(role)) return <AccessDenied />
 
   const today     = new Date().toISOString().slice(0, 10)
+  // eslint-disable-next-line react-hooks/purity
   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+  // eslint-disable-next-line react-hooks/purity
   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
 
   const [

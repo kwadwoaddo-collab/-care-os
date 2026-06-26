@@ -1,6 +1,7 @@
 import { requireAdmin }         from '@/lib/auth/requireAdmin'
 import { getVerificationQueue } from '@/lib/documents/verification'
 import VerificationQueueClient  from './VerificationQueueClient'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,20 +22,20 @@ export default async function DocumentVerificationPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <a
+          <Link
             href="/admin/documents/routing"
             className="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">route</span>
             Routing Rules
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/staff"
             className="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 transition-colors"
           >
             <span className="material-symbols-outlined text-[16px]">arrow_back</span>
             Back to Staff
-          </a>
+          </Link>
         </div>
       </div>
 

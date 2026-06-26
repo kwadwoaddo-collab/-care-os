@@ -14,7 +14,7 @@ export default function AdminError({ error, reset }: Props) {
   // Generate a stable incident reference from digest or timestamp
   const incidentRef = error.digest
     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
-    : `ERR-${Date.now().toString(36).toUpperCase()}`
+    : `ERR-UNKNOWN`
 
   useEffect(() => {
     console.error('[admin/error]', {

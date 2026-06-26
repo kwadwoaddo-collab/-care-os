@@ -1,0 +1,471 @@
+
+> care-os@0.1.0 lint
+> eslint
+
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/page.tsx
+  66:15  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/page.tsx:66:15
+  64 |   if (!orch)   return null
+  65 |
+> 66 |   const now = Date.now()
+     |               ^^^^^^^^^^ Cannot call impure function
+  67 |   const aging = {
+  68 |     over24h: orch.priorities.filter((p) => {
+  69 |       const h = (now - new Date(p.createdAt).getTime()) / 3600000  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/admin/applicants/[id]/DocumentsSection.tsx
+  64:10  warning  'expiryStatus' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/applicants/[id]/page.tsx
+  9:27   warning  'getRequiredDocuments' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  9:49   warning  'getComplianceTemplate' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  9:110  warning  'ApplicationRole' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  9:132  warning  'FormSection' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/care-packages/page.tsx
+  215:21  warning  'statusCls' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/compliance/ComplianceDashboardClient.tsx
+    8:10  warning  'COMPLIANCE_STATE_CLS' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+    8:32  warning  'COMPLIANCE_STATE_LABEL' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+    9:10  warning  'BAND_CLS' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+    9:25  warning  'ExpiryBand' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  161:10  warning  'isPending' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/documents/routing/page.tsx
+  38:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  52:9  error    Do not use an `<a>` element to navigate to `/admin/staff/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/kwadwo/Projects/care-os/app/admin/documents/verification/page.tsx
+  31:11  error  Do not use an `<a>` element to navigate to `/admin/staff/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/kwadwo/Projects/care-os/app/admin/error.tsx
+  12:9   warning  'instanceId' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  17:14  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/error.tsx:17:14
+  15 |   const incidentRef = error.digest
+  16 |     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+> 17 |     : `ERR-${Date.now().toString(36).toUpperCase()}`
+     |              ^^^^^^^^^^ Cannot call impure function
+  18 |
+  19 |   useEffect(() => {
+  20 |     console.error('[admin/error]', {  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/admin/incidents/page.tsx
+  2:8  warning  'CreateIncidentButton' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/layout.tsx
+   1:10  warning  'ENABLE_TIMESHEETS' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+   5:3   warning  'canViewCompliance' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+   6:3   warning  'canViewAuditLogs' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+   7:3   warning  'canViewNotifications' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   8:3   warning  'canViewShifts' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+   9:3   warning  'canViewIncidents' is defined but never used. Allowed unused vars must match /^_/u                     @typescript-eslint/no-unused-vars
+  10:3   warning  'canManageStaff' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  11:3   warning  'canViewSystemHealth' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  12:3   warning  'canManageRoles' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  14:10  warning  'can' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+  14:20  warning  'Permission' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+  38:7   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/app/admin/loading.tsx
+  10:10  warning  'SkeletonCard' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/pipeline/OnboardingPipelineClient.tsx
+   73:34  warning  'forecast' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  127:15  warning  'cls' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/pipeline/page.tsx
+  10:3  warning  'WorkerReadiness' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/page.tsx
+    8:26  warning  'settle' is defined but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  104:28  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/page.tsx:104:28
+  102 |
+  103 |   const today = new Date().toISOString().slice(0, 10)
+> 104 |   const in7days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      |                            ^^^^^^^^^^ Cannot call impure function
+  105 |
+  106 |   // All queries fire in parallel — no waterfalls
+  107 |   const results = await Promise.allSettled([  react-hooks/purity
+  178:9   warning  'onboarding' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/operations/page.tsx
+  6:32  warning  'OperationsSummary' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  7:10  warning  'adminFetch' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/page.tsx
+  103:9  warning  'upcomingCount' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/ComplianceTimeline.tsx
+  101:29  warning  'i' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/DocumentRepositoryTab.tsx
+  149:30  warning  'staffProfileId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  241:23  warning  'folderId' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  463:65  warning  'companyId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/RecruitmentFileTab.tsx
+  10:3  warning  'ApplicationSourceSection' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/RoleManagementPanel.tsx
+  8:15  warning  'Role' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  9:8   warning  'AdminAccessButton' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/StaffStatusControl.tsx
+  55:3  warning  'pendingStatus' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/page.tsx
+    8:8   warning  'StaffDocumentUpload' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+    9:8   warning  'StaffStatusControl' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+   10:8   warning  'ComplianceReviewSection' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+   11:8   warning  'StaffAvailabilitySection' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+   12:8   warning  'PortalInviteButton' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+   13:8   warning  'EditStaffProfileForm' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   14:8   warning  'EditHrDetailsForm' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+   15:8   warning  'OnboardingChecklist' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   16:8   warning  'OnboardingTimeline' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+   17:8   warning  'DocumentApprovalButton' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+   19:10  warning  'calculateOnboardingStatus' is defined but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+   35:10  warning  'can' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+  237:10  warning  'formatDate' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+  244:10  warning  'formatBytes' is defined but never used. Allowed unused vars must match /^_/u                          @typescript-eslint/no-unused-vars
+  267:7   warning  'STATUS_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  275:7   warning  'SHIFT_STATUS_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  283:7   warning  'TIMESHEET_STATUS_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  291:7   warning  'INCIDENT_SEVERITY_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  298:7   warning  'INCIDENT_STATUS_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  306:7   warning  'DOC_STATUS_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  313:10  warning  'docExpiryStatus' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+  320:10  warning  'docExpiryLabel' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  330:7   warning  'COMPLIANCE_CLS' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  338:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  347:10  warning  'Field' is defined but never used. Allowed unused vars must match /^_/u                                @typescript-eslint/no-unused-vars
+  356:10  warning  'SectionBox' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+  369:10  warning  'ComplianceCard' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  369:38  warning  'jobRole' is defined but never used. Allowed unused args must match /^_/u                              @typescript-eslint/no-unused-vars
+  489:10  warning  'expiryRowCls' is defined but never used. Allowed unused vars must match /^_/u                         @typescript-eslint/no-unused-vars
+  496:10  warning  'expiryTextCls' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+  539:30  warning  'applicant' is assigned a value but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+  539:52  warning  'compliance_items' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  551:9   warning  'hrReadiness' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  617:9   warning  'displayName' is assigned a value but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  666:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  668:11  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/DocumentTable.tsx
+  46:70  warning  'staffProfileId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/DocumentWorkspace.tsx
+   68:25  warning  'folderId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  330:7   warning  Expected an assignment or function call and instead saw an expression       @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/FolderTree.tsx
+   30:3   warning  'companyId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  145:3   warning  'companyId' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+  306:85  warning  'staffProfileId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/PreviewDrawer.tsx
+    3:20  warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+  230:65  warning  'onStatusChange' is defined but never used. Allowed unused args must match /^_/u                        @typescript-eslint/no-unused-vars
+  235:6   warning  React Hook useEffect has a missing dependency: 'doc'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/helpers.ts
+  1:34  warning  'FilterKey' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/system/tenants/[id]/setup/page.tsx
+  50:9  warning  'router' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/timesheets/page.tsx
+  32:9  warning  'pendingCount' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/visits/anomalies/page.tsx
+  4:8  warning  'Link' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/WorkforceCapacityClient.tsx
+    3:23  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+    9:3   warning  'ExpiryCluster' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   10:3   warning  'UnderstaffedDay' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  378:21  warning  'atRiskTotal' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx
+  46:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx:46:30
+  44 |
+  45 |   const today     = new Date().toISOString().slice(0, 10)
+> 46 |   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+     |                              ^^^^^^^^^^ Cannot call impure function
+  47 |   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
+  48 |
+  49 |   const [                   react-hooks/purity
+  47:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx:47:30
+  45 |   const today     = new Date().toISOString().slice(0, 10)
+  46 |   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+> 47 |   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
+     |                              ^^^^^^^^^^ Cannot call impure function
+  48 |
+  49 |   const [
+  50 |     staffResult,  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/api/admin/analytics/safeguarding/route.ts
+  101:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  122:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/app/api/admin/communications/triggers/route.ts
+  63:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/app/api/admin/documents/bulk/route.ts
+  56:7  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  71:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  79:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/app/api/admin/incidents/route.ts
+  135:5  warning  'company_id' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/interviews/route.ts
+  36:11  warning  'companyId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/notifications/send-shift-reminders/route.ts
+  87:13  warning  'subject' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/operations/summary/route.ts
+  164:9  warning  'uncoveredSummary' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/scheduling/staffing-risk/route.ts
+  55:9  warning  'in14days' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/[id]/route.ts
+  8:7  warning  'ALLOWED_TYPES' is assigned a value but only used as a type. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/[id]/safety-check/route.ts
+  167:9  warning  'today' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  183:9  warning  'windowShifts' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/metrics/route.ts
+  17:10  warning  'shiftDurationMinutes' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  27:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/staff/[id]/admin-access/route.ts
+  7:10  warning  'normaliseRole' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/staff/[id]/role/route.ts
+  14:3  warning  'hierarchyLevel' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/system/jobs/route.ts
+  7:27  warning  'executeJob' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/visits/route.ts
+  82:5  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/app/api/admin/workforce/capacity/route.ts
+  108:9  warning  'in30days' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/cron/compliance-sweep/route.ts
+   6:26  warning  'staffRiskLevel' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  21:11  warning  'SweepStaffResult' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/cron/lifecycle-automation/route.ts
+  3:36  warning  'summariseReadiness' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/worker/onboarding/requirements/route.ts
+  66:9  warning  'now' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/worker/visits/[shiftId]/checklist/route.ts
+  70:11  warning  'shiftId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/global-error.tsx
+  13:9  warning  'instanceId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/layout.tsx
+  48:9  warning  Block is not recommended. See: https://nextjs.org/docs/messages/google-font-display                                                                              @next/next/google-font-display
+  48:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+/Users/kwadwo/Projects/care-os/app/portal/apply/ApplyContent.tsx
+  496:10  warning  'CheckItem' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/worker/onboarding/page.tsx
+  368:9  warning  'trainingDone' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/AdminDashboardDesktop.tsx
+  182:29  warning  'activeIncidents' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/AdminSidebar.tsx
+  6:10  warning  'ENABLE_TIMESHEETS' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/ApplicationFormSummary.tsx
+  1:8   warning  'React' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  2:10  warning  'getRoleCategory' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  2:27  warning  'getRequiredDocuments' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  2:49  warning  'getComplianceTemplate' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:72  warning  'CATEGORY_META' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  3:15  warning  'Document' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/AuditLogMobile.tsx
+   34:9   warning  'domain' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  119:30  warning  'index' is defined but never used. Allowed unused args must match /^_/u            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx
+   77:34  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:77:34
+  75 |
+  76 |   // Default expiry: 7 days from now
+> 77 |   const defaultExpiry = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+     |                                  ^^^^^^^^^^ Cannot call impure function
+  78 |   const maxExpiry     = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+  79 |
+  80 |   async function submit(e: React.FormEvent) {                                                                                                                            react-hooks/purity
+   78:34  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:78:34
+  76 |   // Default expiry: 7 days from now
+  77 |   const defaultExpiry = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+> 78 |   const maxExpiry     = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+     |                                  ^^^^^^^^^^ Cannot call impure function
+  79 |
+  80 |   async function submit(e: React.FormEvent) {
+  81 |     e.preventDefault()                                                                                                     react-hooks/purity
+  140:25  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:140:25
+  138 |           type="date"
+  139 |           value={expiresAt || defaultExpiry}
+> 140 |           min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+      |                         ^^^^^^^^^^ Cannot call impure function
+  141 |           max={maxExpiry}
+  142 |           onChange={(e) => setExpires(e.target.value)}
+  143 |           className="rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-surface-container-lowest"  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/components/admin/IncidentIntelligenceDashboard.tsx
+  52:10  warning  'formatDate' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/OperationsControlCenter.tsx
+   94:31  warning  'defaultOpen' is assigned a value but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  662:12  warning  'focusMode' is defined but never used. Allowed unused args must match /^_/u             @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/OperationsPriorityQueue.tsx
+  108:3  warning  'value' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/StaffProfileDesktop.tsx
+  3:20  warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/StaffProfileMobile.tsx
+  3:20  warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/TopPrioritiesSection.tsx
+  10:3  warning  'RecommendedAction' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  51:7  warning  'SEVERITY_ORDER' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/shared/AdminNotificationBell.tsx
+  68:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Users/kwadwo/Projects/care-os/components/shared/NotificationBell.tsx
+  71:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/set-state-in-effect')
+
+/Users/kwadwo/Projects/care-os/lib/compliance/explainability.ts
+   14:30  warning  'getExpiryBand' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  246:11  warning  'expiry' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/documents/application-pdf.ts
+  4:10  warning  'routeDocument' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/documents/pdf-generator.ts
+  152:10  warning  'formatValue' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/notifications/templates/complianceExpiring.ts
+  1:22  warning  'row' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/onboarding/readiness.ts
+   22:10  warning  'getRequiredTraining' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  242:3   warning  'jobRole' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/operations/orchestration.ts
+   10:26  warning  'QueuePriority' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  535:9   warning  'daysSince' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/run_test.js
+  1:10  warning  'calculateOnboardingStatus' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/cleanup-demo-data.ts
+  30:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+  45:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/scripts/create-test-manager.ts
+   33:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+   50:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  308:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/scripts/e2e-apply.mjs
+  20:7  warning  'headers' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/migrate-auth.js
+  22:7  warning  'path' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  59:3  warning  'changes' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/pilot-verify.ts
+   30:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+   79:3  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  101:3  warning  Expected an assignment or function call and instead saw an expression                                     @typescript-eslint/no-unused-expressions
+  120:3  warning  Expected an assignment or function call and instead saw an expression                                     @typescript-eslint/no-unused-expressions
+  254:7  warning  Expected an assignment or function call and instead saw an expression                                     @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/scripts/reset-qa-environment.ts
+  18:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+  34:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/scripts/seed-demo-data.ts
+  17:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+  30:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/scripts/seed-qa-environment.ts
+  26:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-require-imports')
+  61:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+
+/Users/kwadwo/Projects/care-os/tests/smoke/onboarding.smoke.ts
+  125:82  warning  'page' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/smoke/worker.smoke.ts
+  22:10  warning  'QA_WORKER_PORTAL_TOKEN' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/unit/rbac.test.ts
+  50:3  warning  'ROLES' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  52:3  warning  'ROLE_HIERARCHY' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  63:3  warning  'canViewCompliance' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  65:3  warning  'canViewShifts' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  67:3  warning  'canWriteIncidents' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  69:3  warning  'canManageStaff' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  72:3  warning  'canViewSystemHealth' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  73:3  warning  'canViewNotifications' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/unit/worker-auth.test.ts
+  28:10  warning  'report' is defined but never used. Allowed unused vars must match /^_/u                               @typescript-eslint/no-unused-vars
+  49:1   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  59:10  warning  'validateWorkerToken' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+
+✖ 199 problems (10 errors, 189 warnings)
+  0 errors and 24 warnings potentially fixable with the `--fix` option.
+

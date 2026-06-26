@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { adminClient }   from '@/lib/supabase/admin'
 import { getRoutingDiagnostics } from '@/lib/documents/routing'
 import RoutingReviewClient from './RoutingReviewClient'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,13 +50,13 @@ export default async function DocumentRoutingPage() {
             Review and manage automatic document classification across all staff folders.
           </p>
         </div>
-        <a
+        <Link
           href="/admin/staff"
           className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-700 transition-colors"
         >
           <span className="material-symbols-outlined text-[14px]">arrow_back</span>
           Back to staff
-        </a>
+        </Link>
       </div>
 
       <RoutingReviewClient

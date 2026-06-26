@@ -10,7 +10,7 @@ interface Props {
 export default function WorkerError({ error, reset }: Props) {
   const incidentRef = error.digest
     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
-    : `ERR-${Date.now().toString(36).toUpperCase()}`
+    : `ERR-UNKNOWN`
 
   useEffect(() => {
     console.error('[worker/error]', {

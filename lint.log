@@ -1,0 +1,1124 @@
+
+> care-os@0.1.0 lint
+> eslint
+
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/page.tsx
+   66:15  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/page.tsx:66:15
+  64 |   if (!orch)   return null
+  65 |
+> 66 |   const now = Date.now()
+     |               ^^^^^^^^^^ Cannot call impure function
+  67 |   const aging = {
+  68 |     over24h: orch.priorities.filter((p) => {
+  69 |       const h = (now - new Date(p.createdAt).getTime()) / 3600000                                                                                                                                                                                                                                                                                                                                                             react-hooks/purity
+  237:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/page.tsx:237:21
+  235 |   }, [period])
+  236 |
+> 237 |   useEffect(() => { loadData() }, [loadData])
+      |                     ^^^^^^^^ Avoid calling setState() directly within an effect
+  238 |
+  239 |   const kpis = data?.kpis
+  240 |   const hs   = data?.health_score  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/safeguarding/page.tsx
+  46:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/analytics/safeguarding/page.tsx:46:5
+  44 |
+  45 |   useEffect(() => {
+> 46 |     setLoading(true)
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |     fetch(`/api/admin/analytics/safeguarding?period=${period}`)
+  48 |       .then(r => r.json())
+  49 |       .then(d => setData(d))  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/applicants/[id]/DocumentsSection.tsx
+  64:10  warning  'expiryStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/applicants/[id]/page.tsx
+  9:27   warning  'getRequiredDocuments' is defined but never used   @typescript-eslint/no-unused-vars
+  9:49   warning  'getComplianceTemplate' is defined but never used  @typescript-eslint/no-unused-vars
+  9:110  warning  'ApplicationRole' is defined but never used        @typescript-eslint/no-unused-vars
+  9:132  warning  'FormSection' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/audit-log/AuditLogContent.tsx
+  60:10  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/audit-log/AuditLogContent.tsx:60:10
+  58 |   // Initial load & when filter/limit changes
+  59 |   useEffect(() => {
+> 60 |     void fetchLogs(activeFilter, appliedSearchEntityId, limit)
+     |          ^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |   }, [fetchLogs, activeFilter, appliedSearchEntityId, limit])
+  62 |
+  63 |   const handleFilterChange = (filter: string) => {  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/care-packages/page.tsx
+  215:21  warning  'statusCls' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/communications/page.tsx
+  69:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/communications/page.tsx:69:21
+  67 |   }, [typeFilter, statusFilter])
+  68 |
+> 69 |   useEffect(() => { load() }, [load])
+     |                     ^^^^ Avoid calling setState() directly within an effect
+  70 |
+  71 |   async function runTriggers(dry = false) {
+  72 |     setTriggering(true)  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/compliance/ComplianceDashboardClient.tsx
+    8:10  warning  'COMPLIANCE_STATE_CLS' is defined but never used    @typescript-eslint/no-unused-vars
+    8:32  warning  'COMPLIANCE_STATE_LABEL' is defined but never used  @typescript-eslint/no-unused-vars
+    9:10  warning  'BAND_CLS' is defined but never used                @typescript-eslint/no-unused-vars
+    9:25  warning  'ExpiryBand' is defined but never used              @typescript-eslint/no-unused-vars
+  161:10  warning  'isPending' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/documents/routing/page.tsx
+  52:9  error  Do not use an `<a>` element to navigate to `/admin/staff/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/kwadwo/Projects/care-os/app/admin/documents/verification/page.tsx
+  31:11  error  Do not use an `<a>` element to navigate to `/admin/staff/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/kwadwo/Projects/care-os/app/admin/error.tsx
+  12:9   warning  'instanceId' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  17:14  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/error.tsx:17:14
+  15 |   const incidentRef = error.digest
+  16 |     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+> 17 |     : `ERR-${Date.now().toString(36).toUpperCase()}`
+     |              ^^^^^^^^^^ Cannot call impure function
+  18 |
+  19 |   useEffect(() => {
+  20 |     console.error('[admin/error]', {  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/admin/incidents/page.tsx
+  2:8  warning  'CreateIncidentButton' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/layout.tsx
+   1:10  warning  'ENABLE_TIMESHEETS' is defined but never used     @typescript-eslint/no-unused-vars
+   5:3   warning  'canViewCompliance' is defined but never used     @typescript-eslint/no-unused-vars
+   6:3   warning  'canViewAuditLogs' is defined but never used      @typescript-eslint/no-unused-vars
+   7:3   warning  'canViewNotifications' is defined but never used  @typescript-eslint/no-unused-vars
+   8:3   warning  'canViewShifts' is defined but never used         @typescript-eslint/no-unused-vars
+   9:3   warning  'canViewIncidents' is defined but never used      @typescript-eslint/no-unused-vars
+  10:3   warning  'canManageStaff' is defined but never used        @typescript-eslint/no-unused-vars
+  11:3   warning  'canViewSystemHealth' is defined but never used   @typescript-eslint/no-unused-vars
+  12:3   warning  'canManageRoles' is defined but never used        @typescript-eslint/no-unused-vars
+  14:10  warning  'can' is defined but never used                   @typescript-eslint/no-unused-vars
+  14:20  warning  'Permission' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/loading.tsx
+  10:10  warning  'SkeletonCard' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/notifications/page.tsx
+  60:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/notifications/page.tsx:60:5
+  58 |
+  59 |   useEffect(() => {
+> 60 |     setLoading(true)
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     setError(null)
+  62 |     // Fetch directly from Supabase via the admin API proxy approach isn't set up,
+  63 |     // so we fetch via a simple admin endpoint route that we'll call here  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/page.tsx
+  311:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/page.tsx:311:21
+  309 |   }, [])
+  310 |
+> 311 |   useEffect(() => { load('all') }, [load])
+      |                     ^^^^ Avoid calling setState() directly within an effect
+  312 |
+  313 |   function switchStage(s: Stage) {
+  314 |     setStage(s)  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/pipeline/OnboardingPipelineClient.tsx
+   73:34  warning  'forecast' is defined but never used      @typescript-eslint/no-unused-vars
+  127:15  warning  'cls' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/onboarding/pipeline/page.tsx
+  10:3  warning  'WorkerReadiness' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/page.tsx
+    8:26  warning  'settle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  100:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  104:28  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/page.tsx:104:28
+  102 |
+  103 |   const today = new Date().toISOString().slice(0, 10)
+> 104 |   const in7days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+      |                            ^^^^^^^^^^ Cannot call impure function
+  105 |
+  106 |   // All queries fire in parallel — no waterfalls
+  107 |   const results = await Promise.allSettled([  react-hooks/purity
+  162:83  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  170:89  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  171:89  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  178:9   warning  'onboarding' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  184:49  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  204:85  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+
+/Users/kwadwo/Projects/care-os/app/admin/set-password/SetPasswordClient.tsx
+  297:38  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/ShiftsGrid.tsx
+  187:54  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  187:67  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/operations/page.tsx
+    6:32  warning  'OperationsSummary' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    7:10  warning  'adminFetch' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  174:21  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/operations/page.tsx:174:21
+  172 |   }, [])
+  173 |
+> 174 |   useEffect(() => { load('today') }, [load])
+      |                     ^^^^ Avoid calling setState() directly within an effect
+  175 |
+  176 |   function changeFilter(f: FilterKey) {
+  177 |     setFilter(f)  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/shifts/page.tsx
+  103:9   warning  'upcomingCount' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  178:90  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/ComplianceTimeline.tsx
+  101:29  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/DocumentApprovalButton.tsx
+  105:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  105:76  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/DocumentRepositoryTab.tsx
+  149:30  warning  'staffProfileId' is defined but never used  @typescript-eslint/no-unused-vars
+  241:23  warning  'folderId' is defined but never used        @typescript-eslint/no-unused-vars
+  463:65  warning  'companyId' is defined but never used       @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/RecruitmentFileTab.tsx
+  10:3  warning  'ApplicationSourceSection' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/RoleManagementPanel.tsx
+  8:15  warning  'Role' is defined but never used               @typescript-eslint/no-unused-vars
+  9:8   warning  'AdminAccessButton' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/StaffStatusControl.tsx
+  55:3  warning  'pendingStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/page.tsx
+    8:8   warning  'StaffDocumentUpload' is defined but never used             @typescript-eslint/no-unused-vars
+    9:8   warning  'StaffStatusControl' is defined but never used              @typescript-eslint/no-unused-vars
+   10:8   warning  'ComplianceReviewSection' is defined but never used         @typescript-eslint/no-unused-vars
+   11:8   warning  'StaffAvailabilitySection' is defined but never used        @typescript-eslint/no-unused-vars
+   12:8   warning  'PortalInviteButton' is defined but never used              @typescript-eslint/no-unused-vars
+   13:8   warning  'EditStaffProfileForm' is defined but never used            @typescript-eslint/no-unused-vars
+   14:8   warning  'EditHrDetailsForm' is defined but never used               @typescript-eslint/no-unused-vars
+   15:8   warning  'OnboardingChecklist' is defined but never used             @typescript-eslint/no-unused-vars
+   16:8   warning  'OnboardingTimeline' is defined but never used              @typescript-eslint/no-unused-vars
+   17:8   warning  'DocumentApprovalButton' is defined but never used          @typescript-eslint/no-unused-vars
+   19:10  warning  'calculateOnboardingStatus' is defined but never used       @typescript-eslint/no-unused-vars
+   35:10  warning  'can' is defined but never used                             @typescript-eslint/no-unused-vars
+  237:10  warning  'formatDate' is defined but never used                      @typescript-eslint/no-unused-vars
+  244:10  warning  'formatBytes' is defined but never used                     @typescript-eslint/no-unused-vars
+  267:7   warning  'STATUS_CLS' is assigned a value but never used             @typescript-eslint/no-unused-vars
+  275:7   warning  'SHIFT_STATUS_CLS' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  283:7   warning  'TIMESHEET_STATUS_CLS' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  291:7   warning  'INCIDENT_SEVERITY_CLS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  298:7   warning  'INCIDENT_STATUS_CLS' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  306:7   warning  'DOC_STATUS_CLS' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  313:10  warning  'docExpiryStatus' is defined but never used                 @typescript-eslint/no-unused-vars
+  320:10  warning  'docExpiryLabel' is defined but never used                  @typescript-eslint/no-unused-vars
+  330:7   warning  'COMPLIANCE_CLS' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  338:10  warning  'Badge' is defined but never used                           @typescript-eslint/no-unused-vars
+  347:10  warning  'Field' is defined but never used                           @typescript-eslint/no-unused-vars
+  356:10  warning  'SectionBox' is defined but never used                      @typescript-eslint/no-unused-vars
+  369:10  warning  'ComplianceCard' is defined but never used                  @typescript-eslint/no-unused-vars
+  369:38  warning  'jobRole' is defined but never used                         @typescript-eslint/no-unused-vars
+  375:40  error    A `require()` style import is forbidden                     @typescript-eslint/no-require-imports
+  489:10  warning  'expiryRowCls' is defined but never used                    @typescript-eslint/no-unused-vars
+  496:10  warning  'expiryTextCls' is defined but never used                   @typescript-eslint/no-unused-vars
+  539:30  warning  'applicant' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  539:52  warning  'compliance_items' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  551:9   warning  'hrReadiness' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  617:9   warning  'displayName' is assigned a value but never used            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/DocumentTable.tsx
+  46:70  warning  'staffProfileId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/DocumentWorkspace.tsx
+   68:25  warning  'folderId' is defined but never used                                   @typescript-eslint/no-unused-vars
+  327:49  warning  '_multi' is defined but never used                                     @typescript-eslint/no-unused-vars
+  330:7   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/FolderTree.tsx
+   30:3   warning  'companyId' is defined but never used       @typescript-eslint/no-unused-vars
+  145:3   warning  'companyId' is defined but never used       @typescript-eslint/no-unused-vars
+  306:85  warning  'staffProfileId' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/PreviewDrawer.tsx
+    3:20  warning  'useCallback' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   95:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/PreviewDrawer.tsx:95:5
+  93 |
+  94 |   useEffect(() => {
+> 95 |     setLoading(true)
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  96 |     fetch(`/api/admin/documents/${documentId}/audit-history`)
+  97 |       .then((r) => r.json())
+  98 |       .then((j) => setHistory(j.history ?? []))                             react-hooks/set-state-in-effect
+  155:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/PreviewDrawer.tsx:155:5
+  153 |
+  154 |   useEffect(() => {
+> 155 |     setLoading(true); setError(false); setUrl(null)
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  156 |     fetch(`/api/admin/documents/${doc.id}/preview-url`)
+  157 |       .then((r) => r.json())
+  158 |       .then((j) => setUrl(j.url ?? null))  react-hooks/set-state-in-effect
+  230:65  warning  'onStatusChange' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  234:14  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/PreviewDrawer.tsx:234:14
+  232 |
+  233 |   useEffect(() => {
+> 234 |     if (doc) setTab('preview')
+      |              ^^^^^^ Avoid calling setState() directly within an effect
+  235 |   }, [doc?.id])
+  236 |
+  237 |   if (!doc) return null                                                                                                        react-hooks/set-state-in-effect
+  235:6   warning  React Hook useEffect has a missing dependency: 'doc'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+/Users/kwadwo/Projects/care-os/app/admin/staff/[id]/workspace/helpers.ts
+  1:34  warning  'FilterKey' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/system/jobs/page.tsx
+  189:26  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/system/jobs/page.tsx:189:26
+  187 |   }, [])
+  188 |
+> 189 |   useEffect(() => { void load() }, [load])
+      |                          ^^^^ Avoid calling setState() directly within an effect
+  190 |
+  191 |   function showToast(type: 'success' | 'error', message: string) {
+  192 |     setToast({ type, message })  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/system/tenants/[id]/setup/page.tsx
+  50:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/timesheets/page.tsx
+  32:9  warning  'pendingCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/visits/anomalies/page.tsx
+   4:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  45:21  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/visits/anomalies/page.tsx:45:21
+  43 |   }, [resolved, severity])
+  44 |
+> 45 |   useEffect(() => { load() }, [load])
+     |                     ^^^^ Avoid calling setState() directly within an effect
+  46 |
+  47 |   async function resolve(id: string) {
+  48 |     setResolving(id)  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/visits/page.tsx
+  124:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/admin/visits/page.tsx:124:5
+  122 |
+  123 |   useEffect(() => {
+> 124 |     load()
+      |     ^^^^ Avoid calling setState() directly within an effect
+  125 |     const interval = setInterval(load, 60_000)
+  126 |     return () => clearInterval(interval)
+  127 |   }, [load])  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/WorkforceCapacityClient.tsx
+    3:23  warning  'useEffect' is defined but never used             @typescript-eslint/no-unused-vars
+    9:3   warning  'ExpiryCluster' is defined but never used         @typescript-eslint/no-unused-vars
+   10:3   warning  'UnderstaffedDay' is defined but never used       @typescript-eslint/no-unused-vars
+  378:21  warning  'atRiskTotal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx
+  46:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx:46:30
+  44 |
+  45 |   const today     = new Date().toISOString().slice(0, 10)
+> 46 |   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+     |                              ^^^^^^^^^^ Cannot call impure function
+  47 |   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
+  48 |
+  49 |   const [                   react-hooks/purity
+  47:30  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/admin/workforce/capacity/page.tsx:47:30
+  45 |   const today     = new Date().toISOString().slice(0, 10)
+  46 |   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
+> 47 |   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
+     |                              ^^^^^^^^^^ Cannot call impure function
+  48 |
+  49 |   const [
+  50 |     staffResult,  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/api/admin/communications/templates/route.ts
+  8:27  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/compliance/training-matrix/route.ts
+  127:27  warning  '_request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/documents/bulk/route.ts
+  56:7  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  71:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  79:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/app/api/admin/documents/folders/route.ts
+  24:27  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/incidents/route.ts
+  135:5  warning  'company_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/interviews/route.ts
+  36:11  warning  'companyId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/notifications/send-shift-reminders/route.ts
+  87:13  warning  'subject' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/operations/summary/route.ts
+  164:9  warning  'uncoveredSummary' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/scheduling/staffing-risk/route.ts
+  55:9  warning  'in14days' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/[id]/assign/route.ts
+  130:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  149:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/[id]/route.ts
+  8:7  warning  'ALLOWED_TYPES' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/[id]/safety-check/route.ts
+  167:9  warning  'today' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  183:9  warning  'windowShifts' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/shifts/metrics/route.ts
+  17:10  warning  'shiftDurationMinutes' is defined but never used  @typescript-eslint/no-unused-vars
+  27:27  warning  'request' is defined but never used               @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/staff/[id]/admin-access/route.ts
+  7:10  warning  'normaliseRole' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/staff/[id]/role/route.ts
+  14:3  warning  'hierarchyLevel' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/system/jobs/route.ts
+  7:27  warning  'executeJob' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/admin/workforce/capacity/route.ts
+  108:9  warning  'in30days' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/cron/compliance-sweep/route.ts
+   6:26  warning  'staffRiskLevel' is defined but never used    @typescript-eslint/no-unused-vars
+  21:11  warning  'SweepStaffResult' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/cron/lifecycle-automation/route.ts
+  3:36  warning  'summariseReadiness' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/worker/availability/route.ts
+  50:18  warning  '_t' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/worker/onboarding/requirements/route.ts
+  66:9  warning  'now' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/api/worker/shifts/[id]/action/route.ts
+  83:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/kwadwo/Projects/care-os/app/api/worker/visits/[shiftId]/checklist/route.ts
+  70:11  warning  'shiftId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/global-error.tsx
+  13:9   warning  'instanceId' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  16:14  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/global-error.tsx:16:14
+  14 |   const incidentRef = error.digest
+  15 |     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+> 16 |     : `ERR-${Date.now().toString(36).toUpperCase()}`
+     |              ^^^^^^^^^^ Cannot call impure function
+  17 |
+  18 |   useEffect(() => {
+  19 |     console.error('[global/error]', {  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/layout.tsx
+  48:9  warning  Block is not recommended. See: https://nextjs.org/docs/messages/google-font-display                                                                              @next/next/google-font-display
+  48:9  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+/Users/kwadwo/Projects/care-os/app/not-found.tsx
+  16:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  16:38  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/portal/apply/ApplyContent.tsx
+  496:10  warning  'CheckItem' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  551:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/portal/apply/ApplyContent.tsx:551:7
+  549 |   useEffect(() => {
+  550 |     if (!token) {
+> 551 |       setPage({ phase: 'error', message: 'This link doesn\'t include an invitation code. Please use the link sent to you by your employer — check your email including your spam folder.' })
+      |       ^^^^^^^ Avoid calling setState() directly within an effect
+  552 |       return
+  553 |     }
+  554 |     let cancelled = false  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/WorkerAuthGuard.tsx
+  19:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/WorkerAuthGuard.tsx:19:7
+  17 |     // Skip for login page
+  18 |     if (pathname === '/worker/login') {
+> 19 |       setReady(true)
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |       return
+  21 |     }
+  22 |  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/availability/page.tsx
+  147:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/availability/page.tsx:147:7
+  145 |     const t = sessionStorage.getItem('worker_token')
+  146 |     if (!t) {
+> 147 |       setError('Session expired. Please use your portal link again.')
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  148 |       setLoading(false)
+  149 |       return
+  150 |     }  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/dashboard/page.tsx
+  385:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/dashboard/page.tsx:385:5
+  383 |
+  384 |   useEffect(() => {
+> 385 |     setQueued(getQueue().length)
+      |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  386 |   }, [])
+  387 |
+  388 |   useEffect(() => {                                                                                                             react-hooks/set-state-in-effect
+  389:17  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/dashboard/page.tsx:389:17
+  387 |
+  388 |   useEffect(() => {
+> 389 |     if (online) syncOfflineQueue()
+      |                 ^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  390 |   }, [online, syncOfflineQueue])
+  391 |
+  392 |   useEffect(() => {                                                               react-hooks/set-state-in-effect
+  395:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/dashboard/page.tsx:395:7
+  393 |     const token = sessionStorage.getItem('worker_token')
+  394 |     if (!token) {
+> 395 |       setError('Session expired. Please use your portal link again.')
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  396 |       setLoading(false)
+  397 |       return
+  398 |     }  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/documents/page.tsx
+  333:15  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/documents/page.tsx:333:15
+  331 |   useEffect(() => {
+  332 |     const t = sessionStorage.getItem('worker_token')
+> 333 |     if (!t) { setError('Session expired. Please use your portal link again.'); setLoading(false); return }
+      |               ^^^^^^^^ Avoid calling setState() directly within an effect
+  334 |     setToken(t)
+  335 |     Promise.all([loadDocs(t), loadReqs(t)])
+  336 |       .catch(() => setError('Network error — please try again.'))  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/error.tsx
+  13:14  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/app/worker/error.tsx:13:14
+  11 |   const incidentRef = error.digest
+  12 |     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
+> 13 |     : `ERR-${Date.now().toString(36).toUpperCase()}`
+     |              ^^^^^^^^^^ Cannot call impure function
+  14 |
+  15 |   useEffect(() => {
+  16 |     console.error('[worker/error]', {  react-hooks/purity
+
+/Users/kwadwo/Projects/care-os/app/worker/login/LoginClient.tsx
+  24:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/login/LoginClient.tsx:24:7
+  22 |   useEffect(() => {
+  23 |     if (!token) {
+> 24 |       setMode('request-link')
+     |       ^^^^^^^ Avoid calling setState() directly within an effect
+  25 |       return
+  26 |     }
+  27 |  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/messages/page.tsx
+  70:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/messages/page.tsx:70:19
+  68 |
+  69 |   useEffect(() => {
+> 70 |     if (!token) { setLoading(false); setError('Portal token missing.'); return }
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  71 |     fetch(`/api/worker/messages?token=${encodeURIComponent(token)}`)
+  72 |       .then(r => r.json())
+  73 |       .then(d => {  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/notifications/page.tsx
+  52:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/notifications/page.tsx:52:19
+  50 |
+  51 |   useEffect(() => {
+> 52 |     if (!token) { setLoading(false); setError('Portal token missing from URL.'); return }
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  53 |     setLoading(true)
+  54 |     fetch(`/api/worker/notifications?token=${encodeURIComponent(token)}`)
+  55 |       .then(async (res) => {  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/onboarding/page.tsx
+  311:15  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/onboarding/page.tsx:311:15
+  309 |   useEffect(() => {
+  310 |     const t = sessionStorage.getItem('worker_token')
+> 311 |     if (!t) { setError('Session expired. Please use your portal link again.'); setLoading(false); return }
+      |               ^^^^^^^^ Avoid calling setState() directly within an effect
+  312 |     setToken(t)
+  313 |     loadData(t)
+  314 |   }, [])  react-hooks/set-state-in-effect
+  368:9   warning  'trainingDone' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/app/worker/performance/page.tsx
+  84:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/performance/page.tsx:84:19
+  82 |   useEffect(() => {
+  83 |     const token = sessionStorage.getItem('worker_token')
+> 84 |     if (!token) { setError('Session expired.'); setLoading(false); return }
+     |                   ^^^^^^^^ Avoid calling setState() directly within an effect
+  85 |     fetch(`/api/worker/performance?token=${encodeURIComponent(token)}`)
+  86 |       .then(r => r.json())
+  87 |       .then(d => setData(d))  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/shifts/[id]/page.tsx
+  130:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/shifts/[id]/page.tsx:130:7
+  128 |     const t = sessionStorage.getItem('worker_token')
+  129 |     if (!t) {
+> 130 |       setError('Session expired. Please use your portal link again.')
+      |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  131 |       setLoading(false)
+  132 |       return
+  133 |     }  react-hooks/set-state-in-effect
+  328:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react/no-unescaped-entities
+
+/Users/kwadwo/Projects/care-os/app/worker/shifts/page.tsx
+  66:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/shifts/page.tsx:66:7
+  64 |     const token = sessionStorage.getItem('worker_token')
+  65 |     if (!token) {
+> 66 |       setError('Session expired. Please use your portal link again.')
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  67 |       setLoading(false)
+  68 |       return
+  69 |     }  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/tasks/page.tsx
+  79:17  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/tasks/page.tsx:79:17
+  77 |   useEffect(() => {
+  78 |     const tok = sessionStorage.getItem('worker_token') ?? ''
+> 79 |     if (!tok) { setError('Session expired.'); setLoading(false); return }
+     |                 ^^^^^^^^ Avoid calling setState() directly within an effect
+  80 |     setToken(tok)
+  81 |     load(tok).catch(() => setError('Failed to load tasks.')).finally(() => setLoading(false))
+  82 |   }, [load])  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/timeline/page.tsx
+  60:19  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/timeline/page.tsx:60:19
+  58 |   useEffect(() => {
+  59 |     const token = sessionStorage.getItem('worker_token')
+> 60 |     if (!token) { setError('Session expired.'); setLoading(false); return }
+     |                   ^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     fetch(`/api/worker/shifts?token=${encodeURIComponent(token)}`)
+  62 |       .then(r => r.json())
+  63 |       .then(d => setShifts(Array.isArray(d) ? d : []))  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/visit-notes/[id]/page.tsx
+  68:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/visit-notes/[id]/page.tsx:68:7
+  66 |     const t = sessionStorage.getItem('worker_token')
+  67 |     if (!t) {
+> 68 |       setError('Session expired. Please use your portal link again.')
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |       setLoading(false)
+  70 |       return
+  71 |     }  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/app/worker/visits/[shiftId]/page.tsx
+  117:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/visits/[shiftId]/page.tsx:117:21
+  115 |   }, [shiftId, token])
+  116 |
+> 117 |   useEffect(() => { loadGuidance() }, [loadGuidance])
+      |                     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  118 |   useEffect(() => { if (phase === 'checklist') loadTasks() }, [phase, loadTasks])
+  119 |   useEffect(() => { if (phase === 'medication') loadMeds() }, [phase, loadMeds])
+  120 |                                                 react-hooks/set-state-in-effect
+  118:48  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/visits/[shiftId]/page.tsx:118:48
+  116 |
+  117 |   useEffect(() => { loadGuidance() }, [loadGuidance])
+> 118 |   useEffect(() => { if (phase === 'checklist') loadTasks() }, [phase, loadTasks])
+      |                                                ^^^^^^^^^ Avoid calling setState() directly within an effect
+  119 |   useEffect(() => { if (phase === 'medication') loadMeds() }, [phase, loadMeds])
+  120 |
+  121 |   async function arrive() {                    react-hooks/set-state-in-effect
+  119:49  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/app/worker/visits/[shiftId]/page.tsx:119:49
+  117 |   useEffect(() => { loadGuidance() }, [loadGuidance])
+  118 |   useEffect(() => { if (phase === 'checklist') loadTasks() }, [phase, loadTasks])
+> 119 |   useEffect(() => { if (phase === 'medication') loadMeds() }, [phase, loadMeds])
+      |                                                 ^^^^^^^^ Avoid calling setState() directly within an effect
+  120 |
+  121 |   async function arrive() {
+  122 |     setBusy(true)  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/components/admin/AdminDashboardDesktop.tsx
+  182:29  warning  'activeIncidents' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/AdminHeader.tsx
+  112:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/kwadwo/Projects/care-os/components/admin/AdminSidebar.tsx
+  6:10  warning  'ENABLE_TIMESHEETS' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/ApplicationFormSummary.tsx
+  1:8   warning  'React' is defined but never used                  @typescript-eslint/no-unused-vars
+  2:10  warning  'getRoleCategory' is defined but never used        @typescript-eslint/no-unused-vars
+  2:27  warning  'getRequiredDocuments' is defined but never used   @typescript-eslint/no-unused-vars
+  2:49  warning  'getComplianceTemplate' is defined but never used  @typescript-eslint/no-unused-vars
+  2:72  warning  'CATEGORY_META' is defined but never used          @typescript-eslint/no-unused-vars
+  3:15  warning  'Document' is defined but never used               @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/AuditLogMobile.tsx
+   34:9   warning  'domain' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  119:30  warning  'index' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx
+   77:34  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:77:34
+  75 |
+  76 |   // Default expiry: 7 days from now
+> 77 |   const defaultExpiry = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+     |                                  ^^^^^^^^^^ Cannot call impure function
+  78 |   const maxExpiry     = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+  79 |
+  80 |   async function submit(e: React.FormEvent) {                                                                                                                                                                                                                                                                           react-hooks/purity
+   78:34  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:78:34
+  76 |   // Default expiry: 7 days from now
+  77 |   const defaultExpiry = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+> 78 |   const maxExpiry     = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+     |                                  ^^^^^^^^^^ Cannot call impure function
+  79 |
+  80 |   async function submit(e: React.FormEvent) {
+  81 |     e.preventDefault()                                                                                                                                                                                                                                                    react-hooks/purity
+  140:25  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:140:25
+  138 |           type="date"
+  139 |           value={expiresAt || defaultExpiry}
+> 140 |           min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+      |                         ^^^^^^^^^^ Cannot call impure function
+  141 |           max={maxExpiry}
+  142 |           onChange={(e) => setExpires(e.target.value)}
+  143 |           className="rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-surface-container-lowest"                                                                                                                                                 react-hooks/purity
+  189:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/components/admin/ComplianceExplainModal.tsx:189:5
+  187 |   useEffect(() => {
+  188 |     if (!open || !staffId) return
+> 189 |     setLoading(true)
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  190 |     setData(null)
+  191 |     setShowOverride(false)
+  192 |     setActiveTab('breakdown')  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/components/admin/IncidentIntelligenceDashboard.tsx
+  52:10  warning  'formatDate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/OperationsControlCenter.tsx
+   94:31  warning  'defaultOpen' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  597:89  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react/no-unescaped-entities
+  662:12  warning  'focusMode' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  746:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/kwadwo/Projects/care-os/components/admin/OperationsControlCenter.tsx:746:5
+  744 |   // Hydrate from localStorage after mount
+  745 |   useEffect(() => {
+> 746 |     setFocusModeState(getFocusMode())
+      |     ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  747 |   }, [])
+  748 |
+  749 |   function toggleFocus() {  react-hooks/set-state-in-effect
+
+/Users/kwadwo/Projects/care-os/components/admin/OperationsPriorityQueue.tsx
+  108:3  warning  'value' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/StaffProfileDesktop.tsx
+  3:20  warning  'useCallback' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/StaffProfileMobile.tsx
+  3:20  warning  'useCallback' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/components/admin/TopPrioritiesSection.tsx
+  10:3  warning  'RecommendedAction' is defined but never used        @typescript-eslint/no-unused-vars
+  51:7  warning  'SEVERITY_ORDER' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/fix.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/kwadwo/Projects/care-os/lib/compliance/explainability.ts
+   14:30  warning  'getExpiryBand' is defined but never used    @typescript-eslint/no-unused-vars
+  246:11  warning  'expiry' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/documents/application-pdf.ts
+  4:10  warning  'routeDocument' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/documents/pdf-generator.ts
+  152:10  warning  'formatValue' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/notifications/templates/complianceExpiring.ts
+  1:22  warning  'row' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/onboarding/readiness.ts
+   22:10  warning  'getRequiredTraining' is defined but never used  @typescript-eslint/no-unused-vars
+  242:3   warning  'jobRole' is defined but never used              @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/lib/operations/orchestration.ts
+   10:26  warning  'QueuePriority' is defined but never used       @typescript-eslint/no-unused-vars
+  535:9   warning  'daysSince' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/run_test.js
+  1:10  warning  'calculateOnboardingStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/add-company-ctx.js
+  18:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  19:22  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/kwadwo/Projects/care-os/scripts/add-company-scope.js
+  8:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/kwadwo/Projects/care-os/scripts/audit-company-scope.js
+  15:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/kwadwo/Projects/care-os/scripts/e2e-apply.mjs
+  20:7  warning  'headers' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/migrate-auth.js
+  21:12  error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+  22:7   warning  'path' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  22:14  error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+  23:22  error    A `require()` style import is forbidden       @typescript-eslint/no-require-imports
+  59:3   warning  'changes' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/scripts/pilot-verify.ts
+  101:3  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  120:3  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  254:7  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/Users/kwadwo/Projects/care-os/test-db.js
+  1:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/Users/kwadwo/Projects/care-os/tests/smoke/onboarding.smoke.ts
+  125:82  warning  'page' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/smoke/worker.smoke.ts
+  22:10  warning  'QA_WORKER_PORTAL_TOKEN' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/unit/rbac.test.ts
+  50:3  warning  'ROLES' is defined but never used                 @typescript-eslint/no-unused-vars
+  52:3  warning  'ROLE_HIERARCHY' is defined but never used        @typescript-eslint/no-unused-vars
+  63:3  warning  'canViewCompliance' is defined but never used     @typescript-eslint/no-unused-vars
+  65:3  warning  'canViewShifts' is defined but never used         @typescript-eslint/no-unused-vars
+  67:3  warning  'canWriteIncidents' is defined but never used     @typescript-eslint/no-unused-vars
+  69:3  warning  'canManageStaff' is defined but never used        @typescript-eslint/no-unused-vars
+  72:3  warning  'canViewSystemHealth' is defined but never used   @typescript-eslint/no-unused-vars
+  73:3  warning  'canViewNotifications' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/kwadwo/Projects/care-os/tests/unit/worker-auth.test.ts
+  28:10  warning  'report' is defined but never used               @typescript-eslint/no-unused-vars
+  59:10  warning  'validateWorkerToken' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 250 problems (80 errors, 170 warnings)
+

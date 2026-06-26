@@ -73,9 +73,9 @@ function OverrideForm({ staffId, onSuccess, onCancel }: {
   const [busy,      setBusy]     = useState(false)
   const [error,     setError]    = useState<string | null>(null)
 
-  // Default expiry: 7 days from now
-  const defaultExpiry = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
-  const maxExpiry     = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
+  const [now] = useState(() => Date.now())
+  const defaultExpiry = new Date(now + 7 * 86400000).toISOString().slice(0, 10)
+  const maxExpiry     = new Date(now + 30 * 86400000).toISOString().slice(0, 10)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -137,7 +137,7 @@ function OverrideForm({ staffId, onSuccess, onCancel }: {
         <input
           type="date"
           value={expiresAt || defaultExpiry}
-          min={new Date(Date.now() + 86400000).toISOString().slice(0, 10)}
+          min={new Date(now + 86400000).toISOString().slice(0, 10)}
           max={maxExpiry}
           onChange={(e) => setExpires(e.target.value)}
           className="rounded-lg border border-orange-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-surface-container-lowest"

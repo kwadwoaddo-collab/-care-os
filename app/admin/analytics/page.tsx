@@ -63,7 +63,7 @@ function ExecutiveRiskSummary() {
   if (loading) return <Skeleton variant="card" count={1} />
   if (!orch)   return null
 
-  const now = Date.now()
+  const [now] = useState(() => Date.now())
   const aging = {
     over24h: orch.priorities.filter((p) => {
       const h = (now - new Date(p.createdAt).getTime()) / 3600000
