@@ -19,7 +19,6 @@ import { calculateOnboardingStatus, type OnboardingInput } from '@/lib/staff/cal
 import { classifyDeployability }                          from '@/lib/workforce/readinessEngine'
 import { calculateDeployabilityScore }                    from '@/lib/workforce/deployabilityScore'
 import { getRequiredDocuments }                           from '@/lib/staff/getRequiredDocuments'
-import { getRequiredTraining }                            from '@/lib/training/matrix'
 import { EXPIRY_WARN_DAYS }                               from '@/lib/compliance/requirements'
 
 // ── Stage taxonomy ────────────────────────────────────────────────────────────
@@ -239,7 +238,7 @@ function calculateVerificationProgress(
 function detectDocumentGaps(
   documents:     ReadinessDocumentInput[],
   requiredTypes: string[],
-  jobRole:       string | null,
+  _jobRole:       string | null,
 ): DocumentGap[] {
   const gaps: DocumentGap[] = []
   const docsByType = new Map<string, ReadinessDocumentInput[]>()

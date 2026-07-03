@@ -1,8 +1,14 @@
 'use client'
 
 import { useState, useEffect, useTransition, useCallback } from 'react'
+import Link from 'next/link'
 import type { QueueItem, QueuePriority, QueueCategory } from '@/lib/operations/priorityQueue'
 import { getQueuePrefs, setQueuePrefs, type QueuePrefs } from '@/lib/operations/workspaceMemory'
+
+const gbDayMonthFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+})
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -270,21 +276,21 @@ function QueueRow({ item, onUpdate }: { item: QueueItem; onUpdate: (id: string, 
             {item.assigned_to && <span>→ {item.assigned_to}</span>}
             {item.due_date && (
               <span className={isOverdue ? 'text-red-600 font-semibold' : 'text-amber-700'}>
-                due {new Date(item.due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                due {gbDayMonthFormatter.format(new Date(item.due_date))}
               </span>
             )}
-            <span>{new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+            <span>{gbDayMonthFormatter.format(new Date(item.created_at))}</span>
           </div>
         </div>
 
         {/* Inline quick actions (always visible) */}
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           {item.entity_url && (
-            <a href={item.entity_url}
+            <Link href={item.entity_url}
               className="inline-flex items-center rounded px-2 py-1 text-[10px] font-semibold border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-gray-50 transition-colors min-h-[28px]"
             >
               View
-            </a>
+            </Link>
           )}
           {isActive && (
             <button

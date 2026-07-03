@@ -43,13 +43,13 @@ type FilterType =
   | 'not_ready'
   | 'hr_incomplete'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const gbDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit', month: 'short', year: 'numeric',
+})
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+  return gbDateFormatter.format(new Date(iso))
 }
 
 const STAFF_STATUS_CLS: Record<string, string> = {

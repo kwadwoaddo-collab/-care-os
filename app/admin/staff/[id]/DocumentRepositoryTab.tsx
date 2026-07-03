@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import Link from 'next/link'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -560,9 +561,9 @@ export default function DocumentRepositoryTab({ staffProfileId, companyId, folde
           <div className="p-4">
             <p className="text-xs text-amber-700 mb-3">
               These documents could not be automatically routed. Classify them via the{' '}
-              <a href="/admin/documents/routing" className="underline font-semibold hover:text-amber-900">
+              <Link href="/admin/documents/routing" className="underline font-semibold hover:text-amber-900">
                 routing review screen
-              </a>.
+              </Link>.
             </p>
             <div className="space-y-2">
               {unclassified.map((doc) => (
@@ -571,12 +572,12 @@ export default function DocumentRepositoryTab({ staffProfileId, companyId, folde
                     <p className="text-xs font-medium text-gray-800 truncate">{doc.file_name}</p>
                     <p className="text-[11px] text-gray-400">{doc.document_type.replace(/_/g, ' ')} · {fmt(doc.created_at)}</p>
                   </div>
-                  <a
+                  <Link
                     href="/admin/documents/routing"
                     className="text-xs font-semibold text-amber-700 hover:text-amber-900 transition-colors whitespace-nowrap"
                   >
                     Classify →
-                  </a>
+                  </Link>
                 </div>
               ))}
             </div>

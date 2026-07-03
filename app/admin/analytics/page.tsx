@@ -51,6 +51,7 @@ function RiskItem({ item }: { item: UnifiedPriorityItem }) {
 function ExecutiveRiskSummary() {
   const [orch,    setOrch]    = useState<OrchestrationResult | null>(null)
   const [loading, setLoading] = useState(true)
+  const [now]                 = useState(() => Date.now())
 
   useEffect(() => {
     fetch('/api/admin/operations/priorities')
@@ -63,7 +64,6 @@ function ExecutiveRiskSummary() {
   if (loading) return <Skeleton variant="card" count={1} />
   if (!orch)   return null
 
-  const [now] = useState(() => Date.now())
   const aging = {
     over24h: orch.priorities.filter((p) => {
       const h = (now - new Date(p.createdAt).getTime()) / 3600000

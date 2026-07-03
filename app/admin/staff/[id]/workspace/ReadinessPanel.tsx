@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import Link from 'next/link'
 import type { WorkerReadiness, WorkerReadinessStage } from '@/lib/onboarding/readiness'
 import {
   READINESS_STAGE_LABEL,
@@ -241,11 +242,11 @@ export default function ReadinessPanel({ staffProfileId, initialReadiness }: Pro
           )}
 
           {/* View pipeline link */}
-          <a href="/admin/onboarding/pipeline"
+          <Link href="/admin/onboarding/pipeline"
             className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-800 transition-colors">
             <span className="material-symbols-outlined text-[13px]">open_in_new</span>
             View in onboarding pipeline
-          </a>
+          </Link>
         </div>
       )}
     </div>

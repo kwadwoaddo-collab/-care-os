@@ -11,7 +11,7 @@
 // Pure functions — no DB or server dependencies.
 
 import type { ComplianceSummary, ComplianceState, ComplianceDocument } from './calculateCompliance'
-import { getDaysUntilExpiry, getExpiryBand }                           from './expiryBands'
+import { getDaysUntilExpiry }                                           from './expiryBands'
 import { REQUIRED_DOCUMENTS }                                          from './requirements'
 
 // ── Labels ────────────────────────────────────────────────────────────────────
@@ -243,7 +243,6 @@ export function explainCompliance(
   // ── Document issues ───────────────────────────────────────────────────────
 
   for (const key of summary.missingDocuments) {
-    const expiry = findExpiryForType(documents, key)
     issues.push({
       item:           key,
       label:          itemLabel(key),

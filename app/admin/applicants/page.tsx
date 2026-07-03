@@ -77,10 +77,12 @@ function avatarColour(id: string): string {
   return colours[idx]
 }
 
+const gbDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit', month: 'short', year: 'numeric',
+})
+
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+  return gbDateFormatter.format(new Date(iso))
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────

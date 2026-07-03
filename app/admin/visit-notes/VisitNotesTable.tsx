@@ -31,13 +31,13 @@ export interface VisitNoteSummary {
 
 type FilterKey = 'all' | 'draft' | 'submitted' | 'incidents'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const gbDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit', month: 'short', year: 'numeric',
+})
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'
-  return new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
+  return gbDateFormatter.format(new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')))
 }
 
 function formatTime(t: string) { return t.slice(0, 5) }

@@ -21,10 +21,14 @@ const STATUS_CONFIG: Record<
   missing:  { bg: 'bg-surface-container', text: 'text-on-surface-variant', icon: 'remove_circle_outline', label: 'Missing' },
 }
 
+const gbShortDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit', month: 'short', year: '2-digit',
+})
+
 function formatDate(iso: string | null): string {
   if (!iso) return ''
   const d = new Date(iso)
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })
+  return gbShortDateFormatter.format(d)
 }
 
 function pctColor(pct: number): string {
