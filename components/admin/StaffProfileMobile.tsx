@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { calculateCompliance, type ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import { DAY_KEYS, type StaffAvailability, type DayKey } from '@/lib/staff/types'

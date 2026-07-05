@@ -181,22 +181,7 @@ const IDENTITY_DOCS = new Set([
   'share_code', 'share_code_confirmation', 'id',
 ])
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function isExpired(iso: string | null): boolean {
-  return !!iso && new Date(iso) < new Date()
-}
-
-function isExpiringSoon(iso: string | null, days = EXPIRY_WARN_DAYS): boolean {
-  if (!iso) return false
-  const e = new Date(iso); const w = new Date()
-  w.setDate(w.getDate() + days)
-  return e > new Date() && e <= w
-}
-
-function daysUntil(iso: string): number {
-  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000)
-}
+import { isExpired, isExpiringSoon, getDaysUntilExpiry as daysUntil } from '@/lib/compliance/expiryBands'
 
 function reminderBand(days: number): 90 | 60 | 30 | 14 | 7 | 1 {
   if (days <= 1)  return 1

@@ -49,11 +49,6 @@ function ScoreBar({ score }: { score: number }) {
   )
 }
 
-function formatDate(iso: string | null) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
-}
-
 // ── Summary stat cards ─────────────────────────────────────────────────────────
 
 function StatCard({

@@ -34,17 +34,16 @@ export type ItemStatus =
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
-function daysUntil(isoDate: string): number {
-  return (new Date(isoDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-}
+import { getDaysUntilExpiry } from './expiryBands'
 
 export function isExpired(isoDate: string | null): boolean {
-  return isoDate !== null && daysUntil(isoDate) < 0
+  if (!isoDate) return false
+  return getDaysUntilExpiry(isoDate) < 0
 }
 
 export function isExpiringSoon(isoDate: string | null): boolean {
   if (!isoDate) return false
-  const days = daysUntil(isoDate)
+  const days = getDaysUntilExpiry(isoDate)
   return days >= 0 && days <= EXPIRY_NOTICE_DAYS
 }
 
@@ -56,7 +55,7 @@ export function expiryUrgency(
   isoDate: string | null,
 ): 'expired' | 'warning' | 'notice' | null {
   if (!isoDate) return null
-  const days = daysUntil(isoDate)
+  const days = getDaysUntilExpiry(isoDate)
   if (days < 0)                   return 'expired'
   if (days <= EXPIRY_WARN_DAYS)   return 'warning'
   if (days <= EXPIRY_NOTICE_DAYS) return 'notice'

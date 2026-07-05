@@ -1,7 +1,7 @@
 import 'server-only'
 import { adminClient } from '@/lib/supabase/admin'
 import { generateApplicationFormPdf, type PdfSection, type PdfField } from './pdf-generator'
-import { routeDocument } from './routing'
+
 
 // ── Type ──────────────────────────────────────────────────────────────────────
 

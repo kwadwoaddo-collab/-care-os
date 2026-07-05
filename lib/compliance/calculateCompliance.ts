@@ -51,21 +51,7 @@ export interface ComplianceSummary {
   complianceState:     ComplianceState
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function isExpired(expiryDate: string | null): boolean {
-  if (!expiryDate) return false
-  return new Date(expiryDate) < new Date()
-}
-
-function isExpiringSoon(expiryDate: string | null): boolean {
-  if (!expiryDate) return false
-  const expiry  = new Date(expiryDate)
-  const now     = new Date()
-  const warnAt  = new Date()
-  warnAt.setDate(now.getDate() + EXPIRY_WARN_DAYS)
-  return expiry > now && expiry <= warnAt
-}
+import { isExpired, isExpiringSoon } from './expiryBands'
 
 // ── Training resolution (category-based + approval-aware) ─────────────────────
 //

@@ -147,36 +147,6 @@ class LayoutState {
   }
 }
 
-// ── Value formatter ───────────────────────────────────────────────────────────
-
-function formatValue(raw: unknown): string {
-  if (raw === null || raw === undefined) return '—'
-  if (typeof raw === 'string') return raw.trim() || '—'
-  if (typeof raw === 'boolean') return raw ? 'Yes' : 'No'
-  if (typeof raw === 'number') return String(raw)
-  if (Array.isArray(raw)) {
-    if (raw.length === 0) return '—'
-    return raw
-      .map((item, i) => {
-        if (typeof item === 'object' && item !== null) {
-          return `${i + 1}. ` + Object.entries(item as Record<string, unknown>)
-            .filter(([, v]) => v !== null && v !== '' && v !== undefined)
-            .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${formatValue(v)}`)
-            .join(' | ')
-        }
-        return `${i + 1}. ${formatValue(item)}`
-      })
-      .join('\n')
-  }
-  if (typeof raw === 'object') {
-    return Object.entries(raw as Record<string, unknown>)
-      .filter(([, v]) => v !== null && v !== '' && v !== undefined)
-      .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${formatValue(v)}`)
-      .join('\n')
-  }
-  return String(raw)
-}
-
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export async function generateApplicationFormPdf(data: ApplicationFormPdfData): Promise<Uint8Array> {

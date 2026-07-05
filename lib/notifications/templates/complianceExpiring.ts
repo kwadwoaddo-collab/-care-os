@@ -1,4 +1,4 @@
-import { emailShell, row, alertBox, ctaButton } from './shell'
+import { emailShell, alertBox, ctaButton } from './shell'
 
 export interface ComplianceExpiringItem {
   staffName:    string

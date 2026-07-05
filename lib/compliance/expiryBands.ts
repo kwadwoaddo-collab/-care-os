@@ -19,9 +19,32 @@ export const BAND_DAYS = {
 } as const
 
 export function getDaysUntilExpiry(expiryDate: string): number {
-  return Math.ceil(
-    (new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+  const expiryDateObj = new Date(expiryDate)
+  const expiryMidnight = Date.UTC(
+    expiryDateObj.getUTCFullYear(),
+    expiryDateObj.getUTCMonth(),
+    expiryDateObj.getUTCDate()
   )
+
+  const now = new Date()
+  const nowMidnight = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  )
+
+  return Math.round((expiryMidnight - nowMidnight) / (1000 * 60 * 60 * 24))
+}
+
+export function isExpired(expiryDate: string | null): boolean {
+  if (!expiryDate) return false
+  return getDaysUntilExpiry(expiryDate) < 0
+}
+
+export function isExpiringSoon(expiryDate: string | null, days = 30): boolean {
+  if (!expiryDate) return false
+  const remaining = getDaysUntilExpiry(expiryDate)
+  return remaining >= 0 && remaining <= days
 }
 
 /**

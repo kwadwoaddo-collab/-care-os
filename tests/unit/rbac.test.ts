@@ -47,9 +47,7 @@ function report(): void {
 
 import { can } from '../../lib/rbac/permissions'
 import {
-  ROLES,
   ASSIGNABLE_ROLES,
-  ROLE_HIERARCHY,
   hierarchyLevel,
   normaliseRole,
   hasRole,
@@ -60,17 +58,11 @@ import {
   canAssignRole,
   getAssignableRoles,
   canApproveCompliance,
-  canViewCompliance,
   canManageShifts,
-  canViewShifts,
   canViewIncidents,
-  canWriteIncidents,
   canViewSafeguarding,
-  canManageStaff,
   canViewAuditLogs,
   canManageSettings,
-  canViewSystemHealth,
-  canViewNotifications,
   isOperationallyActive,
   canPerformOperations,
 } from '../../lib/rbac/can'
