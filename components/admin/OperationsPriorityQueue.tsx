@@ -111,9 +111,9 @@ function StaBadge({ status }: { status: string }) {
 }
 
 function SelBtn({
-  value, active, onClick, children,
+  _value, active, onClick, children,
 }: {
-  value: string; active: boolean; onClick: () => void; children: React.ReactNode
+  _value: string; active: boolean; onClick: () => void; children: React.ReactNode
 }) {
   return (
     <button

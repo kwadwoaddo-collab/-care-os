@@ -105,7 +105,6 @@ export async function GET() {
 
   const today     = new Date().toISOString().slice(0, 10)
   const in14days  = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
-  const in30days  = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
   const ago30days = new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10)
 
   // ── Parallel data fetches ─────────────────────────────────────────────────

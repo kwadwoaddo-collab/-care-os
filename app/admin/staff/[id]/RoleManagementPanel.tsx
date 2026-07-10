@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { getAssignableRoles, canManageRoles } from '@/lib/rbac/can'
 import { getAccessState } from '@/lib/rbac/access'
 import { isAdminCapableRole } from '@/lib/rbac/roles'
-import type { Role } from '@/lib/rbac/roles'
-import AdminAccessButton from './AdminAccessButton'
 import PortalInviteButton from './PortalInviteButton'
 
 // ── Role metadata ─────────────────────────────────────────────────────────────

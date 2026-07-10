@@ -19,7 +19,6 @@ import { calculateOnboardingStatus, type OnboardingInput } from '@/lib/staff/cal
 import { classifyDeployability }                          from '@/lib/workforce/readinessEngine'
 import { calculateDeployabilityScore }                    from '@/lib/workforce/deployabilityScore'
 import { getRequiredDocuments }                           from '@/lib/staff/getRequiredDocuments'
-import { EXPIRY_WARN_DAYS }                               from '@/lib/compliance/requirements'
 
 // ── Stage taxonomy ────────────────────────────────────────────────────────────
 //

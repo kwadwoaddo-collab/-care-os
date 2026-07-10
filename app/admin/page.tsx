@@ -5,7 +5,7 @@ import type { AlertsResponse, AlertItem } from '@/app/api/admin/compliance/alert
 import type { OnboardingResponse } from '@/app/api/admin/onboarding/route'
 import { adminFetch } from '@/lib/admin/serverFetch'
 import AdminDashboardDesktop from '@/components/admin/AdminDashboardDesktop'
-import { fmt, staffName, settle } from '@/lib/utils/formatters'
+import { fmt, staffName } from '@/lib/utils/formatters'
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
@@ -176,7 +176,7 @@ export default async function AdminDashboard() {
     ? (await complianceRes.json() as AlertsResponse)
     : null
 
-  const onboarding: OnboardingResponse | null = onboardingRes.ok
+  const _onboarding: OnboardingResponse | null = onboardingRes.ok
     ? (await onboardingRes.json() as OnboardingResponse)
     : null
 

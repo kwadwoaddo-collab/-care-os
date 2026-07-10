@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useId } from 'react'
+import { useEffect } from 'react'
 
 export default function GlobalError({
   error,
@@ -10,7 +10,6 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const instanceId = useId()
   const incidentRef = error.digest
     ? `ERR-${error.digest.slice(0, 8).toUpperCase()}`
     : `ERR-UNKNOWN`

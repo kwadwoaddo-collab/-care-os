@@ -5,8 +5,8 @@
  */
 
 // ── Minimal test harness ──────────────────────────────────────────────────────
-let passed = 0
-let failed = 0
+let _passed = 0
+let _failed = 0
 
 function describe(suite: string, fn: () => void): void {
   console.log(`\n──────────────────────────────────────────`)
@@ -15,17 +15,17 @@ function describe(suite: string, fn: () => void): void {
   fn()
 }
 
-function it(name: string, fn: () => void): void {
+function it(_name: string, _fn: () => void): void {
   // no-op, since it's skipped anyway
 }
 
 function assert(condition: boolean, message: string): void {
   if (condition) {
     console.log(`  ✅  ${message}`)
-    passed++
+    _passed++
   } else {
     console.error(`  ❌  ${message}`)
-    failed++
+    _failed++
   }
 }
 

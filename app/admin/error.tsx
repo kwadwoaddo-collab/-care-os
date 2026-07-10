@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
 
 interface Props {
@@ -9,7 +9,6 @@ interface Props {
 }
 
 export default function AdminError({ error, reset }: Props) {
-  const instanceId = useId()
 
   // Generate a stable incident reference from digest or timestamp
   const incidentRef = error.digest

@@ -6,7 +6,7 @@ import InterviewsSection, { type Interview } from './InterviewsSection'
 import { adminFetch } from '@/lib/admin/serverFetch'
 import { requireAdmin } from '@/lib/auth/requireAdmin'
 import { can } from '@/lib/rbac/permissions'
-import { getRoleCategory, getRequiredDocuments, getComplianceTemplate, CATEGORY_META, isSectionVisible, type ApplicationRole, type FormSection } from '@/lib/roles'
+import { getRoleCategory, CATEGORY_META, isSectionVisible } from '@/lib/roles'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -11,7 +11,6 @@ import {
 import {
   normaliseRole,
   ASSIGNABLE_ROLES,
-  hierarchyLevel,
   isAdminCapableRole,
   type Role,
 } from '@/lib/rbac/roles'

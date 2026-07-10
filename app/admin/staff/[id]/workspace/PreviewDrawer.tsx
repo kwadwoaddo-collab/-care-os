@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { WorkspaceDocument } from './types'
 import {
   fmt, fmtSize, docTypeLabel, isExpired, isExpiringSoon,
@@ -227,12 +227,12 @@ function DocumentPreview({ doc }: { doc: WorkspaceDocument }) {
 
 type ActiveTab = 'preview' | 'metadata' | 'history'
 
-export default function PreviewDrawer({ doc, onClose, onAction, onStatusChange }: Props) {
+export default function PreviewDrawer({ doc, onClose, onAction, onStatusChange: _onStatusChange }: Props) {
   const [tab, setTab] = useState<ActiveTab>('preview')
 
   useEffect(() => {
     if (doc) setTab('preview')
-  }, [doc?.id])
+  }, [doc])
 
   if (!doc) return null
 

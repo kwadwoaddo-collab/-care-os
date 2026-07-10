@@ -7,16 +7,6 @@ function SkeletonBar({ w = 'w-full', h = 'h-4' }: { w?: string; h?: string }) {
   )
 }
 
-function SkeletonCard() {
-  return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] px-4 py-4 space-y-3">
-      <SkeletonBar w="w-1/3" h="h-3" />
-      <SkeletonBar w="w-2/3" h="h-4" />
-      <SkeletonBar w="w-1/2" h="h-3" />
-    </div>
-  )
-}
-
 function SkeletonRow() {
   return (
     <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 last:border-0">

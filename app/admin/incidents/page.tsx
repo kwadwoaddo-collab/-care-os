@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import CreateIncidentButton from './CreateIncidentButton'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import Pagination  from '@/components/admin/Pagination'
 import IncidentsDashboardDesktop from '@/components/admin/IncidentsDashboardDesktop'

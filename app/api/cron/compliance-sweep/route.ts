@@ -3,7 +3,7 @@ import { adminClient }               from '@/lib/supabase/admin'
 import { buildComplianceSnapshot }   from '@/lib/compliance/buildComplianceSnapshot'
 import { getExpiryBand }             from '@/lib/compliance/expiryBands'
 import { getEscalationLevel, daysNonCompliant, shouldEscalate, type EscalationLevel } from '@/lib/compliance/escalation'
-import { staffRiskScore, staffRiskLevel }  from '@/lib/compliance/riskScore'
+import { staffRiskScore }  from '@/lib/compliance/riskScore'
 import { createNotification }        from '@/lib/notifications/createNotification'
 import type { ComplianceDocument }   from '@/lib/compliance/calculateCompliance'
 
@@ -18,15 +18,7 @@ function isAuthorized(request: NextRequest): boolean {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface SweepStaffResult {
-  staffId:         string
-  staffName:       string
-  complianceState: string
-  percentage:      number
-  escalationLevel: string
-  notificationsCreated: number
-  escalated:       boolean
-}
+
 
 interface SweepCompanyResult {
   companyId:   string

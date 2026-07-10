@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
   const compliance = calculateCompliance(docs, job_role ?? null)
 
   // Build required doc coverage
-  const now            = new Date()
   const uploadedTypes  = new Set(docs.map((d) => d.document_type))
   // Expand passport
   if (uploadedTypes.has('passport')) {

@@ -31,7 +31,6 @@ function formatTsMobile(iso: string): string {
 function getEventTitle(entry: AuditEntry): string {
   const actor = entry.actor_id ?? 'System'
   const actionParts = entry.action.split('.')
-  const domain = actionParts[0]
   const actionType = actionParts[1] ?? 'updated'
 
   const entityStr = entry.entity_type ? entry.entity_type.replace('_', ' ') : 'record'
@@ -116,7 +115,7 @@ export default function AuditLogMobile({
           </div>
         )}
 
-        {entries.map((entry, index) => {
+        {entries.map((entry) => {
           const title = getEventTitle(entry)
           const iconColor = getIconColor(entry.action)
           const badgeCls = getBadgeCls(entry.action)

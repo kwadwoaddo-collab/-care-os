@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { OperationsShift, OperationsSummary, OperationsResponse } from '@/app/api/admin/shifts/operations/route'
-import { adminFetch } from '@/lib/admin/serverFetch'
+import type { OperationsShift, OperationsResponse } from '@/app/api/admin/shifts/operations/route'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

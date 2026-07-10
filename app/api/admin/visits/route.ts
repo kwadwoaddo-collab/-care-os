@@ -79,7 +79,6 @@ export async function GET() {
   const notesMap = new Map((notesRes.data ?? []).map(n => [n.shift_id as string, n]))
 
   const buildVisit = (s: Record<string, unknown>): LiveVisit => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sp = (s.staff_profiles as any)
     const workerName = sp ? `${sp.first_name ?? ''} ${sp.last_name ?? ''}`.trim() || 'Unknown' : 'Unassigned'
     const ts   = tsMap.get(s.id as string)

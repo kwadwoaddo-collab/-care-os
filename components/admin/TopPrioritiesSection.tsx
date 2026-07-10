@@ -7,7 +7,6 @@ import type {
   OrchestrationResult,
   PrioritySeverity,
   PriorityCategory,
-  RecommendedAction,
 } from '@/lib/operations/orchestration'
 import { ACTION_LABELS } from '@/lib/operations/orchestration'
 
@@ -48,9 +47,7 @@ const CATEGORY_ICON: Record<PriorityCategory, string> = {
   queue_item:            '✓',
 }
 
-const SEVERITY_ORDER: Record<PrioritySeverity, number> = {
-  critical: 4, urgent: 3, warning: 2, informational: 1,
-}
+
 
 // ── Subcomponents ─────────────────────────────────────────────────────────────
 

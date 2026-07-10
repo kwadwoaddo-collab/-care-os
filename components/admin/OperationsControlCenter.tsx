@@ -91,13 +91,13 @@ function FocusModeToggle({
 // ── Section wrapper with collapse ────────────────────────────────────────────
 
 function CollapsibleSection({
-  id, title, badge, children, defaultOpen = true, focusModeForce,
+  id, title, badge, children, _defaultOpen = true, focusModeForce,
 }: {
   id:              string
   title:           string
   badge?:          React.ReactNode
   children:        React.ReactNode
-  defaultOpen?:    boolean
+  _defaultOpen?:    boolean
   focusModeForce?: boolean   // when focus mode is on, force-open critical sections
 }) {
   const [collapsed, setCollapsed] = useState(() => {
@@ -659,10 +659,10 @@ function FocusModeBanner() {
 // ── Mobile quick-triage view ──────────────────────────────────────────────────
 
 function MobileTriageView({
-  summary, focusMode,
+  summary, _focusMode,
 }: {
   summary:   OccSummary
-  focusMode: boolean
+  _focusMode: boolean
 }) {
   const criticalItems = [
     ...summary.safeguarding.incidents.map((i) => ({

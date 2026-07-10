@@ -1,13 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import Link from 'next/link'
 import type {
   CapacityResponse,
   StaffReadinessRow,
   RoleCapacity,
-  ExpiryCluster,
-  UnderstaffedDay,
 } from '@/app/api/admin/workforce/capacity/route'
 import type { FeedAlert } from '@/lib/workforce/operationalFeed'
 import {
@@ -375,7 +373,6 @@ function RolesTab({ byRole }: { byRole: RoleCapacity[] }) {
           <tbody className="divide-y divide-gray-100">
             {byRole.map((r) => {
               const deployPct = r.total > 0 ? Math.round((r.deployable / r.total) * 100) : 0
-              const atRiskTotal = r.deployable + r.atRisk
               return (
                 <tr key={r.role} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-primary capitalize">

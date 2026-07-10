@@ -36,7 +36,6 @@ export default async function DocumentRoutingPage() {
       .order('sort_order', { ascending: true }),
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pending = (pendingRes.data ?? []) as any as Parameters<typeof RoutingReviewClient>[0]['pending']
   const folders      = foldersRes.data ?? []
   const unrecognised = pending.filter((d) => d.review_status === 'unrecognised')

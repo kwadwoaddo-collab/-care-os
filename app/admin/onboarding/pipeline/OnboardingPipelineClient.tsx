@@ -70,7 +70,7 @@ function ScoreChip({ score }: { score: number }) {
 
 // ── Summary strip ─────────────────────────────────────────────────────────────
 
-function SummaryStrip({ summary, forecast }: { summary: PipelineSummary; forecast: Props['riskForecast'] }) {
+function SummaryStrip({ summary, _forecast }: { summary: PipelineSummary; _forecast: Props['riskForecast'] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
       {[
@@ -124,7 +124,6 @@ function StageKanban({ byStage, selected, onSelect }: {
       </button>
       {STAGE_ORDER.map((stage) => {
         const count = byStage[stage] ?? 0
-        const cls   = READINESS_STAGE_CLS[stage]
         const icon  = READINESS_STAGE_ICON[stage]
         const isSelected = selected === stage
         return (

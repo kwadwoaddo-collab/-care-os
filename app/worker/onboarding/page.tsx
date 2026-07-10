@@ -365,8 +365,6 @@ export default function WorkerOnboardingPage() {
   const trainingByCat = new Map(allTraining.map((t) => [t.cat, t]))
   const trainingList  = [...trainingByCat.values()]
 
-  const trainingDone = sections.training
-
   // Sort sections: worker-actionable first, admin last
   const sectionOrder = ['personal', 'address', 'emergency', 'documents', 'policy', 'training', 'hmrc', 'banking', 'employment', 'compliance']
   const allSectionKeys = sectionOrder.filter((s) => s in sections) as (keyof OnboardingSections)[]

@@ -29,7 +29,6 @@ export default async function TimesheetsPage() {
     (t) => t.status === 'completed' || t.status === 'adjusted'
   ).length
   const missedCount = timesheets.filter((t) => t.status === 'missed').length
-  const pendingCount = timesheets.filter((t) => t.status === 'pending').length
 
   return (
     <div className="space-y-6">

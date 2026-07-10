@@ -7,7 +7,7 @@ import {
   SaferRecruitmentStatus, References, TrainingQualifications, CriminalRecordSection,
   RoleComplianceStatus, OfficeExperienceSection, ProfessionalQualificationsSection,
   ProfessionalRegistrationSection, WorkAvailabilitySection, MedicalHistorySection,
-  ApplicationSourceSection, DeclarationSection
+  DeclarationSection
 } from '@/components/admin/ApplicationFormShared'
 import DocumentComplianceHub from './DocumentComplianceHub'
 

@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ sh
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status })
 
   const { id: staffProfileId, company_id: companyId } = result.worker
-  const { shiftId } = await params
+  const { shiftId: _shiftId } = await params
 
   if (!body.task_id || !body.status) return NextResponse.json({ error: 'task_id and status required' }, { status: 400 })
 

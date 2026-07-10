@@ -1,4 +1,4 @@
-import type { WorkspaceDocument, FilterKey, WorkspaceFilters } from './types'
+import type { WorkspaceDocument, WorkspaceFilters } from './types'
 
 export const SOURCE_LABELS: Record<string, string> = {
   applicant:         'Application stage',

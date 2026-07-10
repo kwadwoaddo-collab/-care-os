@@ -493,17 +493,6 @@ function YesNo({ value, onChange }: { value: string; onChange: (v: string) => vo
   )
 }
 
-function CheckItem({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="flex items-start gap-3 text-sm text-gray-700 cursor-pointer">
-      <input type="checkbox" className="mt-0.5 accent-blue-600"
-        checked={value === 'true'} onChange={e => onChange(e.target.checked ? 'true' : 'false')} />
-      <span>{label}</span>
-    </label>
-  )
-}
-
-
 
 export default function ApplyContent() {
   const params  = useSearchParams()

@@ -98,7 +98,7 @@ export default function ComplianceTimeline({ staffProfileId }: Props) {
       <div className="absolute left-[19px] top-0 bottom-0 w-px bg-gray-200" aria-hidden />
 
       <ul className="space-y-0">
-        {events.map((event, i) => (
+        {events.map((event) => (
           <li key={event.id} className="flex gap-4 py-3 relative">
             {/* dot */}
             <span

@@ -65,8 +65,8 @@ function BulkBar({ count, onApprove, onArchive, onClear, loading }: {
 
 // ── Upload zone ───────────────────────────────────────────────────────────────
 
-function UploadButton({ folderId, folderSlug, staffProfileId }: {
-  folderId:       string
+function UploadButton({ _folderId, folderSlug, staffProfileId }: {
+  _folderId:       string
   folderSlug:     string
   staffProfileId: string
 }) {
@@ -327,7 +327,11 @@ export default function DocumentWorkspace({ staffProfileId, companyId, folders, 
   const handleSelect = useCallback((id: string, _multi: boolean) => {
     setSelected((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }, [])

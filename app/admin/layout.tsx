@@ -1,17 +1,5 @@
-import { ENABLE_TIMESHEETS } from '@/lib/features'
 import { createClient } from '@/lib/supabase/server'
 import { normaliseRole } from '@/lib/rbac/roles'
-import {
-  canViewCompliance,
-  canViewAuditLogs,
-  canViewNotifications,
-  canViewShifts,
-  canViewIncidents,
-  canManageStaff,
-  canViewSystemHealth,
-  canManageRoles,
-} from '@/lib/rbac/can'
-import { can, type Permission } from '@/lib/rbac/permissions'
 import AdminHeader    from '@/components/admin/AdminHeader'
 import AdminMobileNav from '@/components/admin/AdminMobileNav'
 import AdminSidebar   from '@/components/admin/AdminSidebar'
@@ -35,7 +23,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         .select('company_id, role, first_name, last_name, companies(name)')
         .eq('id', user.id)
         .maybeSingle()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const companyName: string = (profile?.companies as any)?.name ?? ''
       isQaEnvironment = companyName.includes('QA')
       userRole = normaliseRole((profile?.role as string | null) ?? '')

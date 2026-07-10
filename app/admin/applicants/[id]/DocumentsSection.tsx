@@ -58,19 +58,7 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-/**
- * Returns null (valid), 'expiring' (within 30 days), or 'expired'.
- */
-function expiryStatus(expiryDate: string | null): 'expired' | 'expiring' | 'valid' | null {
-  if (!expiryDate) return null
-  const now   = new Date()
-  const expiry = new Date(expiryDate)
-  if (expiry < now) return 'expired'
-  const diff = expiry.getTime() - now.getTime()
-  const days = diff / (1000 * 60 * 60 * 24)
-  if (days <= 30) return 'expiring'
-  return 'valid'
-}
+
 
 function ExpiryBadge({ expiryDate }: { expiryDate: string | null }) {
   if (!expiryDate) return <span className="text-gray-400 text-xs" aria-label="No expiry date">No expiry</span>

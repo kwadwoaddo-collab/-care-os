@@ -212,7 +212,6 @@ export default async function CarePackagesPage() {
           {/* ── Desktop Power Cards Grid ──────────────────────── */}
           <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {packages.map((pkg) => {
-              const statusCls = STATUS_PILL[pkg.status] ?? STATUS_PILL.draft
               const avatar = avatarColour(pkg.id)
               const statusDot = pkg.status === 'active' ? 'bg-green-500' : pkg.status === 'paused' ? 'bg-yellow-500' : 'bg-gray-400'
 

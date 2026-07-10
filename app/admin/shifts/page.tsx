@@ -100,7 +100,6 @@ export default async function ShiftsPage({
 
   const today         = todayStr()
   const todayCount    = shifts.filter((s) => s.shift_date === today).length
-  const upcomingCount = shifts.filter((s) => s.shift_date >  today).length
   const inProgressCount = shifts.filter((s) => s.status === 'in_progress').length
   const openCount     = shifts.filter((s) => s.status === 'open' || s.status === 'declined').length
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
 import { Card, PageHeader, SeverityBadge, EmptyState, Skeleton, Button } from '@/components/ui'
 
 interface Anomaly {

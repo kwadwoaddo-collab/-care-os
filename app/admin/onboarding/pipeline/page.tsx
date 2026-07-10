@@ -7,7 +7,6 @@ import Link from 'next/link'
 import type {
   ReadinessStaffInput,
   ReadinessDocumentInput,
-  WorkerReadiness,
   WorkerReadinessStage,
 } from '@/lib/onboarding/readiness'
 

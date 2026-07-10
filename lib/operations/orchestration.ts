@@ -7,7 +7,7 @@
 //
 // Pure functions — no database access. The priorities API feeds this engine.
 
-import type { QueueItem, QueuePriority } from './priorityQueue'
+import type { QueueItem } from './priorityQueue'
 
 // ── Category taxonomy ─────────────────────────────────────────────────────────
 
@@ -532,7 +532,6 @@ function buildComplianceDescription(input: ComplianceRiskInput): string {
 
 function onboardingToPriority(input: OnboardingReadinessInput): UnifiedPriorityItem {
   const isStalled = (input.daysSinceLastProgress ?? 0) >= 7
-  const daysSince = Math.floor((Date.now() - new Date(input.createdAt).getTime()) / 86400000)
 
   const breakdown: Omit<PriorityScoreBreakdown, 'total'> = {
     safeguardingImpact: 0,

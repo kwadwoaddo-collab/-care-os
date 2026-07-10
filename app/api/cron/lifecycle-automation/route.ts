@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
-import { calculateWorkerReadiness, summariseReadiness } from '@/lib/onboarding/readiness'
+import { calculateWorkerReadiness } from '@/lib/onboarding/readiness'
 import { getDueExpiryReminders, markExpiredDocuments, recordReminderSent } from '@/lib/onboarding/expiryScheduler'
 import { createNotification }        from '@/lib/notifications/createNotification'
 import type { ReadinessStaffInput, ReadinessDocumentInput } from '@/lib/onboarding/readiness'

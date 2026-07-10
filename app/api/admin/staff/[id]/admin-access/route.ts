@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminClient }               from '@/lib/supabase/admin'
 import { requireAdmin }              from '@/lib/auth/requireAdmin'
 import { canManageRoles }            from '@/lib/rbac/can'
-import { normaliseRole }             from '@/lib/rbac/roles'
 
 // ── POST /api/admin/staff/[id]/admin-access ────────────────────────────────
 //

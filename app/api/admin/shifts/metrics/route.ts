@@ -14,17 +14,11 @@ function todayDayKey(): DayKey {
   return DAY_NAMES[new Date().getUTCDay()]!
 }
 
-function shiftDurationMinutes(startTime: string, endTime: string): number {
-  const [sh = 0, sm = 0] = startTime.split(':').map(Number)
-  const [eh = 0, em = 0] = endTime.split(':').map(Number)
-  const startMin = sh * 60 + sm
-  const endMin   = eh * 60 + em
-  return endMin > startMin ? endMin - startMin : 1440 - startMin + endMin
-}
+
 
 // ── GET /api/admin/shifts/metrics ────────────────────────────────────────────
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const auth = await requireAdmin()
   if (!auth.ok) return auth.response
   const { companyId } = auth.ctx

@@ -79,7 +79,7 @@ export async function GET(
   const [
     staffDocRes, appDocRes,
     availRes,
-    windowShiftsRes,
+    _windowShiftsRes,
     weekShiftsRes,
     broadShiftsRes,
     ackHistoryRes,
@@ -163,8 +163,6 @@ export async function GET(
 
   const compliance    = calculateCompliance(docs, (staff as { job_role?: string | null }).job_role ?? null)
   const activeOverride = !!overrideRes.data
-
-  const today = new Date().toISOString().slice(0, 10)
   const expiringSoon = docs
     .filter((d) => {
       if (!d.expiry_date) return false
@@ -180,11 +178,7 @@ export async function GET(
 
   // ── Build schedule data ──────────────────────────────────────────────────
 
-  const windowShifts: ShiftSpan[] = (windowShiftsRes.data ?? []).map((s) => ({
-    shift_date: s.shift_date as string,
-    start_time: s.start_time as string,
-    end_time:   s.end_time   as string,
-  }))
+
 
   const broadShifts: ShiftSpan[] = (broadShiftsRes.data ?? []).map((s) => ({
     shift_date: s.shift_date as string,

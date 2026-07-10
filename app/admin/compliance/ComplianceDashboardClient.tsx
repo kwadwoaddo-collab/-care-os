@@ -5,8 +5,6 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import type { StaffComplianceRow, StaffComplianceResponse } from '@/app/api/admin/compliance/staff/route'
 import type { RiskScoreResponse, RiskStaffRow } from '@/app/api/admin/compliance/risk-score/route'
-import { COMPLIANCE_STATE_CLS, COMPLIANCE_STATE_LABEL } from '@/lib/compliance/buildComplianceSnapshot'
-import { BAND_CLS, type ExpiryBand } from '@/lib/compliance/expiryBands'
 import { RISK_LEVEL_CLS, RISK_LEVEL_LABEL } from '@/lib/compliance/riskScore'
 import { TerminationModal, type TerminationData } from '@/components/admin/TerminationModal'
 import ComplianceExplainModal from '@/components/admin/ComplianceExplainModal'
@@ -158,7 +156,7 @@ export default function ComplianceDashboardClient({ userRole }: { userRole?: str
   const router       = useRouter()
   const pathname     = usePathname()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const currentFilter = (searchParams.get('filter') ?? '') as FilterKey
   const currentSearch = searchParams.get('search') ?? ''

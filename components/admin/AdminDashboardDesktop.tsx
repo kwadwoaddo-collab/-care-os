@@ -179,7 +179,7 @@ function EmptyState({ icon, title, sub }: { icon: string; title: string; sub: st
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export default function AdminDashboardDesktop({
-  openShifts, nonCompliant, activeIncidents, activeStaff,
+  openShifts, nonCompliant, _activeIncidents, activeStaff,
   hrIncomplete, expiring7d, pendingApplications,
   incidents, topAlerts,
   onboardingPct, pilotOnboarded, pilotTotalStaff,

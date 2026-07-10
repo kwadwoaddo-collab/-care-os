@@ -1,23 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import {
-  calculateCompliance,
-  complianceTier,
-  TIER_CLS,
-} from '@/lib/compliance/calculateCompliance'
-import StaffDocumentUpload       from './StaffDocumentUpload'
-import StaffStatusControl        from './StaffStatusControl'
-import ComplianceReviewSection   from './ComplianceReviewSection'
-import StaffAvailabilitySection  from './StaffAvailabilitySection'
-import PortalInviteButton        from './PortalInviteButton'
-import EditStaffProfileForm      from './EditStaffProfileForm'
-import EditHrDetailsForm         from './EditHrDetailsForm'
-import OnboardingChecklist       from './OnboardingChecklist'
-import OnboardingTimeline        from './OnboardingTimeline'
-import DocumentApprovalButton    from './DocumentApprovalButton'
-import { calculateHrReadiness }  from '@/lib/staff/calculateHrReadiness'
-import { calculateOnboardingStatus } from '@/lib/staff/calculateOnboardingStatus'
-import {
   parseAvailabilityRecord,
   type StaffAvailability,
 } from '@/lib/staff/types'
@@ -32,7 +15,6 @@ import StaffProfileMobile  from '@/components/admin/StaffProfileMobile'
 import StaffProfileDesktop from '@/components/admin/StaffProfileDesktop'
 import RecruitmentFileTab      from './RecruitmentFileTab'
 import DocumentWorkspace        from './workspace/DocumentWorkspace'
-import { can }                 from '@/lib/rbac/permissions'
 import { getStaffDocumentRepository } from '@/lib/documents/repository'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -232,274 +214,6 @@ async function getRecentIncidents(id: string): Promise<StaffIncident[]> {
   return json.data
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-  })
-}
-
-function formatBytes(bytes: number | null): string {
-  if (!bytes) return '—'
-  if (bytes < 1024)           return `${bytes} B`
-  if (bytes < 1024 * 1024)   return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-/** Returns true if the date is in the past */
-function isExpired(iso: string | null): boolean {
-  if (!iso) return false
-  return new Date(iso) < new Date()
-}
-
-/** Returns true if the date is within 30 days but not expired */
-function isExpiringSoon(iso: string | null): boolean {
-  if (!iso) return false
-  const expiry  = new Date(iso)
-  const now     = new Date()
-  const warnAt  = new Date()
-  warnAt.setDate(now.getDate() + 30)
-  return expiry > now && expiry <= warnAt
-}
-
-const STATUS_CLS: Record<string, string> = {
-  pre_employment: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-  active:         'bg-green-50  text-green-700  ring-green-600/20',
-  suspended:      'bg-orange-50 text-orange-700 ring-orange-600/20',
-  terminated:     'bg-red-50    text-red-700    ring-red-600/20',
-  inactive:       'bg-gray-50   text-gray-600   ring-gray-500/20',
-}
-
-const SHIFT_STATUS_CLS: Record<string, string> = {
-  scheduled: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  confirmed: 'bg-green-50  text-green-700  ring-green-600/20',
-  completed: 'bg-gray-50   text-gray-600   ring-gray-500/20',
-  cancelled: 'bg-red-50    text-red-700    ring-red-600/20',
-  no_show:   'bg-orange-50 text-orange-700 ring-orange-600/20',
-}
-
-const TIMESHEET_STATUS_CLS: Record<string, string> = {
-  pending:    'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
-  clocked_in: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  completed:  'bg-green-50  text-green-700  ring-green-600/20',
-  missed:     'bg-red-50    text-red-700    ring-red-600/20',
-  adjusted:   'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-}
-
-const INCIDENT_SEVERITY_CLS: Record<string, string> = {
-  low:      'bg-gray-50    text-gray-600   ring-gray-400/20',
-  medium:   'bg-yellow-50  text-yellow-700 ring-yellow-600/20',
-  high:     'bg-orange-50  text-orange-700 ring-orange-600/20',
-  critical: 'bg-red-50     text-red-700    ring-red-600/20',
-}
-
-const INCIDENT_STATUS_CLS: Record<string, string> = {
-  open:          'bg-red-50     text-red-700    ring-red-600/20',
-  investigating: 'bg-blue-50    text-blue-700   ring-blue-600/20',
-  resolved:      'bg-green-50   text-green-700  ring-green-600/20',
-  closed:        'bg-gray-50    text-on-surface-variant   ring-gray-400/20',
-}
-
-// Document expiry status badge
-const DOC_STATUS_CLS: Record<string, string> = {
-  expired:       'bg-red-50    text-red-700    ring-red-600/20',
-  expiring_soon: 'bg-yellow-50 text-yellow-700 ring-yellow-600/20',
-  valid:         'bg-green-50  text-green-700  ring-green-600/20',
-  no_expiry:     'bg-gray-50   text-on-surface-variant   ring-gray-400/20',
-}
-
-function docExpiryStatus(expiryDate: string | null): string {
-  if (!expiryDate)             return 'no_expiry'
-  if (isExpired(expiryDate))   return 'expired'
-  if (isExpiringSoon(expiryDate)) return 'expiring_soon'
-  return 'valid'
-}
-
-function docExpiryLabel(status: string): string {
-  const map: Record<string, string> = {
-    expired:       'Expired',
-    expiring_soon: 'Expiring soon',
-    valid:         'Valid',
-    no_expiry:     'No expiry',
-  }
-  return map[status] ?? status
-}
-
-const COMPLIANCE_CLS: Record<string, string> = {
-  not_started: 'bg-gray-50   text-gray-600   ring-gray-500/20',
-  in_progress: 'bg-blue-50   text-blue-700   ring-blue-600/20',
-  complete:    'bg-green-50  text-green-700  ring-green-600/20',
-  rejected:    'bg-red-50    text-red-700    ring-red-600/20',
-  expired:     'bg-orange-50 text-orange-700 ring-orange-600/20',
-}
-
-function Badge({ status, map }: { status: string; map: Record<string, string> }) {
-  const cls = map[status] ?? 'bg-gray-50 text-gray-600 ring-gray-500/20'
-  return (
-    <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}`}>
-      {status.replace(/_/g, ' ')}
-    </span>
-  )
-}
-
-function Field({ label, value }: { label: string; value: string | null | undefined }) {
-  return (
-    <div>
-      <dt className="text-xs font-medium text-on-surface-variant">{label}</dt>
-      <dd className="mt-0.5 text-sm text-primary">{value || '—'}</dd>
-    </div>
-  )
-}
-
-function SectionBox({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5">
-        <h2 className="text-sm font-semibold text-gray-700">{title}</h2>
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  )
-}
-
-// ── Compliance summary card ───────────────────────────────────────────────────
-
-function ComplianceCard({ documents, jobRole }: { documents: Document[], jobRole: string | null }) {
-  const summary = calculateCompliance(documents)
-  const tier    = complianceTier(summary.percentage)
-  const cls     = TIER_CLS[tier]
-
-  // Derive training labels for display
-  const { TRAINING_CATEGORY_LABELS } = require('@/lib/documents/constants')
-  const catLabel = (cat: string): string =>
-    (TRAINING_CATEGORY_LABELS as Record<string, string>)[cat] ?? cat.replace(/_/g, ' ')
-
-  return (
-    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">Compliance</h2>
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${cls}`}>
-          {summary.percentage}%
-        </span>
-      </div>
-      <div className="p-4 space-y-4">
-
-        {/* Progress bar */}
-        <div>
-          <div className="flex justify-between text-xs text-on-surface-variant mb-1">
-            <span>Overall compliance</span>
-            <span className="font-medium">{summary.percentage}%</span>
-          </div>
-          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                tier === 'green' ? 'bg-green-500' :
-                tier === 'amber' ? 'bg-yellow-400' :
-                'bg-red-500'
-              }`}
-              style={{ width: `${summary.percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Issues grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
-          {/* Missing documents */}
-          <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Missing documents</p>
-            {summary.missingDocuments.length === 0 ? (
-              <p className="text-xs text-green-600">✓ None</p>
-            ) : (
-              <ul className="space-y-0.5">
-                {summary.missingDocuments.map((d) => (
-                  <li key={d} className="text-xs text-red-600">✕ {d.replace(/_/g, ' ')}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Expired documents */}
-          <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Expired</p>
-            {summary.expiredDocuments.length === 0 ? (
-              <p className="text-xs text-green-600">✓ None</p>
-            ) : (
-              <ul className="space-y-0.5">
-                {summary.expiredDocuments.map((d) => (
-                  <li key={d} className="text-xs text-red-600">✕ {d.replace(/_/g, ' ')}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Expiring soon */}
-          <div className="rounded-md bg-gray-50 border border-gray-200 p-3">
-            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Expiring within 30 days</p>
-            {summary.expiringSoon.length === 0 ? (
-              <p className="text-xs text-green-600">✓ None</p>
-            ) : (
-              <ul className="space-y-0.5">
-                {summary.expiringSoon.map((d) => (
-                  <li key={d} className="text-xs text-yellow-600">⚠ {d.replace(/_/g, ' ')}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-        </div>
-
-        {/* Missing training */}
-        {summary.missingTraining.length > 0 && (
-          <div className="rounded-md bg-red-50 border border-red-200 p-3">
-            <p className="text-xs font-medium text-red-700 mb-1.5">Missing / expired training</p>
-            <ul className="flex flex-wrap gap-1.5">
-              {summary.missingTraining.map((t) => (
-                <li key={t} className="text-xs bg-red-100 text-red-700 rounded px-1.5 py-0.5">
-                  {catLabel(t)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Satisfied training */}
-        {summary.satisfiedTraining.length > 0 && (
-          <div>
-            <p className="text-xs font-medium text-on-surface-variant mb-1.5">Approved training</p>
-            <ul className="flex flex-wrap gap-1.5">
-              {summary.satisfiedTraining.map((t) => (
-                <li key={t} className="text-xs bg-green-50 text-green-700 rounded px-1.5 py-0.5 ring-1 ring-inset ring-green-600/20">
-                  ✓ {catLabel(t)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-      </div>
-    </div>
-  )
-}
-
-// ── Expiry colour helper (Task 6) ─────────────────────────────────────────────
-
-function expiryRowCls(expiryDate: string | null): string {
-  if (isExpired(expiryDate))     return 'bg-red-50'
-  if (isExpiringSoon(expiryDate)) return 'bg-yellow-50'
-  if (expiryDate)                 return 'bg-green-50/40'
-  return ''
-}
-
-function expiryTextCls(expiryDate: string | null): string {
-  if (isExpired(expiryDate))     return 'text-red-600 font-medium'
-  if (isExpiringSoon(expiryDate)) return 'text-yellow-700 font-medium'
-  if (expiryDate)                 return 'text-green-700'
-  return 'text-on-surface-variant'
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function StaffDetailPage({
@@ -536,7 +250,7 @@ export default async function StaffDetailPage({
   const recentNotes     = await recentNotesPromise.catch(() => [])
   const recentIncidents = await recentIncidentsPromise.catch(() => [] as StaffIncident[])
 
-  const { staff_profile: sp, applicant, documents, compliance_items, hr_readiness } = data
+  const { staff_profile: sp, documents } = data
 
   // Fetch document repository for the Documents tab (lazy — only if that tab is active)
   const docRepository = isDocumentsTab
@@ -546,17 +260,6 @@ export default async function StaffDetailPage({
         companyId:      sp.company_id,
       }).catch(() => ({ folders: [], unclassified: [] }))
     : null
-
-  // If the API didn't return hr_readiness (shouldn't happen post-migration), compute client-side
-  const hrReadiness = hr_readiness ?? calculateHrReadiness({
-    date_of_birth:          sp.date_of_birth,
-    address_line_1:         sp.address_line_1,
-    ni_number:              sp.ni_number,
-    bank_account_number:    sp.bank_account_number,
-    emergency_contact_name: sp.emergency_contact_name,
-    employment_type:        sp.employment_type,
-    starter_declaration:    sp.starter_declaration,
-  })
 
   // ── RBAC: fetch caller role + staff member's profile role ─────────────────
   let callerRole        = 'coordinator'   // safe fallback — hides change button
@@ -614,10 +317,7 @@ export default async function StaffDetailPage({
     }
   } catch { /* non-critical — page still renders */ }
 
-  const displayName =
-    [sp.first_name, sp.last_name].filter(Boolean).join(' ') ||
-    sp.email ||
-    'Unknown'
+
 
   return (
     <div>

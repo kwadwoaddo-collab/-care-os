@@ -1,7 +1,6 @@
 import {
   REQUIRED_DOCUMENTS,
   REQUIRED_TRAINING,
-  EXPIRY_WARN_DAYS,
 } from './requirements'
 import { getRequiredTraining } from '@/lib/training/matrix'
 

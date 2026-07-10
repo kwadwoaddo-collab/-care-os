@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { can } from '@/lib/rbac/permissions'
-import { ENABLE_TIMESHEETS } from '@/lib/features'
 import Icon from '@/components/ui/Icon'
 import {
   canViewCompliance,

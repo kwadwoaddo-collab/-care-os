@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 
 const STEPS = [
@@ -47,7 +47,6 @@ type FormData = typeof DEFAULTS
 
 export default function SetupWizardPage() {
   const { id } = useParams<{ id: string }>()
-  const router  = useRouter()
 
   const [step,    setStep]    = useState(0)
   const [form,    setForm]    = useState<FormData>(DEFAULTS)

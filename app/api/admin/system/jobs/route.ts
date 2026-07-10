@@ -4,7 +4,7 @@ import { requireAdmin }  from '@/lib/auth/requireAdmin'
 import { can }           from '@/lib/auth/permissions'
 import { forbidden }     from '@/lib/auth/responses'
 import { JOB_REGISTRY }  from '@/lib/jobs/registry'
-import { detectStuckJobs, executeJob } from '@/lib/jobs/executor'
+import { detectStuckJobs } from '@/lib/jobs/executor'
 import type { JobExecutionRow } from '@/lib/jobs/types'
 
 export interface JobsResponse {
