@@ -43,13 +43,13 @@ function ExpiryCell({ date }: { date: string | null }) {
 
 // ── Row ───────────────────────────────────────────────────────────────────────
 
-function DocRow({ doc, selected, onSelect, onPreview, onQuickAction, _staffProfileId }: {
+function DocRow({ doc, selected, onSelect, onPreview, onQuickAction, staffProfileId: _staffProfileId }: {
   doc:            WorkspaceDocument
   selected:       boolean
   onSelect:       (id: string, multi: boolean) => void
   onPreview:      (doc: WorkspaceDocument) => void
   onQuickAction:  (action: 'verify' | 'approve' | 'reject' | 'resubmission' | 'archive' | 'move' | 'delete', docId: string) => void
-  _staffProfileId: string
+  staffProfileId: string
 }) {
   const vs = doc.verification_status ?? 'pending_verification'
   const needsAttention = isExpired(doc.expiry_date) || isExpiringSoon(doc.expiry_date)

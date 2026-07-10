@@ -147,9 +147,9 @@ function VisibilityBadge({ visibility }: { visibility: string }) {
 
 // ── Document card ─────────────────────────────────────────────────────────────
 
-function DocumentCard({ doc, _staffProfileId, onArchived }: {
+function DocumentCard({ doc, staffProfileId: _staffProfileId, onArchived }: {
   doc:            RepoDocument
-  _staffProfileId: string
+  staffProfileId: string
   onArchived:     (id: string) => void
 }) {
   const [archiving, setArchiving] = useState(false)
@@ -239,8 +239,8 @@ function DocumentCard({ doc, _staffProfileId, onArchived }: {
 
 // ── Upload drop zone ──────────────────────────────────────────────────────────
 
-function UploadZone({ _folderId, folderSlug, staffProfileId, onUploaded }: {
-  _folderId:       string
+function UploadZone({ folderId: _folderId, folderSlug, staffProfileId, onUploaded }: {
+  folderId:       string
   folderSlug:     string
   staffProfileId: string
   onUploaded:     () => void
@@ -461,7 +461,7 @@ function filterDocs(docs: RepoDocument[], mode: FilterMode): RepoDocument[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function DocumentRepositoryTab({ staffProfileId, _companyId, folders, unclassified }: Props) {
+export default function DocumentRepositoryTab({ staffProfileId, companyId: _companyId, folders, unclassified }: Props) {
   const [search,    setSearch]  = useState('')
   const [filterMode, setFilter] = useState<FilterMode>('all')
   const [expandAll, setExpandAll] = useState(false)

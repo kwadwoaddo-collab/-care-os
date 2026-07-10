@@ -52,13 +52,13 @@ function BlockerRow({ item, type }: { item: ActivationBlocker; type: 'blocker' |
 
 function ActivationPreflightModal({
   check,
-  _pendingStatus,
+  pendingStatus: _pendingStatus,
   onConfirm,
   onCancel,
   isLoading,
 }: {
   check:         ActivationCheckResult
-  _pendingStatus: string
+  pendingStatus: string
   onConfirm:     (force: boolean) => void
   onCancel:      () => void
   isLoading:     boolean

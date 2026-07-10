@@ -27,12 +27,12 @@ function CountBadge({ n, cls }: { n: number; cls: string }) {
 
 function FolderMenu({
   folder,
-  _companyId,
+  companyId: _companyId,
   onRename,
   onArchive,
 }: {
   folder:    WorkspaceFolder
-  _companyId: string
+  companyId: string
   onRename:  (newName: string) => Promise<void>
   onArchive: () => Promise<void>
 }) {
@@ -142,11 +142,11 @@ function FolderMenu({
 // ── New folder dialog ─────────────────────────────────────────────────────────
 
 function NewFolderDialog({
-  _companyId,
+  companyId: _companyId,
   onCreated,
   onClose,
 }: {
-  _companyId: string; onCreated: () => void; onClose: () => void
+  companyId: string; onCreated: () => void; onClose: () => void
 }) {
   const [name, setName]       = useState('')
   const [loading, setLoading] = useState(false)
@@ -301,7 +301,7 @@ function FolderRow({ folder, selected, onClick, companyId, onFoldersChange }: {
 
 // ── FolderTree ────────────────────────────────────────────────────────────────
 
-export default function FolderTree({ folders, unclassified, selectedSlug, onSelect, _staffProfileId, companyId, onFoldersChange }: Props) {
+export default function FolderTree({ folders, unclassified, selectedSlug, onSelect, staffProfileId: _staffProfileId, companyId, onFoldersChange }: Props) {
   const [showNewFolder, setShowNewFolder] = useState(false)
 
   const systemFolders = folders.filter((f) => f.is_system && f.slug !== 'archive')

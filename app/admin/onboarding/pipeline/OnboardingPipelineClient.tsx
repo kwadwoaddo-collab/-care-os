@@ -70,7 +70,7 @@ function ScoreChip({ score }: { score: number }) {
 
 // ── Summary strip ─────────────────────────────────────────────────────────────
 
-function SummaryStrip({ summary, _forecast }: { summary: PipelineSummary; _forecast: Props['riskForecast'] }) {
+function SummaryStrip({ summary, forecast: _forecast }: { summary: PipelineSummary; forecast: Props['riskForecast'] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
       {[

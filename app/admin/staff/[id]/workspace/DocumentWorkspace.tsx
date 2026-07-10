@@ -65,8 +65,8 @@ function BulkBar({ count, onApprove, onArchive, onClear, loading }: {
 
 // ── Upload zone ───────────────────────────────────────────────────────────────
 
-function UploadButton({ _folderId, folderSlug, staffProfileId }: {
-  _folderId:       string
+function UploadButton({ folderId: _folderId, folderSlug, staffProfileId }: {
+  folderId:       string
   folderSlug:     string
   staffProfileId: string
 }) {

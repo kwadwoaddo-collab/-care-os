@@ -659,10 +659,11 @@ function FocusModeBanner() {
 // ── Mobile quick-triage view ──────────────────────────────────────────────────
 
 function MobileTriageView({
-  summary, _focusMode,
+  summary,
+  focusMode: _focusMode,
 }: {
   summary:   OccSummary
-  _focusMode: boolean
+  focusMode: boolean
 }) {
   const criticalItems = [
     ...summary.safeguarding.incidents.map((i) => ({
