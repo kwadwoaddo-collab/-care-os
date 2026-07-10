@@ -6,7 +6,6 @@ import { forbidden }    from '@/lib/auth/responses'
 import type {
   OccSummary,
   FeedEvent,
-  ShiftSummary,
   SafeguardingIncident,
   ComplianceAlert,
   QueueItem,
@@ -161,14 +160,7 @@ export async function GET() {
   })
   const next24hUncovered = next24hShifts.filter((s) => !s.assigned_staff_id)
 
-  const uncoveredSummary: ShiftSummary[] = uncoveredShifts.slice(0, 10).map((s) => ({
-    id:          s.id,
-    title:       s.title,
-    shift_date:  s.shift_date,
-    start_time:  s.start_time,
-    end_time:    s.end_time,
-    client_name: s.client_name,
-  }))
+
 
   // ── Process compliance docs ───────────────────────────────────────────────
 

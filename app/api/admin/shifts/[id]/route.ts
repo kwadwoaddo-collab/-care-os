@@ -50,6 +50,13 @@ export async function PATCH(
     )
   }
 
+  if (body.shift_type !== undefined && !ALLOWED_TYPES.includes(body.shift_type as any)) {
+    return NextResponse.json(
+      { error: `Invalid shift_type. Allowed: ${ALLOWED_TYPES.filter(Boolean).join(', ')} or null` },
+      { status: 400 }
+    )
+  }
+
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   const allowed: Array<keyof PatchBody> = [
     'status', 'shift_type', 'title', 'shift_date',

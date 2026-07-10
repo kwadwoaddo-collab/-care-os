@@ -52,7 +52,6 @@ export async function GET() {
   const { companyId } = auth.ctx
 
   const today    = new Date().toISOString().slice(0, 10)
-  const in14days = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10)
 
   const [staffRes, docsRes, availRes] = await Promise.all([
     adminClient

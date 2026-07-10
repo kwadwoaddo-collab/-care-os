@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       weekday: 'long', day: 'numeric', month: 'long',
     })
 
-    const { subject, html, text } = shiftAssignedTemplate({
+    const { html, text } = shiftAssignedTemplate({
       companyName,
       workerName,
       shiftTitle:  raw.title,
