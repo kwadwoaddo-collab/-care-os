@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
         approvedBy:     userId,
         staffProfileId: doc?.staff_profile_id ?? undefined,
       })
-      res.ok ? results.ok++ : results.failed++
+      if (res.ok) {
+        results.ok++
+      } else {
+        results.failed++
+      }
     }
 
   } else if (action === 'archive') {
@@ -68,7 +72,11 @@ export async function POST(req: NextRequest) {
       .update({ visibility: parsed.data.visibility })
       .in('id', allowed)
       .eq('company_id', companyId)
-    error ? (results.failed = allowed.length) : (results.ok = allowed.length)
+    if (error) {
+      results.failed = allowed.length
+    } else {
+      results.ok = allowed.length
+    }
 
   } else if (action === 'set_worker_visible' && parsed.data.workerVisible !== undefined) {
     const { error } = await adminClient
@@ -76,7 +84,11 @@ export async function POST(req: NextRequest) {
       .update({ worker_visible: parsed.data.workerVisible })
       .in('id', allowed)
       .eq('company_id', companyId)
-    error ? (results.failed = allowed.length) : (results.ok = allowed.length)
+    if (error) {
+      results.failed = allowed.length
+    } else {
+      results.ok = allowed.length
+    }
 
   } else if (action === 'route') {
     for (const docId of allowed) {

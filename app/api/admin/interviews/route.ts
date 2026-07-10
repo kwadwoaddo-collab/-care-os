@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     .from('applicants')
     .select('id, company_id')
     .eq('id', applicant_id)
+    .eq('company_id', companyId)
     .maybeSingle()
 
   if (applicantError) {
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
     .from('applicants')
     .update({ status: 'interview_scheduled', updated_at: new Date().toISOString() })
     .eq('id', applicant_id)
+    .eq('company_id', companyId)
 
   if (statusError) {
     console.error('[admin/interviews] applicant status update failed:', statusError)

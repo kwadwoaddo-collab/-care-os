@@ -132,7 +132,6 @@ export async function POST(request: NextRequest) {
   }
 
   const {
-    company_id,
     visit_note_id,
     shift_id,
     client_id,
