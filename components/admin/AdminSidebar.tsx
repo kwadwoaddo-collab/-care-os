@@ -123,25 +123,20 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
     return (
       <Link
         href={item.href}
-        className={`relative flex items-center gap-4 px-4 py-2.5 rounded-lg transition-all duration-200 overflow-hidden ${
+        className={`relative flex items-center gap-4 px-4 py-2 rounded-xl transition-all duration-200 select-none ${
           active
-            ? 'bg-secondary text-white shadow-sm'
-            : muted
-              ? 'text-on-surface-variant/70 hover:bg-surface-container-high hover:text-on-surface'
-              : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+            ? 'bg-primary/10 text-primary dark:bg-primary/20 shadow-apple-sm'
+            : 'text-foreground/75 hover:bg-foreground/5 hover:text-foreground active:scale-[0.98]'
         }`}
         style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
       >
-        {active && (
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
-        )}
         <Icon
           name={item.icon}
           size={muted ? 'sm' : 'md'}
           fill={active}
           className="shrink-0"
         />
-        <span className={`truncate normal-case ${muted ? 'text-xs font-medium' : 'text-sm font-medium'}`}>
+        <span className={`truncate normal-case ${muted ? 'text-xs font-semibold' : 'text-sm font-semibold'}`}>
           {item.label}
         </span>
       </Link>
@@ -149,7 +144,7 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
   }
 
   return (
-    <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-surface-container border-r border-outline-variant z-50">
+    <aside className="hidden lg:flex flex-col h-screen w-64 min-w-[256px] max-w-[256px] fixed left-0 top-0 bg-surface-container-low/80 dark:bg-black/60 backdrop-blur-xl border-r border-black/[0.04] dark:border-white/[0.06] z-50">
       <div className="flex flex-col h-full px-6 py-8 overflow-y-auto no-scrollbar">
 
         {/* ── Brand ─────────────────────────────────────────────────────────── */}
@@ -205,23 +200,20 @@ export default function AdminSidebar({ userRole, userFullName, userInitials }: A
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex items-center gap-4 px-4 py-3 rounded-lg transition-all duration-200 overflow-hidden ${
+                className={`relative flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-200 select-none ${
                   active
-                    ? 'bg-secondary text-white shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+                    ? 'bg-primary/10 text-primary dark:bg-primary/20 shadow-apple-sm'
+                    : 'text-foreground/75 hover:bg-foreground/5 hover:text-foreground active:scale-[0.98]'
                 }`}
                 style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}
               >
-                {active && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-white/20" />
-                )}
                 <Icon
                   name={item.icon}
                   size="md"
                   fill={active}
                   className="shrink-0"
                 />
-                <span className="text-sm font-medium normal-case truncate">
+                <span className="text-sm font-semibold normal-case truncate">
                   {item.label}
                 </span>
               </Link>

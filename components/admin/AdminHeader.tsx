@@ -152,7 +152,7 @@ export default function AdminHeader() {
   if (isAuthPage) return null
 
   return (
-    <header className="h-16 w-full sticky top-0 z-40 bg-surface-container flex justify-between items-center px-6 transition-colors">
+    <header className="h-16 w-full sticky top-0 z-40 bg-background/80 dark:bg-black/60 backdrop-blur-xl border-b border-black/[0.04] dark:border-white/[0.06] flex justify-between items-center px-6 transition-all select-none">
       
       {/* Mobile Brand (Hidden on Desktop) */}
       <div className="lg:hidden flex items-center gap-3">
@@ -175,16 +175,26 @@ export default function AdminHeader() {
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search staff, clients, documents…"
-            className="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-md w-72 focus:ring-2 focus:ring-secondary transition-all placeholder:text-on-surface-variant text-on-surface"
+            className="bg-surface-container-high/60 border border-black/[0.03] dark:border-white/[0.03] rounded-full py-1.5 pl-10 pr-4 text-xs w-72 focus:w-80 focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-on-surface-variant/70 text-on-surface outline-none shadow-inner"
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-autocomplete="list"
+            aria-controls="search-results-listbox"
+            aria-haspopup="listbox"
           />
 
           {/* Autocomplete / Command Palette Dropdown */}
           {isOpen && (
-            <div className="absolute top-12 left-0 w-96 max-h-[400px] overflow-y-auto bg-surface-container-highest/95 backdrop-blur-md border border-outline-variant/60 rounded-xl shadow-xl z-50 p-2 divide-y divide-outline-variant/20 scrollbar-none">
+            <div 
+              id="search-results-listbox"
+              role="listbox"
+              aria-label="Search suggestions"
+              className="absolute top-12 left-0 w-96 max-h-[400px] overflow-y-auto bg-surface-container/95 dark:bg-zinc-950/90 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] rounded-2xl shadow-apple-lg z-50 p-2 divide-y divide-black/[0.04] dark:divide-white/[0.04] scrollbar-none"
+            >
               
               {isLoading && (
                 <div className="flex items-center gap-2 px-4 py-3 text-xs text-on-surface-variant">
-                  <span className="animate-spin h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full" />
+                  <span className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
                   Searching databases...
                 </div>
               )}
@@ -204,10 +214,12 @@ export default function AdminHeader() {
                           setIsOpen(false)
                           setQuery('')
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors ${
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors select-none ${
                           isSelected 
-                            ? 'bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-semibold' 
-                            : 'text-on-surface hover:bg-indigo-600/5 hover:text-indigo-600 dark:hover:text-indigo-400'
+                            ? 'bg-primary/10 text-primary font-semibold' 
+                            : 'text-on-surface hover:bg-primary/5 hover:text-primary active:scale-[0.99]'
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -237,10 +249,12 @@ export default function AdminHeader() {
                           setIsOpen(false)
                           setQuery('')
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors ${
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors select-none ${
                           isSelected 
-                            ? 'bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-semibold' 
-                            : 'text-on-surface hover:bg-indigo-600/5 hover:text-indigo-600 dark:hover:text-indigo-400'
+                            ? 'bg-primary/10 text-primary font-semibold' 
+                            : 'text-on-surface hover:bg-primary/5 hover:text-primary active:scale-[0.99]'
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -270,10 +284,12 @@ export default function AdminHeader() {
                           setIsOpen(false)
                           setQuery('')
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors ${
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-xs transition-colors select-none ${
                           isSelected 
-                            ? 'bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-semibold' 
-                            : 'text-on-surface hover:bg-indigo-600/5 hover:text-indigo-600 dark:hover:text-indigo-400'
+                            ? 'bg-primary/10 text-primary font-semibold' 
+                            : 'text-on-surface hover:bg-primary/5 hover:text-primary active:scale-[0.99]'
                         }`}
                       >
                         <span className="flex items-center gap-2">

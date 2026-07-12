@@ -38,23 +38,23 @@ interface SeverityBadgeProps {
 }
 
 const LEVEL_CONFIG: Record<SeverityLevel, { cls: string; defaultLabel: string }> = {
-  critical: { cls: 'bg-red-100 text-red-700',         defaultLabel: 'Critical' },
-  high:     { cls: 'bg-orange-100 text-orange-700',   defaultLabel: 'High' },
-  urgent:   { cls: 'bg-amber-100 text-amber-700',     defaultLabel: 'Urgent' },
-  warning:  { cls: 'bg-amber-100 text-amber-700',     defaultLabel: 'Warning' },
-  medium:   { cls: 'bg-amber-50 text-amber-600',      defaultLabel: 'Medium' },
-  success:  { cls: 'bg-emerald-100 text-emerald-700', defaultLabel: 'Good' },
-  low:      { cls: 'bg-slate-100 text-slate-600',     defaultLabel: 'Low' },
-  info:     { cls: 'bg-blue-100 text-blue-700',       defaultLabel: 'Info' },
-  neutral:  { cls: 'bg-slate-100 text-slate-500',     defaultLabel: 'None' },
-  pilot:    { cls: 'bg-indigo-100 text-indigo-700',   defaultLabel: 'Pilot' },
-  active:   { cls: 'bg-emerald-100 text-emerald-700', defaultLabel: 'Active' },
-  inactive: { cls: 'bg-slate-100 text-slate-500',     defaultLabel: 'Inactive' },
+  critical: { cls: 'bg-error/10 text-error-text border border-error/20', defaultLabel: 'Critical' },
+  high:     { cls: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20', defaultLabel: 'High' },
+  urgent:   { cls: 'bg-warning/10 text-warning-text border border-warning/20', defaultLabel: 'Urgent' },
+  warning:  { cls: 'bg-warning/10 text-warning-text border border-warning/20', defaultLabel: 'Warning' },
+  medium:   { cls: 'bg-warning/5 text-warning-text border border-warning/15', defaultLabel: 'Medium' },
+  success:  { cls: 'bg-success/10 text-success-text border border-success/20', defaultLabel: 'Good' },
+  low:      { cls: 'bg-foreground/10 text-foreground/70 border border-foreground/10', defaultLabel: 'Low' },
+  info:     { cls: 'bg-primary/10 text-primary border border-primary/20', defaultLabel: 'Info' },
+  neutral:  { cls: 'bg-foreground/5 text-foreground/50 border border-foreground/5', defaultLabel: 'None' },
+  pilot:    { cls: 'bg-secondary/10 text-secondary border border-secondary/20', defaultLabel: 'Pilot' },
+  active:   { cls: 'bg-success/10 text-success-text border border-success/20', defaultLabel: 'Active' },
+  inactive: { cls: 'bg-foreground/5 text-foreground/50 border border-foreground/5', defaultLabel: 'Inactive' },
 }
 
 const SIZE_CLS: Record<'xs' | 'sm', string> = {
-  xs: 'px-2 py-0.5 text-[11px] font-semibold rounded-full',
-  sm: 'px-2.5 py-1 text-xs font-semibold rounded-lg',
+  xs: 'px-2 py-0.5 text-[10px] font-semibold rounded-full',
+  sm: 'px-2.5 py-0.5 text-[11px] font-semibold rounded-full',
 }
 
 export default function SeverityBadge({

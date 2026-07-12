@@ -27,7 +27,7 @@ const PADDING: Record<NonNullable<CardProps['padding']>, string> = {
 
 export default function Card({ children, className = '', padding = 'default', as: Tag = 'div' }: CardProps) {
   return (
-    <Tag className={`bg-surface-container-lowest border border-slate-200 rounded-xl ${PADDING[padding]} ${className}`}>
+    <Tag className={`bg-surface-container-lowest/80 dark:bg-surface-container-lowest/40 backdrop-blur-md border border-black/[0.04] dark:border-white/[0.06] shadow-apple-sm rounded-2xl transition-all duration-300 hover:shadow-apple-md hover:border-black/[0.08] dark:hover:border-white/[0.1] ${PADDING[padding]} ${className}`}>
       {children}
     </Tag>
   )

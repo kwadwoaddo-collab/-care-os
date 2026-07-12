@@ -74,7 +74,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-surface-container-lowest/90 dark:backdrop-blur-sm rounded-xl border border-outline-variant/50 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.3)] transition-all duration-300 hover:shadow-lg hover:scale-[1.003] hover:border-outline-variant ${className}`}>
+    <div className={`bg-surface-container-lowest/80 dark:bg-surface-container-lowest/40 backdrop-blur-md border border-black/[0.04] dark:border-white/[0.06] shadow-apple-sm rounded-2xl transition-all duration-300 hover:shadow-apple-md hover:border-black/[0.08] dark:hover:border-white/[0.1] ${className}`}>
       {children}
     </div>
   )
@@ -95,37 +95,40 @@ function CommandMetric({
   title: string; count: number | string; sub: string;
   variant: 'urgent' | 'warning' | 'neutral' | 'success'; href: string; icon: string
 }) {
-  const borders = {
-    urgent:  'border-l-red-500',
-    warning: 'border-l-amber-500',
-    neutral: 'border-l-outline-variant',
-    success: 'border-l-indigo-500 dark:border-l-indigo-400',
+  const indicatorDot = {
+    urgent:  'bg-error shadow-[0_0_8px_rgba(255,59,48,0.4)]',
+    warning: 'bg-warning shadow-[0_0_8px_rgba(255,149,0,0.4)]',
+    neutral: 'bg-outline',
+    success: 'bg-success shadow-[0_0_8px_rgba(52,199,89,0.4)]',
   }
   const textColors = {
-    urgent:  'text-red-600 dark:text-red-400',
-    warning: 'text-amber-600 dark:text-amber-400',
+    urgent:  'text-error',
+    warning: 'text-warning',
     neutral: 'text-on-surface',
-    success: 'text-indigo-600 dark:text-indigo-400',
+    success: 'text-primary dark:text-primary',
   }
   const hoverBg = {
-    urgent:  'hover:bg-red-500/5',
-    warning: 'hover:bg-amber-500/5',
+    urgent:  'hover:bg-error/5',
+    warning: 'hover:bg-warning/5',
     neutral: 'hover:bg-surface-container-low',
-    success: 'hover:bg-indigo-500/5',
+    success: 'hover:bg-primary/5',
   }
   const iconBg = {
-    urgent:  'bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400',
-    warning: 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400',
+    urgent:  'bg-error/10 text-error',
+    warning: 'bg-warning/10 text-warning',
     neutral: 'bg-surface-container-high text-on-surface-variant',
-    success: 'bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400',
+    success: 'bg-primary/10 text-primary',
   }
   return (
     <Link
       href={href}
-      className={`group block bg-surface-container-lowest/90 dark:backdrop-blur-sm p-6 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.3)] border-l-4 ${borders[variant]} border border-outline-variant/50 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${hoverBg[variant]}`}
+      className={`group block bg-surface-container-lowest/80 dark:bg-surface-container-lowest/40 backdrop-blur-md p-6 rounded-2xl border border-black/[0.04] dark:border-white/[0.06] shadow-apple-sm transition-all duration-300 hover:shadow-apple-md hover:scale-[1.01] hover:border-black/[0.08] dark:hover:border-white/[0.1] ${hoverBg[variant]}`}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider pt-0.5">{title}</p>
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full shrink-0 ${indicatorDot[variant]}`} />
+          <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider pt-0.5">{title}</p>
+        </div>
         <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110 ${iconBg[variant]}`}>
           <span className="material-symbols-outlined text-[18px]">{icon}</span>
         </div>
@@ -150,7 +153,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="w-full flex items-center gap-4 p-4 rounded-xl border border-outline-variant/50 hover:border-indigo-300/60 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 hover:scale-[1.02] transition-all duration-200 text-left group"
+      className="w-full flex items-center gap-4 p-4 rounded-2xl border border-black/[0.04] dark:border-white/[0.06] hover:border-primary/20 hover:bg-primary/5 active:scale-[0.98] hover:scale-[1.01] shadow-apple-sm hover:shadow-apple-md transition-all duration-200 text-left group"
     >
       <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${bg} ${iconColor} transition-transform duration-200 group-hover:scale-110`}>
         <Icon name={icon} size="md" fill />

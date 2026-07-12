@@ -6,13 +6,14 @@ import NotificationBellWrapper from '@/components/shared/NotificationBellWrapper
 import WorkerAuthGuard from './WorkerAuthGuard'
 import { useRouter, usePathname } from 'next/navigation'
 import { useState } from 'react'
+import Icon from '@/components/ui/Icon'
 
 const NAV = [
-  { href: '/worker/dashboard',  label: 'Home',     icon: '🏠' },
-  { href: '/worker/tasks',      label: 'Tasks',    icon: '✅' },
-  { href: '/worker/shifts',     label: 'Shifts',   icon: '📅' },
-  { href: '/worker/messages',   label: 'Messages', icon: '💬' },
-  { href: '/worker/documents',  label: 'Docs',     icon: '📄' },
+  { href: '/worker/dashboard',  label: 'Home',     icon: 'home' },
+  { href: '/worker/tasks',      label: 'Tasks',    icon: 'task_alt' },
+  { href: '/worker/shifts',     label: 'Shifts',   icon: 'calendar_today' },
+  { href: '/worker/messages',   label: 'Messages', icon: 'chat' },
+  { href: '/worker/documents',  label: 'Docs',     icon: 'description' },
 ]
 
 export default function WorkerLayout({ children }: { children: ReactNode }) {
@@ -40,14 +41,16 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
 
   return (
     <WorkerAuthGuard>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
       {/* Header bar */}
-      <header className="sticky top-0 z-30 shadow-md" style={{ background: 'linear-gradient(to right, #4338ca, #6d28d9)' }}>
+      <header className="sticky top-0 z-30 bg-background/80 dark:bg-black/60 backdrop-blur-xl border-b border-black/[0.04] dark:border-white/[0.06] shadow-apple-sm select-none">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl" aria-hidden="true">🛡️</span>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0" aria-hidden="true">
+              <Icon name="shield" size="sm" fill />
+            </div>
             <div>
-              <p className="text-sm font-bold text-white leading-none tracking-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
+              <p className="text-sm font-bold text-foreground leading-none tracking-tight" style={{ fontFamily: 'var(--font-jakarta), sans-serif' }}>
                 Care OS
               </p>
             </div>
@@ -58,7 +61,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="text-xs text-indigo-200 hover:text-white transition-colors font-medium"
+                className="text-xs text-foreground/60 hover:text-foreground transition-colors font-medium active:scale-95"
               >
                 {loggingOut ? '…' : 'Logout'}
               </button>
@@ -74,7 +77,7 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
 
       {/* Bottom tab bar — hidden on login screen */}
       {pathname !== '/worker/login' && <nav
-        className="sticky bottom-0 z-30 bg-surface-container-lowest border-t border-gray-200 shadow-lg"
+        className="sticky bottom-0 z-30 bg-surface-container-lowest/95 dark:bg-black/75 backdrop-blur-xl border-t border-black/[0.04] dark:border-white/[0.06] shadow-apple-md"
         aria-label="Worker navigation"
       >
         <div className="max-w-2xl mx-auto flex">
@@ -86,14 +89,14 @@ export default function WorkerLayout({ children }: { children: ReactNode }) {
                 href={n.href}
                 aria-current={active ? 'page' : undefined}
                 className={[
-                  'flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors min-h-[56px] justify-center',
+                  'flex-1 flex flex-col items-center gap-1 py-3.5 transition-all duration-200 min-h-[56px] justify-center select-none active:scale-[0.96]',
                   active
-                    ? 'text-indigo-600 bg-indigo-50/60'
-                    : 'text-gray-500 hover:text-indigo-600 hover:bg-indigo-50/40',
+                    ? 'text-primary bg-primary/5 font-semibold'
+                    : 'text-foreground/60 hover:text-primary hover:bg-foreground/5',
                 ].join(' ')}
               >
-                <span className="text-lg leading-none" aria-hidden="true">{n.icon}</span>
-                <span className={`text-[11px] font-medium ${active ? 'text-indigo-700' : ''}`}>{n.label}</span>
+                <Icon name={n.icon} size="md" fill={active} />
+                <span className="text-[10px] tracking-wide mt-0.5">{n.label}</span>
               </Link>
             )
           })}

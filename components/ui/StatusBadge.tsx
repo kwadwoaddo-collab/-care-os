@@ -31,24 +31,24 @@ interface VariantDef {
 }
 
 const VARIANTS: Record<BadgeVariant, VariantDef> = {
-  success:  { base: 'bg-green-100 text-green-800 ring-green-700/20' },
-  warning:  { base: 'bg-amber-100 text-amber-800 ring-amber-700/20' },
-  error:    { base: 'bg-red-100   text-red-800   ring-red-700/20' },
-  info:     { base: 'bg-blue-100  text-blue-800  ring-blue-700/20' },
-  neutral:  { base: 'bg-gray-100  text-gray-700  ring-gray-500/20' },
-  pending:  { base: 'bg-yellow-100 text-yellow-800 ring-yellow-700/20' },
-  approved: { base: 'bg-green-100 text-green-800 ring-green-700/20', prefix: '✓' },
-  rejected: { base: 'bg-red-100   text-red-800   ring-red-700/20',   prefix: '✕' },
-  expired:  { base: 'bg-red-100   text-red-800   ring-red-700/20',   prefix: '⚠' },
-  expiring: { base: 'bg-amber-100 text-amber-800 ring-amber-700/20', prefix: '⏰' },
-  missing:  { base: 'bg-red-100   text-red-800   ring-red-700/20',   prefix: '✕' },
+  success:  { base: 'bg-success/10 text-success-text border border-success/20' },
+  warning:  { base: 'bg-warning/10 text-warning-text border border-warning/20' },
+  error:    { base: 'bg-error/10 text-error-text border border-error/20' },
+  info:     { base: 'bg-primary/10 text-primary border border-primary/20' },
+  neutral:  { base: 'bg-foreground/5 text-foreground/60 border border-foreground/10' },
+  pending:  { base: 'bg-warning/10 text-warning-text border border-warning/20' },
+  approved: { base: 'bg-success/10 text-success-text border border-success/20', prefix: '✓' },
+  rejected: { base: 'bg-error/10 text-error-text border border-error/20', prefix: '✕' },
+  expired:  { base: 'bg-error/10 text-error-text border border-error/20', prefix: '!' },
+  expiring: { base: 'bg-warning/10 text-warning-text border border-warning/20', prefix: 'exp' },
+  missing:  { base: 'bg-error/10 text-error-text border border-error/20', prefix: '✕' },
 }
 
 // ── Size config ───────────────────────────────────────────────────────────────
 
 const SIZE_CLS: Record<'xs' | 'sm', string> = {
-  xs: 'px-1.5 py-0.5 text-[10px] font-semibold tracking-wide',
-  sm: 'px-2   py-0.5 text-xs    font-medium',
+  xs: 'px-2 py-0.5 text-[9px] font-bold tracking-wider',
+  sm: 'px-2.5 py-0.5 text-[10px] font-semibold tracking-wide',
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -77,33 +77,33 @@ export default function StatusBadge({
   const sizeCls = SIZE_CLS[size]
 
   const DOT_COLOURS: Partial<Record<BadgeVariant, string>> = {
-    success:  'bg-green-500',
-    warning:  'bg-amber-500',
-    error:    'bg-red-500',
-    info:     'bg-blue-500',
-    neutral:  'bg-gray-400',
-    pending:  'bg-yellow-500',
-    approved: 'bg-green-500',
-    rejected: 'bg-red-500',
-    expired:  'bg-red-500',
-    expiring: 'bg-amber-500',
-    missing:  'bg-red-500',
+    success:  'bg-success',
+    warning:  'bg-warning',
+    error:    'bg-error',
+    info:     'bg-primary',
+    neutral:  'bg-foreground/40',
+    pending:  'bg-warning',
+    approved: 'bg-success',
+    rejected: 'bg-error',
+    expired:  'bg-error',
+    expiring: 'bg-warning',
+    missing:  'bg-error',
   }
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-md ring-1 ring-inset uppercase ${def.base} ${sizeCls} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full uppercase ${def.base} ${sizeCls} ${className}`}
       aria-label={ariaLabel ?? `Status: ${label}`}
       role="status"
     >
       {dot && (
         <span
-          className={`w-1.5 h-1.5 rounded-full shrink-0 ${DOT_COLOURS[variant] ?? 'bg-gray-400'}`}
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${DOT_COLOURS[variant] ?? 'bg-foreground/40'}`}
           aria-hidden="true"
         />
       )}
       {def.prefix && (
-        <span className="shrink-0" aria-hidden="true">{def.prefix}</span>
+        <span className="shrink-0 font-bold" aria-hidden="true">{def.prefix}</span>
       )}
       {label}
     </span>

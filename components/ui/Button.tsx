@@ -24,11 +24,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLS: Record<ButtonVariant, string> = {
-  primary:   'bg-indigo-600 text-white hover:bg-indigo-700 border-transparent',
-  secondary: 'bg-surface-container-lowest text-slate-700 border-slate-200 hover:bg-slate-50',
-  danger:    'bg-red-600 text-white hover:bg-red-700 border-transparent',
-  ghost:     'bg-transparent text-indigo-600 hover:text-indigo-800 border-transparent hover:underline',
-  warning:   'bg-amber-600 text-white hover:bg-amber-700 border-transparent',
+  primary:   'bg-primary text-on-primary hover:bg-primary/90 hover:brightness-105 border-transparent shadow-apple-sm active:scale-[0.97]',
+  secondary: 'bg-surface-container-highest text-foreground border-transparent hover:bg-surface-container-highest/80 active:scale-[0.97]',
+  danger:    'bg-error text-on-error hover:bg-error/90 hover:brightness-105 border-transparent shadow-apple-sm active:scale-[0.97]',
+  ghost:     'bg-transparent text-primary hover:bg-primary/10 border-transparent active:scale-[0.98]',
+  warning:   'bg-warning text-black hover:bg-warning/90 hover:brightness-105 border-transparent shadow-apple-sm active:scale-[0.97]',
 }
 
 const SIZE_CLS: Record<ButtonSize, string> = {
@@ -54,9 +54,9 @@ export default function Button({
       {...props}
       disabled={isDisabled}
       className={[
-        'inline-flex items-center justify-center gap-2 font-medium rounded-lg border transition-colors',
-        'disabled:opacity-60 disabled:cursor-not-allowed',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1',
+        'inline-flex items-center justify-center gap-2 font-medium rounded-xl border transition-all duration-200 select-none',
+        'disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-1 focus-visible:ring-offset-background',
         VARIANT_CLS[variant],
         SIZE_CLS[size],
         className,
