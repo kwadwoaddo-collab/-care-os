@@ -102,6 +102,73 @@ function flattenValue(raw: unknown): string {
   return String(raw)
 }
 
+// ── Application answers → PDF sections ───────────────────────────────────────
+//
+// Shared by generateAndStoreApplicationPdf below and the staff audit export
+// (lib/documents/staff-audit.ts), so both render application data identically.
+
+export async function buildApplicationPdfSections(
+  applicantId: string,
+  companyId:   string,
+  responseId?: string,
+): Promise<{ sections: PdfSection[]; submittedAt: string | null; responseId: string | null }> {
+  let responseQuery = adminClient
+    .from('form_responses')
+    .select('id, submitted_at')
+    .eq('applicant_id', applicantId)
+    .eq('company_id', companyId)
+    .eq('status', 'submitted')
+
+  if (responseId) {
+    responseQuery = responseQuery.eq('id', responseId)
+  }
+
+  const { data: responseRow } = await responseQuery
+    .order('submitted_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!responseRow) {
+    return { sections: [], submittedAt: null, responseId: null }
+  }
+
+  const { data: answers } = await adminClient
+    .from('form_answers')
+    .select('value, form_fields(slug, label)')
+    .eq('response_id', responseRow.id)
+
+  const answerMap: Record<string, { label: string; value: unknown }> = {}
+  for (const a of answers ?? []) {
+    const field = a.form_fields as { slug?: string; label?: string } | null
+    if (field?.slug) {
+      answerMap[field.slug] = { label: field.label ?? field.slug, value: a.value }
+    }
+  }
+
+  const sections: PdfSection[] = []
+
+  for (const section of SECTION_MAP) {
+    const fields: PdfField[] = []
+    for (const slug of section.slugs) {
+      const entry = answerMap[slug]
+      if (!entry) continue
+      const value = flattenValue(entry.value)
+      if (value !== '—') {
+        fields.push({ label: entry.label, value })
+      }
+    }
+    if (fields.length > 0) {
+      sections.push({ title: section.title, fields })
+    }
+  }
+
+  return {
+    sections,
+    submittedAt: (responseRow.submitted_at as string | null) ?? null,
+    responseId:  responseRow.id as string,
+  }
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export async function generateAndStoreApplicationPdf(opts: GenerateApplicationPdfOpts): Promise<{
@@ -126,68 +193,18 @@ export async function generateAndStoreApplicationPdf(opts: GenerateApplicationPd
     const companyName = (applicant.companies as { name?: string } | null)?.name ?? 'Care OS'
     const applicantName = [applicant.first_name, applicant.last_name].filter(Boolean).join(' ') || applicant.email || 'Unknown'
 
-    // ── 2. Load form response & answers ───────────────────────────────────────
+    // ── 2. Load form response & build sections ─────────────────────────────────
 
-    let responseQuery = adminClient
-      .from('form_responses')
-      .select('id, submitted_at')
-      .eq('applicant_id', applicantId)
-      .eq('company_id', companyId)
-      .eq('status', 'submitted')
+    const { sections, submittedAt: responseSubmittedAt, responseId: matchedResponseId } = await buildApplicationPdfSections(applicantId, companyId, responseId)
 
-    if (responseId) {
-      responseQuery = responseQuery.eq('id', responseId)
-    }
-
-    const { data: responseRow } = await responseQuery
-      .order('submitted_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (!responseRow) {
-      return { ok: false, documentId: null, error: 'No submitted form response found' }
-    }
-
-    const { data: answers } = await adminClient
-      .from('form_answers')
-      .select('value, form_fields(slug, label)')
-      .eq('response_id', responseRow.id)
-
-    const answerMap: Record<string, { label: string; value: unknown }> = {}
-    for (const a of answers ?? []) {
-      const field = a.form_fields as { slug?: string; label?: string } | null
-      if (field?.slug) {
-        answerMap[field.slug] = { label: field.label ?? field.slug, value: a.value }
-      }
-    }
-
-    // ── 3. Build PDF sections ──────────────────────────────────────────────────
-
-    const sections: PdfSection[] = []
-
-    for (const section of SECTION_MAP) {
-      const fields: PdfField[] = []
-      for (const slug of section.slugs) {
-        const entry = answerMap[slug]
-        if (!entry) continue
-        const value = flattenValue(entry.value)
-        if (value !== '—') {
-          fields.push({ label: entry.label, value })
-        }
-      }
-      if (fields.length > 0) {
-        sections.push({ title: section.title, fields })
-      }
-    }
-
-    if (sections.length === 0) {
+    if (sections.length === 0 || !matchedResponseId) {
       return { ok: false, documentId: null, error: 'No form data to include in PDF' }
     }
 
     // ── 4. Generate PDF ────────────────────────────────────────────────────────
 
-    const submittedAt = responseRow.submitted_at
-      ? new Date(responseRow.submitted_at as string).toLocaleDateString('en-GB', {
+    const submittedAt = responseSubmittedAt
+      ? new Date(responseSubmittedAt).toLocaleDateString('en-GB', {
           day: '2-digit', month: 'long', year: 'numeric',
         })
       : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
@@ -289,7 +306,7 @@ export async function generateAndStoreApplicationPdf(opts: GenerateApplicationPd
         document_type:  'application_form',
         source_label:   'Generated from application submission',
         folder_slug:    'application-form-cv',
-        submitted_at:   responseRow.submitted_at,
+        submitted_at:   responseSubmittedAt,
       },
     })
 
@@ -304,7 +321,7 @@ export async function generateAndStoreApplicationPdf(opts: GenerateApplicationPd
         applicant_name: applicantName,
         document_type:  'application_form',
         file_name:      fileName,
-        response_id:    responseRow.id,
+        response_id:    matchedResponseId,
       },
     })
 
