@@ -8,7 +8,7 @@ import { DAY_KEYS, type StaffAvailability, type DayKey } from '@/lib/staff/types
 import type { ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import EditStaffProfileForm from '@/app/admin/staff/[id]/EditStaffProfileForm'
 import StaffChecklistPanel from '@/components/admin/StaffChecklistPanel'
-import { ENABLE_ONBOARDING_CHECKLISTS } from '@/lib/features'
+import { ENABLE_ONBOARDING_CHECKLISTS, ENABLE_STAFF_AUDIT_EXPORT } from '@/lib/features'
 import ComplianceActionDrawer, {
   type DrawerAction,
   type DrawerDoc,
@@ -272,6 +272,17 @@ export default function StaffProfileDesktop({
                 <span className="material-symbols-outlined text-[18px]">fact_check</span>
                 Pre-Employment
               </Link>
+              {ENABLE_STAFF_AUDIT_EXPORT && (
+                <a
+                  href={`/api/admin/staff/${sp.id}/audit-export`}
+                  download
+                  id="export-staff-file-btn"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 bg-white/10 text-sm font-semibold text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                  Export Staff File
+                </a>
+              )}
               <Link
                 href={`/admin/shifts?assign_to=${sp.id}`}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-indigo-700 text-sm font-bold hover:bg-indigo-50 transition-colors shadow-sm"
