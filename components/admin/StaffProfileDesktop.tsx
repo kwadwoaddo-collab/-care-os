@@ -7,7 +7,8 @@ import { calculateCompliance } from '@/lib/compliance/calculateCompliance'
 import { DAY_KEYS, type StaffAvailability, type DayKey } from '@/lib/staff/types'
 import type { ComplianceDocument } from '@/lib/compliance/calculateCompliance'
 import EditStaffProfileForm from '@/app/admin/staff/[id]/EditStaffProfileForm'
-import { ENABLE_STAFF_AUDIT_EXPORT } from '@/lib/features'
+import StaffChecklistPanel from '@/components/admin/StaffChecklistPanel'
+import { ENABLE_ONBOARDING_CHECKLISTS, ENABLE_STAFF_AUDIT_EXPORT } from '@/lib/features'
 import ComplianceActionDrawer, {
   type DrawerAction,
   type DrawerDoc,
@@ -566,6 +567,9 @@ export default function StaffProfileDesktop({
                 </>
               )}
             </Card>
+
+            {/* Onboarding Checklist */}
+            {ENABLE_ONBOARDING_CHECKLISTS && <StaffChecklistPanel staffProfileId={sp.id} />}
 
             {/* Shift Pattern */}
             <Card>

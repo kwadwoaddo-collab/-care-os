@@ -11,6 +11,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import MobilePageHeader from '@/components/admin/MobilePageHeader'
 import type { OnboardingRow, OnboardingResponse, OnboardingSummary } from '@/app/api/admin/onboarding/route'
+import { ENABLE_ONBOARDING_CHECKLISTS } from '@/lib/features'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -363,13 +364,25 @@ export default function OnboardingQueuePage() {
             Staff onboarding pipeline, progress tracking, and stalled alerts.
           </p>
         </div>
-        <Link
-          href="/admin/applicants"
-          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-primary text-on-primary hover:opacity-90 transition-all shadow-sm"
-        >
-          <span className="material-symbols-outlined text-[16px]">person_add</span>
-          Invite Applicant
-        </Link>
+        <div className="flex items-center gap-2">
+          {ENABLE_ONBOARDING_CHECKLISTS && (
+            <Link
+              href="/admin/onboarding/checklist-templates"
+              id="checklist-templates-link"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-secondary-container/10 text-secondary hover:bg-secondary-container/20 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">checklist</span>
+              Checklist Templates
+            </Link>
+          )}
+          <Link
+            href="/admin/applicants"
+            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold bg-primary text-on-primary hover:opacity-90 transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">person_add</span>
+            Invite Applicant
+          </Link>
+        </div>
       </div>
 
       {/* Stalled warning banner */}
