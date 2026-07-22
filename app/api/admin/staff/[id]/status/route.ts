@@ -132,6 +132,7 @@ export async function PATCH(
   }
 
   // ── Build update payload ────────────────────────────────────────────────────
+  const TERMINAL_STAFF_STATUSES = new Set(['terminated', 'inactive'])
   const updatePayload: Record<string, unknown> = { status, updated_at: new Date().toISOString() }
 
   if (status === 'terminated') {
@@ -140,6 +141,14 @@ export async function PATCH(
     updatePayload.exit_notes     = terminationNotes || null
     updatePayload.terminated_at  = new Date().toISOString()
     updatePayload.terminated_by  = userId
+  }
+
+  // Revoke worker portal access immediately on termination/deactivation — a
+  // terminated worker's token otherwise keeps working until it naturally
+  // expires (up to 7 days).
+  if (TERMINAL_STAFF_STATUSES.has(status)) {
+    updatePayload.portal_token_hash       = null
+    updatePayload.portal_token_expires_at = null
   }
 
   // When restoring from terminated, clear the termination metadata so it does
@@ -195,8 +204,23 @@ export async function PATCH(
     })
   }
 
+  // ── Audit log — worker portal token revoked (fire-and-forget) ──────────────
+  if (TERMINAL_STAFF_STATUSES.has(status)) {
+    void adminClient.from('audit_logs').insert({
+      company_id:  companyId,
+      actor_id:    userId,
+      action:      'worker.token_revoked',
+      entity_type: 'staff_profile',
+      entity_id:   staffProfileId,
+      metadata: {
+        previous_status: staffProfile.status,
+        new_status:      status,
+        timestamp:       new Date().toISOString(),
+      },
+    })
+  }
+
   // ── Archive linked applicant when staff is terminated ──────────────────────
-  const TERMINAL_STAFF_STATUSES = new Set(['terminated', 'inactive'])
   if (TERMINAL_STAFF_STATUSES.has(status) && staffProfile.applicant_id) {
     void adminClient
       .from('applicants')
